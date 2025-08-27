@@ -53,8 +53,8 @@
  @font-face {
    font-family: "IFC INSANE RODEO";
    src:
-     url("../FONTS/IFC-INSANE-RODEO.woff2") format("woff2"),
-     url("../FONTS/IFC INSANE RODEO.ttf") format("truetype");
+     url("../fonts/IFC-INSANE-RODEO.woff2") format("woff2"),
+     url("../fonts/IFC INSANE RODEO.ttf") format("truetype");
      font-display: block;
  }
 
