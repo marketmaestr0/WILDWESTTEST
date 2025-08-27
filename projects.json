@@ -1,0 +1,14 @@
+{
+  "projects": [
+    {
+      "chainId": "base",
+      "tokenAddress": "0x8129609E5303910464FCe3022a809fA44455Fe9A",
+      "name": "$WILDW"
+    },
+    {
+      "chainId": "base",
+      "tokenAddress": "0x5C3e978A301a71d5b48C9023EF090321a02A0fc1",
+      "name": "User Project 1"
+    }
+  ]
+}

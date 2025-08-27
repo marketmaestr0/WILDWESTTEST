@@ -1,0 +1,19 @@
+{
+  "name": "wildwest-launchpad",
+  "version": "1.0.0",
+  "description": "Wild West Crypto Launchpad - GitHub Pages deployment",
+  "scripts": {
+    "dev": "http-server . -p 3000",
+    "build": "echo 'No build needed for static site'",
+    "deploy": "echo 'Deployment handled by GitHub Actions - push to main branch'",
+    "optimize:team": "node scripts/generate-team-images.mjs"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "sharp": "^0.34.3",
+    "sharp-cli": "^5.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

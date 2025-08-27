@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Token</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #fff;
+            font-family: 'Orbitron', 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        
+        .close-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00d4ff;
+            border-radius: 50%;
+            color: #00d4ff;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .close-button:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+        }
+        
+        .trade-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .token-name {
+            font-size: 2.5rem;
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+        
+        .trade-widget {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            min-height: 600px;
+        }
+        
+        .trade-widget iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .token-name {
+                font-size: 2rem;
+            }
+            .container {
+                padding: 60px 15px 20px;
+            }
+            .trade-widget {
+                padding: 15px;
+            }
+            .trade-widget iframe {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="close-button" onclick="window.close() || history.back()">×</button>
+    
+    <div class="container">
+        <div class="trade-header">
+            <h1 class="token-name" id="token-name">Trade Token</h1>
+        </div>
+        
+        <div class="trade-widget" id="trade-widget">
+            <div style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+                <h3 style="color: #00d4ff; margin-bottom: 1rem;">Loading Uniswap...</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SIMPLE WALLET BROWSER DETECTION - based on working examples
+        function isWalletBrowser() {
+            const userAgent = navigator.userAgent;
+            console.log('🔍 Simple wallet detection - User Agent:', userAgent);
+            console.log('🔍 Window ethereum available:', !!window.ethereum);
+            
+            // FIRST: Check if it's desktop - desktop browsers are NEVER wallet browsers
+            const isDesktop = /Windows|Mac|Linux|X11/i.test(userAgent) && 
+                            window.screen.width >= 1024 && 
+                            window.screen.height >= 768;
+            
+            if (isDesktop) {
+                console.log('🖥️ Desktop detected - NOT a wallet browser');
+                return false;
+            }
+            
+            // Check for wallet-specific user agent patterns (case insensitive)
+            const walletPatterns = /MetaMask|Trust|Coinbase|Rainbow|ImToken|TokenPocket|1inch|Phantom|Zerion|Argent|Exodus|Atomic/i;
+            const hasWalletPattern = walletPatterns.test(userAgent);
+            
+            // Check for wallet provider properties
+            const hasWalletProvider = window.ethereum && (
+                window.ethereum.isMetaMask ||
+                window.ethereum.isCoinbaseWallet ||
+                window.ethereum.isTrust ||
+                window.ethereum.isRainbow
+            );
+            
+            // Check if mobile device
+            const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
+            
+            // Simple logic: wallet pattern OR (mobile + ethereum provider)
+            const isWallet = hasWalletPattern || hasWalletProvider || (isMobile && window.ethereum);
+            
+            console.log('🔍 Wallet detection results:', {
+                isDesktop,
+                hasWalletPattern,
+                hasWalletProvider,
+                isMobile,
+                windowEthereum: !!window.ethereum,
+                finalResult: isWallet
+            });
+            
+            return isWallet;
+        }
+
+        // Get parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenSymbol = urlParams.get('symbol') || 'TOKEN';
+        const tokenAddress = urlParams.get('address') || '';
+        
+        // Update page content
+        document.getElementById('token-name').textContent = `Trade ${tokenSymbol}`;
+        document.title = `Trade ${tokenSymbol}`;
+        
+        // Handle wallet browser vs regular browser
+        if (tokenAddress) {
+            const uniswapUrl = `https://app.uniswap.org/#/swap?outputCurrency=${tokenAddress}&chain=base`;
+            
+            if (isWalletBrowser()) {
+                // Wallet browser: Show redirect message and auto-redirect
+                console.log('🔍 Wallet browser detected - redirecting to Uniswap app');
+                document.getElementById('trade-widget').innerHTML = `
+                    <div style="text-align: center; padding: 3rem 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🦄</div>
+                        <h2 style="color: #00d4ff; margin-bottom: 1rem;">Wallet Browser Detected</h2>
+                        <p style="color: #ccc; margin-bottom: 1rem; line-height: 1.6;">
+                            We've detected you're using a wallet browser (like Trust Wallet, MetaMask mobile, etc.).
+                        </p>
+                        <p style="color: #999; margin-bottom: 2rem; line-height: 1.6; font-size: 0.9rem;">
+                            Wallet browsers can't connect to trading widgets due to security restrictions, 
+                            so we'll take you directly to Uniswap where your wallet can connect properly.
+                        </p>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                            <button onclick="window.location.href='${uniswapUrl}'" 
+                                    style="background: linear-gradient(135deg, #00d4ff, #0088ff); 
+                                           color: white; border: none; padding: 1rem 2rem; 
+                                           border-radius: 12px; font-size: 1.1rem; font-weight: bold; 
+                                           cursor: pointer; transition: all 0.3s ease;">
+                                Continue to Uniswap
+                            </button>
+                            <button onclick="window.close() || history.back()" 
+                                    style="background: rgba(255, 255, 255, 0.1); 
+                                           color: #ccc; border: 1px solid #444; padding: 1rem 2rem; 
+                                           border-radius: 12px; font-size: 1.1rem; 
+                                           cursor: pointer; transition: all 0.3s ease;">
+                                Go Back
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Auto-redirect after 3 seconds
+                setTimeout(() => {
+                    console.log('🚀 Auto-redirecting to Uniswap app...');
+                    window.location.href = uniswapUrl;
+                }, 3000);
+                
+            } else {
+                // Regular browser: Use iframe widget with proper permissions
+                console.log('🖥️ Regular browser detected - loading Uniswap widget');
+                const iframe = document.createElement('iframe');
+                iframe.src = uniswapUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '600px';
+                iframe.style.border = 'none';
+                iframe.style.borderRadius = '12px';
+                
+                // Add sandbox permissions for Uniswap to work properly
+                iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation';
+                
+                // Add additional attributes to help with loading
+                iframe.setAttribute('loading', 'lazy');
+                iframe.setAttribute('allow', 'clipboard-write; web-share; microphone; camera');
+                
+                document.getElementById('trade-widget').innerHTML = '';
+                document.getElementById('trade-widget').appendChild(iframe);
+            }
+        } else {
+            // No token address provided
+            document.getElementById('trade-widget').innerHTML = `
+                <div style="text-align: center; padding: 3rem 1rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                    <h3 style="color: #ff6b6b; margin-bottom: 1rem;">Invalid Token</h3>
+                    <p style="color: #ccc;">No token address provided for trading.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

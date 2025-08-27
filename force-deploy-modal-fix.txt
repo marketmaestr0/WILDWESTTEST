@@ -1,0 +1,4 @@
+FORCE DEPLOY: Modal positioning fix with cache busting
+Timestamp: 2025-08-24 Cache Bust v001
+Issue: Deployed version still using old cached function
+Fix: Updated function names and added cache busting headers

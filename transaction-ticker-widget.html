@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Ticker Widget</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: transparent;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+        }
+        
+        #transaction-bar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            z-index: 99999;
+            box-shadow: 0 2px 10px rgba(0,212,255,0.15);
+            height: 40px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        #transaction-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+            z-index: 1;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .ticker-header {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00d4ff;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: livePulse 2s infinite;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+        }
+
+        @keyframes livePulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+                box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(1.2);
+                box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+            }
+        }
+
+        .ticker-status {
+            display: none; /* Hidden in thin mode */
+        }
+
+        #transaction-list {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            white-space: nowrap;
+            align-items: center;
+            height: 100%;
+            padding: 0 100px 0 0;
+            margin: 0;
+            list-style: none;
+            position: relative;
+            z-index: 2;
+            transition: transform 1s ease-in-out;
+        }
+        
+        /* Individual transaction sliding animation */
+        .transaction-slide {
+            animation: slideAndPause 12s ease-in-out forwards;
+        }
+        
+        @keyframes slideAndPause {
+            0% { transform: translateX(100vw) scale(1); }
+            20% { transform: translateX(calc(50vw - 70px)) scale(1); }
+            25% { transform: translateX(calc(50vw - 70px)) scale(1.05); }
+            30% { transform: translateX(calc(50vw - 70px)) scale(1); }
+            35% { transform: translateX(calc(50vw - 70px)) scale(1.03); }
+            40% { transform: translateX(calc(50vw - 70px)) scale(1); }
+            75% { transform: translateX(calc(50vw - 70px)) scale(1); }
+            80% { transform: translateX(calc(50vw - 70px)) scale(0.95); }
+            100% { transform: translateX(-100vw) scale(1); }
+        }
+        
+        #transaction-bar li {
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            min-width: 140px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+            transition: all 0.2s ease;
+            justify-content: center;
+            font-weight: 500;
+            height: 24px;
+        }
+
+        #transaction-bar li:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.2);
+        }
+
+        .buy-transaction {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.03) 100%);
+            border-color: rgba(34, 197, 94, 0.25);
+            color: #22c55e;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.05);
+        }
+
+        .sell-transaction {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.03) 100%);
+            border-color: rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.05);
+        }
+
+        /* Ensure both buy and sell use the same slide animation */
+        .buy-transaction.transaction-slide,
+        .sell-transaction.transaction-slide {
+            animation: slideAndPause 12s ease-in-out forwards;
+        }
+
+        .loading-transaction {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 212, 255, 0.03) 100%);
+            border-color: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            animation: pulse 2s infinite;
+            position: absolute;
+            right: 20px;
+            top: 2px;
+            margin: 0;
+            padding: 2px 6px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.01); }
+        }
+
+        .transaction-link {
+            text-decoration: none;
+            color: inherit;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .transaction-link:hover {
+            color: #00d4ff;
+            transform: scale(1.01);
+        }
+
+        .transaction-link::after {
+            content: '↗';
+            opacity: 0;
+            margin-left: 2px;
+            transition: opacity 0.2s ease;
+            font-size: 9px;
+        }
+
+        .transaction-link:hover::after {
+            opacity: 0.6;
+        }
+
+        .amount {
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .symbol {
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .action {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Queue system for smooth transitions */
+        .transaction-queue {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #transaction-bar { height: 35px; }
+            .ticker-header { font-size: 11px; left: 10px; gap: 6px; }
+            .live-indicator { width: 6px; height: 6px; }
+            #transaction-bar li { min-width: 120px; padding: 4px 8px; font-size: 11px; height: 20px; }
+            .amount { font-size: 11px; }
+            .action { font-size: 9px; }
+            
+            /* Mobile-specific centering for transactions */
+            @keyframes slideAndPause {
+                0% { transform: translateX(100vw) scale(1); }
+                20% { transform: translateX(calc(50vw - 65px)) scale(1); }
+                25% { transform: translateX(calc(50vw - 65px)) scale(1.05); }
+                30% { transform: translateX(calc(50vw - 65px)) scale(1); }
+                35% { transform: translateX(calc(50vw - 65px)) scale(1.03); }
+                40% { transform: translateX(calc(50vw - 65px)) scale(1); }
+                75% { transform: translateX(calc(50vw - 65px)) scale(1); }
+                80% { transform: translateX(calc(50vw - 65px)) scale(0.95); }
+                100% { transform: translateX(-100vw) scale(1); }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="transaction-bar">
+        <div class="ticker-header">
+            <div class="live-indicator"></div>
+            LIVE TRADES
+        </div>
+        <div class="ticker-status" id="ticker-status">Loading...</div>
+        <ul id="transaction-list"></ul>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+    // --- CONFIG ---
+    const QUICKNODE_ENDPOINT = 'https://responsive-omniscient-model.base-mainnet.quiknode.pro/aa86b92100862c55985ff1d322a9ff07d9ab236f/';
+    const FACTORY_CONTRACT = '0xaB4FE16F395921081bD9895359cf173a2Eaa7125';
+    const WHITELISTED_TOKENS = [
+        { address: '0x5C3e978A301a71d5b48C9023EF090321a02A0fc1', symbol: 'TRP', decimals: 18 },
+        { address: '0x8129609E5303910464FCe3022a809fA44455Fe9A', symbol: 'WILDW', decimals: 18 }
+        // Add more tokens here if needed
+    ];
+    const BLACKLISTED_CONTRACTS = [
+        '0x72213f5b7c246fb5d14a2aae41d0f73e88310fb4',
+        '0xd5fa8927fa46e866270f4ac884c5967bbed71f13'
+    ];
+
+    // Rate limiting configuration
+    const RATE_LIMIT_CONFIG = {
+        MAX_REQUESTS_PER_SECOND: 10,
+        MAX_CONCURRENT_REQUESTS: 3,
+        RETRY_DELAY: 2000,
+        MAX_RETRIES: 2,
+        RATE_LIMIT_BACKOFF: 10000, // 10 seconds backoff for 429 errors
+        POLL_INTERVAL: 20000,      // 20 seconds between polls
+        BLOCK_RANGE: 100,          // Smaller block range to reduce requests
+    };
+
+    // Rate limiter implementation
+    class RateLimiter {
+        constructor() {
+            this.requestTimes = [];
+            this.activeRequests = 0;
+            this.rateLimited = false;
+            this.rateLimitedUntil = 0;
+        }
+
+        async waitForSlot() {
+            // Check if we're in rate limit backoff period
+            if (this.rateLimited && Date.now() < this.rateLimitedUntil) {
+                const waitTime = this.rateLimitedUntil - Date.now();
+                console.warn(`[RateLimit] Waiting ${waitTime}ms due to rate limiting`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                this.rateLimited = false;
+            }
+
+            // Wait if we have too many concurrent requests
+            while (this.activeRequests >= RATE_LIMIT_CONFIG.MAX_CONCURRENT_REQUESTS) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Remove old request times (older than 1 second)
+            const now = Date.now();
+            this.requestTimes = this.requestTimes.filter(time => now - time < 1000);
+
+            // Wait if we've made too many requests per second
+            if (this.requestTimes.length >= RATE_LIMIT_CONFIG.MAX_REQUESTS_PER_SECOND) {
+                const oldestTime = this.requestTimes[0];
+                const waitTime = 1000 - (now - oldestTime);
+                if (waitTime > 0) {
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                }
+            }
+
+            this.requestTimes.push(now);
+            this.activeRequests++;
+        }
+
+        releaseSlot() {
+            this.activeRequests--;
+        }
+
+        handleRateLimit() {
+            this.rateLimited = true;
+            this.rateLimitedUntil = Date.now() + RATE_LIMIT_CONFIG.RATE_LIMIT_BACKOFF;
+            console.warn(`[RateLimit] Rate limited - backing off until ${new Date(this.rateLimitedUntil).toLocaleTimeString()}`);
+        }
+    }
+
+    // Global rate limiter instance
+    const rateLimiter = new RateLimiter();
+
+    // Enhanced provider with rate limiting
+    async function makeRateLimitedRequest(requestFunc, retries = RATE_LIMIT_CONFIG.MAX_RETRIES) {
+        await rateLimiter.waitForSlot();
+        
+        try {
+            const result = await requestFunc();
+            rateLimiter.releaseSlot();
+            return result;
+        } catch (error) {
+            rateLimiter.releaseSlot();
+            
+            // Handle rate limiting (429 errors)
+            if (error.code === 429 || (error.message && error.message.includes('429'))) {
+                rateLimiter.handleRateLimit();
+                
+                if (retries > 0) {
+                    console.warn(`[RateLimit] Retrying request after rate limit (${retries} retries left)`);
+                    await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_CONFIG.RETRY_DELAY));
+                    return makeRateLimitedRequest(requestFunc, retries - 1);
+                } else {
+                    console.error('[RateLimit] Max retries exceeded for rate-limited request');
+                    throw error;
+                }
+            }
+            
+            // Handle other errors with regular retry
+            if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_CONFIG.RETRY_DELAY));
+                return makeRateLimitedRequest(requestFunc, retries - 1);
+            }
+            
+            throw error;
+        }
+    }
+
+    // Helper to build contract info mapping
+    function buildContractInfo(tokens) {
+        const info = {};
+        for (const t of tokens) {
+            info[t.address.toLowerCase()] = { symbol: t.symbol, decimals: t.decimals };
+        }
+        return info;
+    }
+
+    // Dynamically fetch all factory tokens
+    async function getFactoryTokens() {
+        const factoryABI = [
+            'function getTokenCount() view returns (uint256)',
+            'function allTokens(uint256) view returns (address tokenAddress, address creator, string symbol, string name, uint256 createdAt, address poolAddress)'
+        ];
+        const factory = new ethers.Contract(FACTORY_CONTRACT, factoryABI, provider);
+        let tokens = [];
+        try {
+            const count = await makeRateLimitedRequest(() => factory.getTokenCount());
+            console.log('[Ticker] Factory token count:', count);
+            
+            // Process tokens in smaller batches to avoid overwhelming the RPC
+            const batchSize = 5; // Smaller batch size
+            for (let i = 0; i < count; i += batchSize) {
+                const batchPromises = [];
+                for (let j = i; j < Math.min(i + batchSize, count); j++) {
+                    batchPromises.push(
+                        makeRateLimitedRequest(() => factory.allTokens(j)).then(t => {
+                            const address = t.tokenAddress || t[0];
+                            const symbol = t.symbol || t[2] || `TOKEN${j}`;
+                            console.log(`[Ticker] Loaded factory token #${j}:`, address, symbol);
+                            return { address, symbol, decimals: 18 };
+                        }).catch(err => {
+                            console.warn(`[Ticker] Error loading factory token #${j}:`, err);
+                            return null;
+                        })
+                    );
+                }
+                
+                const batchResults = await Promise.all(batchPromises);
+                const validTokens = batchResults.filter(token => token !== null);
+                tokens.push(...validTokens);
+                
+                // Add delay between batches
+                if (i + batchSize < count) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+        } catch (err) {
+            console.warn('Error loading factory tokens:', err);
+        }
+        console.log('[Ticker] Final factory tokens:', tokens);
+        return tokens;
+    }
+    const UNISWAP_V3_FACTORY = '0x33128a8fC17869897dcE68Ed026d694621f6FDfD';
+    const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
+
+    // --- ABIs ---
+    const UNISWAP_V3_FACTORY_ABI = [
+        'function getPool(address tokenA, address tokenB, uint24 fee) view returns (address pool)'
+    ];
+    const UNISWAP_V3_POOL_ABI = [
+        'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
+        'function token0() view returns (address)',
+        'function token1() view returns (address)'
+    ];
+
+    // --- Widget Logic ---
+    const provider = new ethers.providers.JsonRpcProvider(QUICKNODE_ENDPOINT);
+    const transactionList = document.getElementById('transaction-list');
+
+    async function getPoolAddress(tokenAddress) {
+        // Check cache first
+        const cacheKey = tokenAddress.toLowerCase();
+        if (cachedPools[cacheKey]) {
+            return cachedPools[cacheKey];
+        }
+
+        const factory = new ethers.Contract(UNISWAP_V3_FACTORY, UNISWAP_V3_FACTORY_ABI, provider);
+        const feeTiers = [3000, 10000]; // Only check most common fees to reduce requests
+        
+        for (const fee of feeTiers) {
+            try {
+                const poolAddr = await makeRateLimitedRequest(() => factory.getPool(tokenAddress, WETH_ADDRESS, fee));
+                if (poolAddr && poolAddr !== ethers.constants.AddressZero) {
+                    console.log(`[Ticker] Found pool for ${tokenAddress} with ${fee/10000}% fee: ${poolAddr}`);
+                    cachedPools[cacheKey] = poolAddr; // Cache the result
+                    return poolAddr;
+                }
+            } catch (err) {
+                console.warn(`[Ticker] Error checking pool for fee ${fee}:`, err);
+                continue;
+            }
+            
+            // Small delay between fee tier checks
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        console.warn(`[Ticker] No pool found for ${tokenAddress}`);
+        cachedPools[cacheKey] = null; // Cache negative result too
+        return null;
+    }
+
+    function parseSwapEvent(log, tokenAddress) {
+        const iface = new ethers.utils.Interface(UNISWAP_V3_POOL_ABI);
+        try {
+            const event = iface.parseLog(log);
+            if (log.address.toLowerCase() === tokenAddress.toLowerCase()) {
+                if (event.args.amount0.lt(0)) return 'BUY';
+                if (event.args.amount0.gt(0)) return 'SELL';
+            }
+        } catch (err) {}
+        return null;
+    }
+
+    let isPolling = false; // Prevent multiple simultaneous polls
+    let cachedTokens = null; // Cache tokens to avoid reloading factory every time
+    let cachedPools = {}; // Cache pool addresses
+    let activeTokensOnly = []; // Only tokens with recent activity for scaling
+    let lastActivityCheck = 0;
+    const ACTIVITY_CHECK_INTERVAL = 300000; // Check for new active tokens every 5 minutes
+    const TOKEN_BATCH_SIZE = 5; // Reduced batch size for rate limiting
+    const MAX_ACTIVE_TOKENS = 10; // Further reduced for rate limiting
+    let lastKnownTransactions = []; // Fallback cache of recent transactions
+    const FALLBACK_HISTORY_BLOCKS = 1000; // Reduced scan depth
+    let backgroundScanRunning = false; // Prevent multiple background scans
+    let transactionQueue = []; // Queue for smooth transaction display
+    let currentTransactionIndex = 0;
+    let displayInterval = null;
+
+    // Scalable token activity detection
+    async function findActiveTokens(allTokens) {
+        console.log(`[Scale] Scanning ${allTokens.length} tokens for activity...`);
+        const now = Date.now();
+        
+        // If we recently checked, return cached active tokens
+        if (activeTokensOnly.length > 0 && (now - lastActivityCheck) < ACTIVITY_CHECK_INTERVAL) {
+            console.log(`[Scale] Using cached active tokens: ${activeTokensOnly.length}`);
+            return activeTokensOnly;
+        }
+        
+        const latestBlock = await makeRateLimitedRequest(() => provider.getBlockNumber());
+        const checkBlocks = 1000; // Look back further for activity detection
+        const blacklist = BLACKLISTED_CONTRACTS.map(addr => addr.toLowerCase());
+        
+        // Process tokens in batches to avoid overwhelming the RPC
+        const activeTokens = [];
+        for (let i = 0; i < allTokens.length; i += TOKEN_BATCH_SIZE) {
+            const batch = allTokens.slice(i, i + TOKEN_BATCH_SIZE)
+                .filter(token => !blacklist.includes(token.address.toLowerCase()));
+            
+            console.log(`[Scale] Processing token batch ${Math.floor(i/TOKEN_BATCH_SIZE) + 1}/${Math.ceil(allTokens.length/TOKEN_BATCH_SIZE)}`);
+            
+            // Limit concurrent requests within batch
+            const batchPromises = [];
+            for (let j = 0; j < batch.length; j += RATE_LIMIT_CONFIG.MAX_CONCURRENT_REQUESTS) {
+                const subBatch = batch.slice(j, j + RATE_LIMIT_CONFIG.MAX_CONCURRENT_REQUESTS);
+                
+                const subBatchPromise = Promise.all(subBatch.map(async (token) => {
+                    try {
+                        // Get pool address (cached if available)
+                        let poolAddr = cachedPools[token.address.toLowerCase()];
+                        if (!poolAddr) {
+                            poolAddr = await getPoolAddress(token.address);
+                            cachedPools[token.address.toLowerCase()] = poolAddr;
+                        }
+                        
+                        if (!poolAddr || poolAddr === ethers.constants.AddressZero) return null;
+                        
+                        // Quick activity check - just count recent events
+                        const logs = await makeRateLimitedRequest(() => provider.getLogs({
+                            address: poolAddr,
+                            fromBlock: latestBlock - checkBlocks > 0 ? latestBlock - checkBlocks : 0,
+                            toBlock: latestBlock,
+                            topics: [ethers.utils.id("Swap(address,address,int256,int256,uint160,uint128,int24)")]
+                        }));
+                        
+                        if (logs.length > 0) {
+                            console.log(`[Scale] ${token.symbol} is active (${logs.length} events)`);
+                            return { ...token, poolAddr, activityScore: logs.length };
+                        }
+                        
+                        return null;
+                    } catch (error) {
+                        return null;
+                    }
+                }));
+                
+                batchPromises.push(subBatchPromise);
+            }
+            
+            // Wait for all sub-batches in this batch
+            const batchResults = await Promise.all(batchPromises);
+            const validTokens = batchResults.flat().filter(token => token !== null);
+            activeTokens.push(...validTokens);
+            
+            // Prevent rate limiting
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Sort by activity and limit to prevent performance issues
+        activeTokens.sort((a, b) => b.activityScore - a.activityScore);
+        activeTokensOnly = activeTokens.slice(0, MAX_ACTIVE_TOKENS);
+        lastActivityCheck = now;
+        
+        console.log(`[Scale] Found ${activeTokensOnly.length} active tokens out of ${allTokens.length} total`);
+        return activeTokensOnly;
+    }
+
+    // Fallback: get last known transactions from any token (includes whitelisted)
+    async function getLastKnownTransactions(allTokens) {
+        console.log('[Fallback] Searching for last 10 transactions across all tokens...');
+        const latestBlock = await makeRateLimitedRequest(() => provider.getBlockNumber());
+        const swapTopic = ethers.utils.id("Swap(address,address,int256,int256,uint160,uint128,int24)");
+        const blacklist = BLACKLISTED_CONTRACTS.map(addr => addr.toLowerCase());
+        
+        // Ensure whitelisted tokens are prioritized in fallback search
+        const prioritizedTokens = [
+            ...WHITELISTED_TOKENS.filter(token => !blacklist.includes(token.address.toLowerCase())),
+            ...allTokens.filter(token => 
+                !WHITELISTED_TOKENS.some(wt => wt.address.toLowerCase() === token.address.toLowerCase()) &&
+                !blacklist.includes(token.address.toLowerCase())
+            )
+        ];
+        
+        console.log(`[Fallback] Prioritizing ${WHITELISTED_TOKENS.length} whitelisted tokens in search`);
+        
+        const allTransactions = [];
+        
+        // Search through tokens in batches for any recent activity
+        for (let i = 0; i < prioritizedTokens.length; i += TOKEN_BATCH_SIZE) {
+            const batch = prioritizedTokens.slice(i, i + TOKEN_BATCH_SIZE);
+            
+            const batchPromises = [];
+            for (let j = 0; j < batch.length; j += RATE_LIMIT_CONFIG.MAX_CONCURRENT_REQUESTS) {
+                const subBatch = batch.slice(j, j + RATE_LIMIT_CONFIG.MAX_CONCURRENT_REQUESTS);
+                
+                const subBatchPromise = Promise.all(subBatch.map(async (token) => {
+                    try {
+                        let poolAddr = cachedPools[token.address.toLowerCase()];
+                        if (!poolAddr) {
+                            poolAddr = await getPoolAddress(token.address);
+                            if (poolAddr) cachedPools[token.address.toLowerCase()] = poolAddr;
+                        }
+                        
+                        if (!poolAddr || poolAddr === ethers.constants.AddressZero) return [];
+                        
+                        // Scan deeper history for fallback data
+                        const logs = await makeRateLimitedRequest(() => provider.getLogs({
+                            address: poolAddr,
+                            fromBlock: latestBlock - FALLBACK_HISTORY_BLOCKS > 0 ? latestBlock - FALLBACK_HISTORY_BLOCKS : 0,
+                            toBlock: latestBlock,
+                            topics: [swapTopic]
+                        }));
+                        
+                        // Get token positions for this pool
+                        const poolContract = new ethers.Contract(poolAddr, UNISWAP_V3_POOL_ABI, provider);
+                        const [token0, token1] = await Promise.all([
+                            makeRateLimitedRequest(() => poolContract.token0()),
+                            makeRateLimitedRequest(() => poolContract.token1())
+                        ]);
+                        
+                        return logs.map(log => ({
+                            ...log,
+                            tokenInfo: token,
+                            poolPositions: {
+                                token0: token0.toLowerCase(),
+                                token1: token1.toLowerCase(),
+                                isToken0: token.address.toLowerCase() === token0.toLowerCase()
+                            }
+                        }));
+                        
+                    } catch (error) {
+                        return [];
+                    }
+                }));
+                
+                batchPromises.push(subBatchPromise);
+            }
+            
+            const batchResults = await Promise.all(batchPromises);
+            const batchTransactions = batchResults.flat().flat();
+            allTransactions.push(...batchTransactions);
+            
+            // If we found enough transactions, we can stop searching
+            if (allTransactions.length >= 10) {
+                break;
+            }
+            
+            // Small delay to prevent rate limiting
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        // Sort by block number and transaction index to get most recent
+        allTransactions.sort((a, b) => {
+            if (a.blockNumber !== b.blockNumber) {
+                return b.blockNumber - a.blockNumber;
+            }
+            return b.transactionIndex - a.transactionIndex;
+        });
+        
+        const recentTransactions = allTransactions.slice(0, 10);
+        console.log(`[Fallback] Found ${recentTransactions.length} fallback transactions`);
+        
+        return recentTransactions;
+    }
+
+    // Generate Uniswap swap URL for Base ETH -> Token
+    function getUniswapSwapUrl(tokenAddress) {
+        const baseEth = 'ETH'; // Use native ETH instead of WETH for better UX
+        return `https://app.uniswap.org/swap?chain=base&inputCurrency=${baseEth}&outputCurrency=${tokenAddress}`;
+    }
+
+    // Background scanner to continuously look for new active tokens
+    async function backgroundScanForActiveTokens() {
+        if (backgroundScanRunning || !cachedTokens) return;
+        backgroundScanRunning = true;
+        
+        try {
+            console.log('[Background] Scanning for newly active tokens...');
+            const newActiveTokens = await findActiveTokens(cachedTokens);
+            
+            if (newActiveTokens.length > activeTokensOnly.length) {
+                console.log(`[Background] Found ${newActiveTokens.length - activeTokensOnly.length} new active tokens!`);
+                // Force a refresh on next poll cycle
+                lastActivityCheck = 0;
+            }
+        } catch (error) {
+            console.warn('[Background] Error in background scan:', error);
+        } finally {
+            backgroundScanRunning = false;
+        }
+    }
+
+    // Queue-based transaction display system
+    function displayTransactionQueue(transactions) {
+        // Clear existing display interval
+        if (displayInterval) {
+            clearInterval(displayInterval);
+        }
+        
+        // Reset queue and index
+        transactionQueue = transactions;
+        currentTransactionIndex = 0;
+        
+        if (transactionQueue.length === 0) {
+            transactionList.innerHTML = ''; // Show nothing instead of "No recent trades found"
+            return;
+        }
+        
+        // Display first transaction immediately
+        showNextTransaction();
+        
+        // Set up interval to cycle through transactions
+        displayInterval = setInterval(showNextTransaction, 12000); // 12 seconds per transaction
+    }
+    
+    function showNextTransaction() {
+        if (transactionQueue.length === 0) return;
+        
+        const transaction = transactionQueue[currentTransactionIndex];
+        
+        // Create the transaction element with slide animation
+        transactionList.innerHTML = `<li class="${transaction.className} transaction-slide">${transaction.html}</li>`;
+        
+        // Move to next transaction (cycle back to start if at end)
+        currentTransactionIndex = (currentTransactionIndex + 1) % transactionQueue.length;
+    }
+
+    async function pollTransactions() {
+        if (isPolling) return; // Prevent overlapping calls
+        isPolling = true;
+        
+        try {
+            if (!window.ethers) {
+                return; // Silent fail instead of showing error
+            }
+            if (!provider) {
+                return; // Silent fail instead of showing error
+            }
+            
+            // No loading indicator - just proceed silently
+            
+            const latestBlock = await makeRateLimitedRequest(() => provider.getBlockNumber());
+            const blacklist = BLACKLISTED_CONTRACTS.map(addr => addr.toLowerCase());
+            
+            // Use cached tokens or load once
+            if (!cachedTokens) {
+                let tokens = [...WHITELISTED_TOKENS];
+                const factoryTokens = await getFactoryTokens();
+                for (const t of factoryTokens) {
+                    if (!tokens.some(x => x.address.toLowerCase() === t.address.toLowerCase()) && !blacklist.includes(t.address.toLowerCase())) {
+                        tokens.push(t);
+                    }
+                }
+                cachedTokens = tokens;
+                console.log('[Scale] Cached tokens:', tokens.length);
+            }
+            
+            // For scalability: only monitor actively trading tokens
+            const tokensToMonitor = await findActiveTokens(cachedTokens);
+            console.log(`[Scale] Monitoring ${tokensToMonitor.length} active tokens out of ${cachedTokens.length} total`);
+            
+            let allEvents = [];
+            
+            if (tokensToMonitor.length === 0) {
+                console.log('[Fallback] No active tokens found, searching for last known transactions...');
+                // No loading message - proceed silently
+                
+                // Use cached fallback transactions if available and recent
+                const cacheAge = Date.now() - lastActivityCheck;
+                const useCachedData = lastKnownTransactions.length > 0 && cacheAge < 120000; // Use cache for 2 minutes
+                
+                if (useCachedData) {
+                    allEvents = lastKnownTransactions;
+                    console.log(`[Fallback] Using ${lastKnownTransactions.length} cached transactions (${Math.floor(cacheAge/1000)}s old)`);
+                    
+                    // Still try to find new active tokens in background for next cycle
+                    setTimeout(async () => {
+                        console.log('[Background] Checking for new active tokens while showing cached data...');
+                        await backgroundScanForActiveTokens();
+                    }, 5000);
+                    
+                } else {
+                    // Search for any recent transactions across all tokens
+                    const fallbackEvents = await getLastKnownTransactions(cachedTokens);
+                    allEvents = fallbackEvents;
+                    lastKnownTransactions = fallbackEvents; // Cache for next time
+                }
+                
+                if (allEvents.length === 0) {
+                    return; // Silent return instead of showing "waiting" message
+                }
+            } else {
+                // Process active tokens normally
+                const swapTopic = ethers.utils.id("Swap(address,address,int256,int256,uint160,uint128,int24)");
+                let poolToToken = {};
+                let poolTokenPositions = {};
+                
+                // Get pools in parallel for active tokens only
+                const poolPromises = tokensToMonitor.map(async (token) => {
+                try {
+                    // Use the poolAddr from activity detection if available
+                    let poolAddr = token.poolAddr || cachedPools[token.address.toLowerCase()];
+                    if (!poolAddr) {
+                        poolAddr = await getPoolAddress(token.address);
+                        cachedPools[token.address.toLowerCase()] = poolAddr;
+                    }
+                        
+                        if (poolAddr && poolAddr !== ethers.constants.AddressZero) {
+                            poolToToken[poolAddr.toLowerCase()] = token;
+                            
+                            // Get token positions in parallel
+                            const poolContract = new ethers.Contract(poolAddr, UNISWAP_V3_POOL_ABI, provider);
+                            const [token0, token1] = await Promise.all([
+                                poolContract.token0(),
+                                poolContract.token1()
+                            ]);
+                            
+                            poolTokenPositions[poolAddr.toLowerCase()] = {
+                                token0: token0.toLowerCase(),
+                                token1: token1.toLowerCase(),
+                                isToken0: token.address.toLowerCase() === token0.toLowerCase()
+                            };
+                            
+                            return { token, poolAddr };
+                        }
+                        return null;
+                    } catch (err) {
+                        console.warn(`[Ticker] Error processing ${token.symbol}:`, err);
+                        return null;
+                    }
+                });
+            
+            // Wait for all pools to be processed
+            const poolResults = await Promise.all(poolPromises);
+            const validPools = poolResults.filter(result => result !== null);
+            console.log(`[Scale] Found ${validPools.length} pools from ${tokensToMonitor.length} active tokens`);
+            
+            // Get events from all pools in parallel with smaller block range for speed
+            const eventPromises = Object.keys(poolToToken).map(async (poolAddr) => {
+                try {
+                    const logs = await makeRateLimitedRequest(() => provider.getLogs({
+                        address: poolAddr,
+                        fromBlock: latestBlock - RATE_LIMIT_CONFIG.BLOCK_RANGE > 0 ? latestBlock - RATE_LIMIT_CONFIG.BLOCK_RANGE : 0,
+                        toBlock: latestBlock,
+                        topics: [swapTopic]
+                    }));
+                    
+                    return logs.map(log => ({
+                        ...log,
+                        tokenInfo: poolToToken[poolAddr.toLowerCase()],
+                        poolPositions: poolTokenPositions[poolAddr.toLowerCase()]
+                    }));
+                } catch (err) {
+                    console.warn('Error fetching events for pool', poolAddr, err);
+                    return [];
+                }
+            });
+            
+                // Wait for all events
+                const eventArrays = await Promise.all(eventPromises);
+                allEvents = eventArrays.flat();
+                
+                // Update fallback cache with fresh data
+                if (allEvents.length > 0) {
+                    lastKnownTransactions = allEvents.slice(-10);
+                }
+            }
+            
+            console.log(`[Scale] Found ${allEvents.length} total events from active monitoring`);
+            console.log('[Scale] Events found:', allEvents.length);
+            
+            let eventRows = await Promise.all(
+                allEvents.slice(-10).reverse().map(async log => {
+                    let buySell = '';
+                    let amount = '?';
+                    let symbol = 'TOKEN';
+                    let decimals = 18;
+                    
+                    // Get token info from the event
+                    const tokenInfo = log.tokenInfo;
+                    const poolPositions = log.poolPositions;
+                    if (tokenInfo) {
+                        symbol = tokenInfo.symbol;
+                        decimals = tokenInfo.decimals;
+                    }
+                    
+                    // Parse Swap event with accurate buy/sell determination
+                    try {
+                        const iface = new ethers.utils.Interface(UNISWAP_V3_POOL_ABI);
+                        const event = iface.parseLog(log);
+                        
+                        const amount0 = event.args.amount0;
+                        const amount1 = event.args.amount1;
+                        
+                        if (poolPositions) {
+                            if (poolPositions.isToken0) {
+                                // Our token is token0
+                                if (amount0.gt(0)) {
+                                    // Token0 (our token) going out = SELL
+                                    buySell = 'SELL';
+                                    amount = ethers.utils.formatUnits(amount0.abs(), decimals);
+                                } else {
+                                    // Token0 (our token) going in = BUY
+                                    buySell = 'BUY';
+                                    amount = ethers.utils.formatUnits(amount0.abs(), decimals);
+                                }
+                            } else {
+                                // Our token is token1
+                                if (amount1.gt(0)) {
+                                    // Token1 (our token) going out = SELL
+                                    buySell = 'SELL';
+                                    amount = ethers.utils.formatUnits(amount1.abs(), decimals);
+                                } else {
+                                    // Token1 (our token) going in = BUY
+                                    buySell = 'BUY';
+                                    amount = ethers.utils.formatUnits(amount1.abs(), decimals);
+                                }
+                            }
+                        } else {
+                            buySell = 'SWAP';
+                            amount = '?';
+                        }
+                        
+                        amount = parseFloat(amount).toLocaleString(undefined, {maximumFractionDigits: 4});
+                    } catch (err) {
+                        console.warn('Error parsing swap event:', err);
+                        amount = '?';
+                        buySell = 'SWAP';
+                    }
+                    
+                    let action = buySell === 'BUY' ? 'BOUGHT' : (buySell === 'SELL' ? 'SOLD' : 'SWAPPED');
+                    let transactionClass = buySell === 'BUY' ? 'buy-transaction' : (buySell === 'SELL' ? 'sell-transaction' : '');
+                    
+                    // Get token address for Uniswap link
+                    const tokenAddress = log.tokenInfo ? log.tokenInfo.address : '';
+                    const uniswapUrl = tokenAddress ? getUniswapSwapUrl(tokenAddress) : '#';
+                    
+                    // Return transaction data for queue system
+                    return {
+                        className: transactionClass,
+                        html: `<a href='${uniswapUrl}' target='_blank' class='transaction-link' title='Trade ${symbol} on Uniswap'>
+                            <span class="amount">${amount}</span>
+                            <span class="symbol">$${symbol}</span>
+                            <span class="action">${action}</span>
+                        </a>`
+                    };
+                })
+            );
+            
+            // Status updates removed - ticker shows only transactions
+            
+        // Use queue display system instead of simple innerHTML
+            if (eventRows.length > 0) {
+                displayTransactionQueue(eventRows);
+            }
+            // If no transactions, show nothing (removed loading message)
+        } catch (err) {
+            console.warn('Error fetching trades:', err); // Log to console only, no UI message
+        } finally {
+            isPolling = false; // Reset flag when done
+        }
+    }
+
+    // Dynamic polling interval based on scale and rate limiting
+    function getOptimalPollingInterval(activeTokenCount) {
+        // Use longer intervals to prevent rate limiting
+        if (activeTokenCount <= 5) return RATE_LIMIT_CONFIG.POLL_INTERVAL;      // 20s for small scale
+        if (activeTokenCount <= 10) return RATE_LIMIT_CONFIG.POLL_INTERVAL + 10000;      // 30s for medium scale  
+        return RATE_LIMIT_CONFIG.POLL_INTERVAL + 20000;  // 40s+ for larger scale
+    }
+
+    // Initialize only once
+    if (!window.tickerInitialized) {
+        window.tickerInitialized = true;
+        pollTransactions();
+        
+        // Start with the configured interval
+        let currentInterval = RATE_LIMIT_CONFIG.POLL_INTERVAL;
+        setInterval(async () => {
+            const optimalInterval = getOptimalPollingInterval(activeTokensOnly.length);
+            if (optimalInterval !== currentInterval) {
+                console.log(`[Scale] Active tokens: ${activeTokensOnly.length}, optimal interval: ${optimalInterval/1000}s`);
+                currentInterval = optimalInterval;
+            }
+            // Only poll if not already polling and not rate limited
+            if (!isPolling && (!rateLimiter.rateLimited || Date.now() >= rateLimiter.rateLimitedUntil)) {
+                pollTransactions();
+            }
+        }, currentInterval);
+        
+        // Background scanner for new active tokens (runs every 5 minutes to reduce load)
+        setInterval(backgroundScanForActiveTokens, 300000);
+    }
+    </script>
+</body>
+</html>

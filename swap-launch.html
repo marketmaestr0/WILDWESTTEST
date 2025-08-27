@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Launching Swap...</title>
+<style>
+  body { margin:0; font-family: system-ui, Arial, sans-serif; background:#0b111d; color:#cfe9ff; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .wrap { max-width:500px; padding:28px 24px; background:linear-gradient(135deg,#121a2a,#0b111d); border:1px solid rgba(0,234,255,0.3); border-radius:16px; box-shadow:0 6px 28px -6px rgba(0,234,255,0.25); }
+  h1 { margin:0 0 12px 0; font-size:1.15rem; letter-spacing:0.5px; }
+  p { font-size:0.75rem; line-height:1.15rem; margin:0 0 10px 0; }
+  code { background:#0b1220; padding:2px 5px; border-radius:4px; font-size:0.65rem; }
+  a.launch { display:inline-block; margin-top:12px; padding:10px 16px; font-weight:700; font-size:0.8rem; color:#00eaff; text-decoration:none; border:1px solid rgba(0,234,255,0.45); border-radius:10px; background:rgba(0,234,255,0.08); }
+  .status { font-size:0.6rem; opacity:0.7; margin-top:10px; min-height:14px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Preparing Swap</h1>
+    <p>Redirecting you to Uniswap with your amount & slippage prefilled.</p>
+    <p class="details"></p>
+    <a class="launch" href="#" target="_blank" rel="noopener">Open Uniswap Now ↗</a>
+    <div class="status"></div>
+    <p style="opacity:0.55">If it doesn't open automatically in a couple seconds, tap the button above. Your amount was copied to clipboard for quick paste.</p>
+  </div>
+<script>
+(function(){
+  const qs = new URLSearchParams(location.search);
+  const chain = (qs.get('chain')||'base').toLowerCase();
+  const side = (qs.get('side')||'buy').toLowerCase();
+  const token = (qs.get('token')||'').trim();
+  const amount = (qs.get('amount')||'').trim();
+  const slip = (qs.get('slippage')||'15').trim();
+  const detailsEl = document.querySelector('.details');
+  const statusEl = document.querySelector('.status');
+  const linkEl = document.querySelector('a.launch');
+  const validAddr = /^0x[0-9a-fA-F]{40}$/.test(token);
+  if(!validAddr){ detailsEl.textContent = 'Invalid token address'; return; }
+  detailsEl.innerHTML = `Side: <code>${side}</code> • Token: <code>${token.slice(0,10)}…</code> • Amount: <code>${amount||'N/A'}</code> • Slippage: <code>${slip}%</code>`;
+
+  // Build Uniswap URL with wide param coverage & deliberate ordering
+  const baseParams = [];
+  baseParams.push('chain='+encodeURIComponent(chain));
+  if(side==='buy') {
+    baseParams.push('inputCurrency=ETH');
+    baseParams.push('outputCurrency='+encodeURIComponent(token));
+  } else {
+    baseParams.push('inputCurrency='+encodeURIComponent(token));
+    baseParams.push('outputCurrency=ETH');
+  }
+  if(amount) {
+    baseParams.push('exactField='+(side==='buy'?'input':'input'));
+    baseParams.push('exactAmount='+encodeURIComponent(amount));
+    baseParams.push('inputAmount='+encodeURIComponent(amount));
+    baseParams.push('amount='+encodeURIComponent(amount));
+  }
+  // Multiple slippage key variants
+  baseParams.push('slippageTolerance='+encodeURIComponent(slip));
+  baseParams.push('slippage='+encodeURIComponent(slip));
+  baseParams.push('maxSlippage='+encodeURIComponent(slip));
+  baseParams.push('allowedSlippage='+encodeURIComponent(slip));
+  // Helpful hints
+  baseParams.push('autoRouter=1');
+  baseParams.push('protocolVersion=v3');
+  // Tracking (optional)
+  baseParams.push('utm_source=wildwest');
+  const uniUrl = 'https://app.uniswap.org/#/swap?'+baseParams.join('&');
+  linkEl.href = uniUrl;
+
+  // Try copying amount for quick manual paste if prefill fails
+  if(amount){
+    navigator.clipboard?.writeText(amount).then(()=>{ statusEl.textContent = 'Amount copied to clipboard.'; }).catch(()=>{ statusEl.textContent='Clipboard copy blocked.'; });
+  }
+
+  // Auto open after a brief delay (allow clipboard first)
+  setTimeout(()=>{
+    try { window.open(uniUrl, '_blank'); statusEl.textContent = 'Opened Uniswap in new tab.'; }
+    catch(e){ statusEl.textContent = 'Popup blocked. Use the button above.'; }
+  }, 350);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+Projects Storage System — Notes (for later)
+
+What this is
+- A simple, public JSON list of user projects (contracts) that powers the Trending/Explore cards.
+- Lives in your banner storage repo so you can edit it without redeploying this site.
+
+Current wiring
+- Remote list URL used by the site:
+  https://raw.githubusercontent.com/cowboytbc/wildwest-banner-storage/main/projects.json
+- Local bootstrap list (hard-coded): js/trending-config.js -> projects[]
+- The loader merges local + remote and dedupes by chainId:tokenAddress (case-insensitive).
+
+JSON formats (either works)
+1) Object form (recommended)
+{
+  "projects": [
+    { "chainId": "base", "tokenAddress": "0x...", "name": "Project A", "logoUrl": "https://..." },
+    { "chainId": "solana", "tokenAddress": "So111..." }
+  ]
+}
+
+2) Array form
+[
+  { "chainId": "base", "tokenAddress": "0x..." },
+  { "chainId": "ethereum", "tokenAddress": "0x...", "name": "Project B" }
+]
+
+How the site uses it (js/trending-loader.js)
+- Fetches the remote list + local list, merges and dedupes.
+- Queries Dexscreener for live data per token.
+- Renders: full name (DS -> config fallback), market cap (FDV fallback), 24h volume, contract (with explorer+copy), logo, and a 24h chart.
+
+Manual updates (for now)
+- Edit projects.json in cowboytbc/wildwest-banner-storage (main branch).
+- The site reads the raw URL above; changes show on next page load (no cache).
+
+Future automation (pick later)
+A) Reuse in-site secure token (same as banner uploads)
+   - Call: window.SECURE_CONFIG.addProjectToStorage({ chainId, tokenAddress, name?, logoUrl? })
+   - This reads, merges, dedupes, and commits projects.json via GitHub API.
+
+B) Serverless endpoint (Vercel/Netlify/Cloudflare Worker)
+   - POST { chainId, tokenAddress, name?, logoUrl? } -> endpoint commits to projects.json using a repo-scoped token.
+
+C) GitHub-native flow
+   - Issue Form collects entries; a GitHub Action updates projects.json on labeled issues.
+
+Security notes
+- Uses the same owner GitHub token system as banners (token never exposed to end users).
+- Keep the token injected via GitHub Actions/PRODUCTION_CONFIG only in production.
+
+Troubleshooting
+- If nothing loads: check the raw URL (200/valid JSON), then browser console for [TrendingLoader] logs.
+- Duplicates: ensured by chainId:tokenAddress dedupe (strings are normalized to lowercase).
+- Logos: hidden if none from Dexscreener or config.
+
+Related files
+- js/trending-config.js (remoteProjectListUrls + local projects)
+- js/trending-loader.js (merge + render logic)
+- js/secure-config.js (addProjectToStorage helper, same token flow as banners)
+- storage-projects-readme.md (longer reference)
+
+To resume later
+- Decide automation path (A/B/C) and enable in factory flow after deploy.
+- Populate the storage repo’s projects.json with initial entries.
+- Expand explorer mapping in loader if adding more chains.
