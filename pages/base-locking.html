@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base ERC20 Token Lock</title>
+  <!-- Console Filter - Universal console control -->
+  <script src="../js/console-filter.js"></script>
+  <!-- Core wallet dependencies -->
+  <script src="../js/wallet.js"></script>
+  <!-- Core wallet dependencies -->
+  <script src="../js/wallet.js"></script>
+  <!-- Mobile Wallet Integration - Clean mobile experience -->
+  <script src="../js/mobile-wallet-detector.js"></script>
+  <script src="../js/mobile-wallet-integration.js"></script>
+  <!-- Legal Disclaimer & Mobile Guidance -->
+  <script src="../js/legal-disclaimer.js"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="icon" type="image/png" href="../images/locked.png">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <!-- Production Configuration (GitHub Secrets injection) -->
+  <script src="../js/production-config.js"></script>
+  <!-- Development Configuration (Local testing when secrets unavailable) -->
+  <script src="../js/dev-config.js"></script>
+  <script src="../js/rpc-config.js"></script>
+  <script src="../js/lock-fee-config.js"></script>
+  <script src="../js/fee-calculator.js"></script>
+  <!-- Quick diagnostic for troubleshooting -->
+  <script src="../js/rpc-diagnostic.js"></script>
+  
+  <!-- Mark that we're handling the wallet button ourselves -->
+  <script>
+    window.BASE_LOCKING_HANDLES_WALLET_BUTTON = true;
+    
+    // AGGRESSIVE ANTI-AUTO-CONNECTION: Block all wallet property access until user clicks connect
+    window.WALLET_AUTO_CONNECTION_BLOCKED = true;
+    console.log('🚫 Base locking page: Wallet auto-connection globally blocked until user interaction');
+  </script>
+  
+  <script src="../js/multi-wallet-manager.js"></script>
+  <script src="../js/wallet.js"></script>
+  <!-- Token Furnace Style Wallet Modal System -->
+  <script>
+    // Token Furnace Style Wallet Modal Implementation for Base Locking
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 Base Locking: Setting up token furnace style wallet');
+      setupBaseLockingWallet();
+    });
+
+    function showChainSelectionModal() {
+      console.log('🚀 Base Locking: showChainSelectionModal called!');
+      
+      // Focus on Ethereum/Base wallets only for base locking page
+      const availableWallets = {
+        ethereum: []
+      };
+      
+      // Detect Ethereum/Base wallets
+      if (window.ethereum) {
+        const providers = window.ethereum.providers || [window.ethereum];
+        
+        providers.forEach(provider => {
+          if (provider.isMetaMask) {
+            availableWallets.ethereum.push({name: 'MetaMask', provider: provider});
+          }
+          if (provider.isCoinbaseWallet) {
+            availableWallets.ethereum.push({name: 'Coinbase Wallet', provider: provider});
+          }
+          if (provider.isRabby) {
+            availableWallets.ethereum.push({name: 'Rabby Wallet', provider: provider});
+          }
+          if (provider.isTrust) {
+            availableWallets.ethereum.push({name: 'Trust Wallet', provider: provider});
+          }
+        });
+        
+        if (availableWallets.ethereum.length === 0) {
+          availableWallets.ethereum.push({name: 'Ethereum Wallet', provider: window.ethereum});
+        }
+      }
+      
+      console.log('🔍 Base Locking: Detected wallets:', availableWallets);
+      
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;
+        z-index: 10000; animation: fadeIn 0.2s ease-out;
+      `;
+      
+      let walletOptionsHTML = '';
+      
+      if (availableWallets.ethereum.length > 0) {
+        walletOptionsHTML += '<h4 style="color: #00eaff; margin: 1rem 0 0.5rem 0; font-size: 1rem;">Base Network (Ethereum)</h4>';
+        availableWallets.ethereum.forEach((wallet, index) => {
+          walletOptionsHTML += `
+            <button onclick="connectSpecificWallet('ethereum', ${index})" style="
+              display: block; width: 100%; margin: 8px 0; padding: 12px 16px;
+              background: linear-gradient(135deg, #0052ff, #0041cc);
+              color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
+              transition: all 0.3s ease; text-align: center;
+            " onmouseover="this.style.background='linear-gradient(135deg, #0066ff, #0052ff)'; this.style.borderColor='#00eaff'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='linear-gradient(135deg, #0052ff, #0041cc)'; this.style.borderColor='rgba(0, 234, 255, 0.3)'; this.style.transform='translateY(0)'">
+              Connect ${wallet.name}
+            </button>
+          `;
+        });
+      } else {
+        walletOptionsHTML = `
+          <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+            <h4 style="color: #ff6b6b; margin-bottom: 1rem;">No Base Wallets Detected</h4>
+            <p style="margin-bottom: 1rem; color: #c0c0c0;">Please install a Base-compatible wallet:</p>
+            <div style="text-align: left;">
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://metamask.io" target="_blank" style="color: #00eaff;">MetaMask</a> (Base Network)</p>
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://wallet.coinbase.com" target="_blank" style="color: #00eaff;">Coinbase Wallet</a> (Base Network)</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      modal.innerHTML = `
+        <div style="
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          border: 2px solid #00eaff;
+          border-radius: 16px;
+          box-shadow: 0 0 30px rgba(0, 234, 255, 0.3);
+          max-width: 400px;
+          width: 90vw;
+          max-height: 80vh;
+          overflow-y: auto;
+          font-family: 'Orbitron', sans-serif;
+        ">
+          <div style="
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 234, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+            <h3 style="margin: 0; color: #00eaff; font-size: 1.25rem;">Connect Base Wallet</h3>
+            <button class="close-modal-btn" style="
+              background: none; border: none; color: #00eaff; font-size: 1.5rem;
+              cursor: pointer; padding: 0; width: 30px; height: 30px;
+              display: flex; align-items: center; justify-content: center;
+              border-radius: 50%; transition: background-color 0.2s;
+            ">×</button>
+          </div>
+          <div style="padding: 1.5rem;">
+            ${walletOptionsHTML}
+            <button class="cancel-modal-btn" style="
+              display: block; width: 100%; margin-top: 1rem; padding: 10px;
+              background: rgba(102, 102, 102, 0.8); color: white;
+              border: 1px solid rgba(0, 234, 255, 0.2); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif;
+            ">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      const closeBtn = modal.querySelector('.close-modal-btn');
+      const cancelBtn = modal.querySelector('.cancel-modal-btn');
+      
+      function closeModal() {
+        modal.remove();
+      }
+      
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+      
+      window.availableWallets = availableWallets;
+    }
+
+    window.connectSpecificWallet = async function(network, walletIndex) {
+      console.log(`🔗 Base Locking: Connecting to wallet ${walletIndex} on ${network} network`);
+      
+      try {
+        if (network === 'ethereum') {
+          const wallet = window.availableWallets.ethereum[walletIndex];
+          if (!wallet) {
+            throw new Error(`Wallet not found at index ${walletIndex}`);
+          }
+          
+          console.log(`📋 Base Locking: Connecting to ${wallet.name}`);
+          
+          const accounts = await wallet.provider.request({ method: 'eth_requestAccounts' });
+          if (accounts.length > 0) {
+            try {
+              await wallet.provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x2105' }], // Base mainnet
+              });
+            } catch (switchError) {
+              if (switchError.code === 4902) {
+                await wallet.provider.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x2105',
+                    chainName: 'Base',
+                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                    rpcUrls: [RPC_CONFIG.getBaseEndpoint()],
+                    blockExplorerUrls: ['https://basescan.org']
+                  }]
+                });
+              }
+            }
+            
+            // Update global state for locking page
+            window.currentAddress = accounts[0];
+            window.currentChain = 'base';
+            window.currentProvider = wallet.provider;
+            
+            // CRITICAL: Set the main script variables immediately
+            provider = wallet.provider;
+            userAddress = accounts[0];
+            window.provider = wallet.provider;
+            window.userAddress = accounts[0];
+            
+            console.log('🔧 Base Locking: FIXED - Set provider:', !!provider);
+            console.log('🔧 Base Locking: FIXED - Set userAddress:', userAddress);
+            
+            // Create signer from provider for ethers.js
+            if (window.ethers && wallet.provider) {
+              try {
+                const ethersProvider = new ethers.providers.Web3Provider(wallet.provider);
+                signer = ethersProvider.getSigner();
+                window.signer = signer;
+                console.log('✅ Base Locking: Signer created successfully');
+              } catch (error) {
+                console.error('❌ Base Locking: Error creating signer:', error);
+              }
+            }
+            
+            // Update UI
+            updateBaseLockingUI(accounts[0]);
+            
+            // Close modal
+            document.querySelector('[style*="position: fixed"]').remove();
+            
+            console.log(`✅ Base Locking: ${wallet.name} connected successfully!`);
+          }
+        }
+      } catch (error) {
+        const walletName = window.availableWallets.ethereum[walletIndex]?.name;
+        console.error(`❌ Base Locking: ${walletName} connection failed:`, error);
+        alert(`Connection failed: ${error.message}`);
+      }
+    };
+
+    function updateBaseLockingUI(address) {
+      const connectBtn = document.getElementById('connectWalletBtn');
+      const walletAddress = document.getElementById('walletAddress');
+      
+      if (connectBtn) {
+        connectBtn.textContent = 'WALLET CONNECTED';
+        connectBtn.style.background = '#4caf50';
+      }
+      
+      if (walletAddress) {
+        const shortAddress = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+        walletAddress.textContent = 'Connected: ' + shortAddress;
+      }
+      
+      // Verify global variables are set (should already be set by connectSpecificWallet)
+      console.log('🔧 Base Locking: UI Update - provider available:', !!provider);
+      console.log('🔧 Base Locking: UI Update - userAddress:', userAddress);
+      
+      // Enable locking functionality
+      document.querySelectorAll('.lock-input, .lock-button').forEach(el => {
+        el.disabled = false;
+      });
+      
+      // Load user locks and fee information
+      if (typeof loadUserLocks === 'function') {
+        loadUserLocks();
+      }
+      if (typeof loadLockCreationFee === 'function') {
+        loadLockCreationFee();
+      }
+      
+      console.log('✅ Base Locking: UI updated and functionality enabled');
+    }
+
+    function setupBaseLockingWallet() {
+      console.log('🔧 Base Locking: Setting up wallet connection');
+      
+      const connectBtn = document.getElementById('connectWalletBtn');
+      if (!connectBtn) {
+        console.error('❌ Base Locking: Connect wallet button not found');
+        return;
+      }
+      
+      connectBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔗 Base Locking: Connect button clicked');
+        showChainSelectionModal();
+      });
+      
+      console.log('✅ Base Locking: Wallet setup complete');
+    }
+
+    // Global variables
+    window.currentAddress = null;
+    window.currentChain = null;
+    window.currentProvider = null;
+    
+    // Make functions globally accessible
+    window.showChainSelectionModal = showChainSelectionModal;
+    window.setupBaseLockingWallet = setupBaseLockingWallet;
+  </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #181c22 0%, #23272f 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #e6eaf3;
+      margin: 0;
+      text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      margin: 0 auto;
+      margin-top: 64px;
+      max-width: 480px;
+      background: rgba(30,34,44,0.92);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px #0008, 0 1.5px 8px #23272f88;
+      padding: 36px 32px 28px 32px;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(4px) saturate(1.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h2 {
+      font-size: 2.1em;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      margin-top: 0;
+      margin-bottom: 18px;
+      text-align: center;
+      color: #e6eaf3;
+      text-shadow: 0 1px 0 #23272f88, 0 2px 8px #0004;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 1em;
+      margin-bottom: 0.2em;
+      display: block;
+      color: #b8c0d0;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #353a45;
+      border-radius: 8px;
+      font-size: 1em;
+      background: #23272f;
+      color: #e6eaf3;
+      margin-bottom: 0.5em;
+      transition: border 0.2s, background 0.2s;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      border: 1.5px solid #6c8cff;
+      outline: none;
+      background: #232b3a;
+    }
+    button {
+      background: linear-gradient(90deg, #6c8cff 0%, #4e6edb 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #6c8cff22;
+      cursor: pointer;
+      margin-top: 1em;
+      transition: background 0.18s, box-shadow 0.18s;
+    }
+    button:hover, button:focus {
+      background: linear-gradient(90deg, #4e6edb 0%, #6c8cff 100%);
+      box-shadow: 0 4px 16px #6c8cff33;
+    }
+    #backToMainBtn {
+      font-size: 1em;
+      background: #23272f;
+      color: #e6eaf3;
+      border: 1.5px solid #353a45;
+      box-shadow: 0 1px 4px #0004;
+      transition: background 0.18s, color 0.18s;
+      left: auto !important;
+      right: 24px !important;
+      top: 18px !important;
+    }
+    #backToMainBtn:hover {
+      background: #353a45;
+      color: #6c8cff;
+    }
+    img[alt="Locked Vault"] {
+      position: absolute;
+      top: 18px;
+      left: 24px;
+      right: auto;
+      width: 32px;
+      height: 32px;
+      max-width: 32px;
+      max-height: 32px;
+      aspect-ratio: 1/1;
+      filter: drop-shadow(0 2px 8px #0004);
+      object-fit: cover;
+      z-index: 11;
+      background: transparent;
+      border-radius: 8px;
+      border: none;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #walletAddress {
+      font-size: 1.08em;
+      color: #6c8cff;
+      background: #232b3a;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin-bottom: 1em;
+      word-break: break-all;
+      box-shadow: 0 1px 4px #0002;
+    }
+    #status {
+      font-size: 1.08em;
+      color: #ff6c6c;
+      background: #2a2323;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 1em;
+      min-height: 24px;
+      box-shadow: 0 1px 4px #0002;
+    }
+    #userLocks {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .wildwest-lock-card {
+      background: linear-gradient(135deg, rgba(30,34,44,0.96) 60%, rgba(76,108,255,0.10) 100%);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px #000a, 0 1.5px 8px #23272f88;
+      padding: 38px 18px 18px 18px; /* Increased bottom padding for button fit */
+      margin-bottom: 18px;
+      border: 2px solid #4e6edb55;
+      position: relative;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      animation: widgetFadeIn 0.7s cubic-bezier(.4,2,.6,1) 1;
+      min-height: 320px; /* Use min-height instead of fixed height */
+      width: 420px;
+      max-width: 420px;
+      min-width: 420px;
+      box-sizing: border-box;
+    }
+    @keyframes widgetFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .wildwest-label {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #6c8cff 0%, #4e6edb 100%);
+      color: #fff;
+      font-size: 0.98em;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+      border-radius: 7px;
+      padding: 4px 16px 3px 16px;
+      box-shadow: 0 2px 8px #6c8cff33;
+      z-index: 3;
+      text-align: center;
+      text-shadow: 0 2px 8px #0004, 0 1px 0 #23272f88;
+      border: 1.5px solid #232b3a;
+      user-select: text;
+    }
+    .lock-img {
+      position: relative;
+      display: block;
+      margin: 0 auto 0 auto; /* Remove top margin, center image */
+      width: 56px;
+      height: 56px;
+      aspect-ratio: 1/1;
+      border-radius: 14px;
+      object-fit: contain;
+      background: linear-gradient(135deg, #232b3a 60%, #6c8cff22 100%);
+      border: 3px solid #6c8cff;
+      box-shadow: 0 4px 24px #6c8cff66, 0 1px 8px #0006;
+      z-index: 2;
+      transition: border 0.2s;
+      top: 0;
+      left: 0;
+      transform: none;
+    }
+    .lock-title {
+      font-size: 1.08em;
+      font-weight: 800;
+      margin-top: 18px;
+      margin-bottom: 4px;
+      text-align: center;
+      color: #e6eaf3;
+      letter-spacing: 0.04em;
+      text-shadow: 0 2px 8px #0004, 0 1px 0 #23272f88;
+      word-break: break-word;
+    }
+    .lock-info {
+      font-size: 1em;
+      margin-bottom: 2px;
+      color: #b8c0d0;
+      text-align: center;
+      font-weight: 600;
+    }
+    .lock-status {
+      font-size: 1em;
+      margin-top: 8px;
+      font-weight: 700;
+      text-align: center;
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 7px;
+      background: linear-gradient(90deg, #232b3a 60%, #4e6edb22 100%);
+      box-shadow: 0 2px 8px #6c8cff22;
+      letter-spacing: 0.08em;
+      border: 1.5px solid #353a45;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      margin-bottom: 2px;
+    }
+    .lock-status.locked {
+      color: #6c8cff;
+      border-color: #6c8cff55;
+      background: linear-gradient(90deg, #232b3a 60%, #4e6edb22 100%);
+    }
+    .lock-status.claimable {
+      color: #00e676;
+      border-color: #00e67699;
+      background: linear-gradient(90deg, #232b3a 60%, #00e67622 100%);
+      box-shadow: 0 0 16px #00e67655, 0 2px 8px #6c8cff22;
+      animation: claimGlow 1.2s infinite alternate;
+    }
+    @keyframes claimGlow {
+      from { box-shadow: 0 0 16px #00e67655, 0 2px 8px #6c8cff22; }
+      to { box-shadow: 0 0 32px #00e676cc, 0 2px 8px #6c8cff22; }
+    }
+    .lock-status.claimed {
+      color: #b8c0d0;
+      border-color: #6c6c6c55;
+      background: linear-gradient(90deg, #232b3a 60%, #6c6c6c22 100%);
+      text-decoration: line-through;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+        justify-content: flex-start;
+        min-height: auto;
+      }
+      .container {
+        margin: 10px auto;
+        margin-top: 60px;
+        padding: 24px 16px;
+        max-width: calc(100vw - 20px);
+        width: 100%;
+        box-sizing: border-box;
+      }
+      h2 {
+        font-size: 1.6em;
+        margin-bottom: 16px;
+      }
+      label {
+        font-size: 1em;
+        margin-top: 0.8em;
+        margin-bottom: 0.4em;
+      }
+      input[type="text"], input[type="number"] {
+        padding: 12px 14px;
+        font-size: 1.1em;
+        border-radius: 10px;
+        margin-bottom: 0.8em;
+      }
+      button {
+        font-size: 1.1em;
+        padding: 12px 16px;
+        border-radius: 10px;
+        width: 100%;
+        margin-top: 0.8em;
+      }
+      #setSelfBeneficiary {
+        width: auto;
+        min-width: 60px;
+        padding: 8px 12px;
+        font-size: 0.9em;
+        margin-top: 0;
+      }
+      #backToMainBtn {
+        right: 10px !important;
+        top: 10px !important;
+        padding: 8px 12px;
+        font-size: 0.9em;
+      }
+      img[alt="Locked Vault"] {
+        left: 10px !important;
+        top: 10px !important;
+        width: 28px;
+        height: 28px;
+        max-width: 28px;
+        max-height: 28px;
+      }
+      #walletAddress, #status {
+        font-size: 1em;
+        padding: 10px 14px;
+        margin: 0.8em 0;
+        border-radius: 8px;
+        word-break: break-all;
+      }
+      .wildwest-lock-card {
+        min-width: auto !important;
+        max-width: calc(100vw - 20px) !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 24px 16px 12px 16px !important;
+        margin: 0 auto 14px auto !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
+      }
+      .wildwest-label {
+        font-size: 0.8em;
+        padding: 3px 10px;
+        top: 6px;
+      }
+      .lock-img-card {
+        top: 6px !important;
+        left: 6px !important;
+        width: 28px;
+        height: 28px;
+        max-width: 28px;
+        max-height: 28px;
+      }
+      .embed-icon {
+        top: 6px !important;
+        right: 6px !important;
+        width: 26px !important;
+        height: 26px !important;
+        background: rgba(76, 108, 255, 0.15) !important;
+        border: 1px solid rgba(76, 108, 255, 0.3) !important;
+      }
+      .embed-icon svg {
+        width: 18px;
+        height: 18px;
+      }
+      .lock-title {
+        font-size: 1.05em;
+        margin-top: 12px;
+        margin-bottom: 6px;
+        line-height: 1.3;
+      }
+      .lock-info {
+        font-size: 0.9em;
+        margin-bottom: 3px;
+        line-height: 1.3;
+        word-break: break-word;
+      }
+      .lock-status {
+        font-size: 0.85em;
+        padding: 5px 10px;
+        margin-top: 8px;
+        margin-bottom: 6px;
+      }
+      .lock-actions {
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
+      }
+      .lock-actions button {
+        width: 100% !important;
+        margin-top: 0 !important;
+        font-size: 0.9em;
+        padding: 8px 12px;
+      }
+      /* Time input flexbox for mobile */
+      div[style*="display:flex"][style*="gap:8px"] {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
+      div[style*="display:flex"][style*="gap:8px"] input[type="number"] {
+        flex: 1;
+        min-width: 60px;
+      }
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;800&display=swap');
+    
+    /* Widget Configuration Modal Styles */
+    .widget-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      animation: modalFadeIn 0.3s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .widget-modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #232b3a 0%, #2a3340 100%);
+      border-radius: 20px;
+      padding: 2em;
+      min-width: 500px;
+      max-width: 600px;
+      max-height: 90vh;
+      border: 2px solid #6c8cff55;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      animation: modalSlideIn 0.4s cubic-bezier(0.4, 2, 0.6, 1);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    @keyframes modalSlideIn {
+      from { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    .widget-modal h2 {
+      color: #6c8cff;
+      text-align: center;
+      margin-bottom: 1em;
+      font-size: 1.5em;
+    }
+    .widget-option {
+      background: rgba(108, 140, 255, 0.1);
+      border: 2px solid #6c8cff33;
+      border-radius: 12px;
+      padding: 1.5em;
+      margin: 1em 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .widget-option:hover {
+      border-color: #6c8cff;
+      background: rgba(108, 140, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    .widget-option h3 {
+      color: #e6eaf3;
+      margin: 0 0 0.5em 0;
+      font-size: 1.2em;
+    }
+    .widget-option p {
+      color: #b8c0d0;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .widget-option .preview-size {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      background: #6c8cff;
+      color: #fff;
+      padding: 0.3em 0.8em;
+      border-radius: 5px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 1em;
+      justify-content: center;
+      margin-top: 2em;
+    }
+    .modal-btn {
+      background: #6c8cff;
+      color: #fff;
+      border: none;
+      padding: 0.8em 2em;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .modal-btn:hover {
+      background: #5577ee;
+    }
+    .modal-btn.secondary {
+      background: #6c6c6c;
+    }
+    .modal-btn.secondary:hover {
+      background: #555;
+    }
+    .code-display {
+      background: #181c22;
+      border: 1px solid #6c8cff;
+      border-radius: 8px;
+      padding: 1em;
+      margin: 1em 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    @media (max-width: 768px) {
+      .widget-modal-content {
+        min-width: 300px;
+        max-width: calc(100vw - 30px);
+        padding: 1.5em;
+        margin: 0;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        position: fixed;
+        max-height: calc(100vh - 60px);
+      }
+      .widget-option {
+        padding: 1.2em;
+        margin: 0.8em 0;
+      }
+      .widget-option h3 {
+        font-size: 1.1em;
+      }
+      .widget-option p {
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+      .widget-option .preview-size {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-bottom: 0.5em;
+        display: inline-block;
+        font-size: 0.8em;
+      }
+      .modal-buttons {
+        flex-direction: column;
+        gap: 0.8em;
+      }
+      .modal-btn {
+        width: 100%;
+        padding: 1em;
+        font-size: 1em;
+      }
+      .code-display {
+        font-size: 0.8em;
+        max-height: 150px;
+        padding: 0.8em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" id="backToMainBtn" style="position:absolute;top:18px;right:24px;padding:8px 16px;background:#f0f0f0;border-radius:6px;text-decoration:none;color:#222;font-weight:600;box-shadow:0 1px 4px #0001;z-index:10;">Back to Main</a>
+  <img src="../images/locked.png" alt="Locked Vault" style="position:absolute;top:18px;left:24px;width:32px;height:auto;max-height:56px;filter:drop-shadow(0 2px 8px #0002);object-fit:contain;z-index:11;"/>
+  <div class="container">
+    <h2>Base ERC20 Token Lock</h2>
+    <button id="connectWalletBtn">CONNECT WALLET</button>
+    <div id="walletAddress" style="margin: 1em 0;"></div>
+    <form id="lockForm">
+      <label>ERC20 Token Address</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="tokenAddress" required placeholder="0x..." style="flex:1;" />
+      </div>
+      <div id="tokenInfo" style="font-size:0.95em;color:#008080;margin-bottom:0.5em;"></div>
+      <label>Beneficiary Address</label>
+      <div style="display:flex;gap:8px;align-items:flex-start;justify-content:center;min-height:48px;">
+        <input type="text" id="beneficiary" required placeholder="0x..." style="flex:1;margin-top:2px;" />
+        <button type="button" id="setSelfBeneficiary" style="padding:4px 12px;min-width:56px;align-self:flex-start;margin-top:12px;">ME</button>
+      </div>
+      <label>Amount</label>
+      <input type="number" id="amount" required min="0" step="any" placeholder="Amount" />
+      <label>Lock Name</label>
+      <input type="text" id="lockName" required maxlength="64" placeholder="Lock Name" />
+      <label>Unlock After</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="number" id="unlockDays" min="0" value="0" style="width:80px;" placeholder="Days" /> days
+        <input type="number" id="unlockHours" min="0" value="0" style="width:80px;" placeholder="Hours" /> hours
+        <input type="number" id="unlockMinutes" min="0" value="0" style="width:80px;" placeholder="Minutes" /> minutes
+      </div>
+      
+      <!-- Lock Creation Fee Display -->
+      <div id="feeDisplay" style="background:rgba(0,255,0,0.1);border:1px solid #00ff00;border-radius:8px;padding:12px;margin:16px 0;text-align:center;">
+        <div style="color:#00ff00;font-weight:600;margin-bottom:4px;">🎉 FREE TOKEN LOCKING</div>
+        <div id="feeAmount" style="font-size:1.1em;color:#e6eaf3;">No fees required!</div>
+      </div>
+      
+      <button type="submit" style="display:block;margin:18px auto 0 auto;">LOCK TOKENS</button>
+    </form>
+    <div id="status" style="margin-top:1em;"></div>
+    <button id="refreshLocksBtn" style="margin-bottom:12px;width:100%;font-size:1.08em;letter-spacing:0.08em;">REFRESH LOCKS</button>
+    <h3>Your Locks</h3>
+    <ul id="userLocks"></ul>
+  </div>
+  <script>
+    const CONTRACT_ADDRESS = "0x58f7D324A96Eb2932a66d99dd06459aCdc30c29D";
+    const FACTORY_ADDRESS = "0xaaDf8d2919C824BD5573e19F43D7a6aFe4867b56";
+    const FACTORY_ABI = [
+      {"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"beneficiary","type":"address"},{"internalType":"uint256","name":"days_","type":"uint256"},{"internalType":"uint256","name":"hours_","type":"uint256"},{"internalType":"uint256","name":"minutes_","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"lockName","type":"string"}],"name":"createLock","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserLocks","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"getAllLocks","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},
+      {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"lock","type":"address"},{"indexed":true,"internalType":"address","name":"creator","type":"address"},{"indexed":true,"internalType":"address","name":"beneficiary","type":"address"},{"indexed":false,"internalType":"address","name":"token","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"releaseTime","type":"uint256"},{"indexed":false,"internalType":"string","name":"lockName","type":"string"}],"name":"LockCreated","type":"event"}
+    ];
+    const LOCK_ABI = [
+      {"inputs":[{"internalType":"address","name":"token_","type":"address"},{"internalType":"address","name":"beneficiary_","type":"address"},{"internalType":"uint256","name":"releaseTime_","type":"uint256"},{"internalType":"uint256","name":"amount_","type":"uint256"},{"internalType":"string","name":"lockName_","type":"string"}],"stateMutability":"nonpayable","type":"constructor"},
+      {"inputs":[],"name":"amount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"beneficiary","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"lockName","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"release","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"releaseTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"released","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+      {"inputs":[],"name":"token","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"}
+    ];
+
+    // Fee collector address from config
+    const FEE_COLLECTOR_ADDRESS = window.LOCK_FEE_CONFIG?.BASE_FEE_COLLECTOR || "0x1234567890123456789012345678901234567890";
+
+    let provider, signer, userAddress;
+
+    async function connectWallet() {
+      console.log('🔵 Base locking: connectWallet function called - using token furnace style');
+      
+      // Check if we already have a connection from the modal
+      if (window.currentAddress && window.currentProvider) {
+        provider = window.currentProvider;
+        userAddress = window.currentAddress;
+        
+        // Create signer from provider
+        if (window.ethers && provider) {
+          const ethersProvider = new ethers.providers.Web3Provider(provider);
+          signer = ethersProvider.getSigner();
+        }
+        
+        console.log('✅ Using existing wallet connection');
+        document.getElementById('walletAddress').textContent = 'Connected: ' + userAddress;
+        
+        loadUserLocks();
+        loadLockCreationFee();
+        return;
+      }
+      
+      // If no connection exists, show the modal
+      console.log('🔗 No existing connection, showing wallet modal');
+      showChainSelectionModal();
+    }
+
+    // Wait for wallet.js to be available
+    function waitForWalletSystem() {
+      console.log('🔍 Waiting for wallet system... wildWestWallet exists:', !!window.wildWestWallet);
+      
+      if (window.wildWestWallet) {
+        console.log('✅ Wallet system loaded, setting up connect button');
+        const connectBtn = document.getElementById('connectWalletBtn');
+        
+        if (connectBtn) {
+          connectBtn.onclick = function() {
+            // UNBLOCK wallet access since user explicitly requested connection
+            window.WALLET_AUTO_CONNECTION_BLOCKED = false;
+            console.log('✅ Base locking: Wallet auto-connection block lifted by user action');
+            
+            // DETECT ALL AVAILABLE EVM WALLETS
+            console.log('🔍 Detecting available EVM wallets...');
+            const availableEvmWallets = detectAvailableEvmWallets();
+            console.log('� Available EVM wallets:', availableEvmWallets);
+            
+            if (availableEvmWallets.length === 0) {
+              alert('No EVM wallets detected. Please install MetaMask, Coinbase Wallet, or another EVM wallet.');
+              return;
+            }
+            
+            // SHOW WALLET SELECTION OR CONNECT DIRECTLY
+            if (availableEvmWallets.length === 1) {
+              // Only one wallet available, connect directly
+              const wallet = availableEvmWallets[0];
+              console.log('🎯 Using single available EVM wallet:', wallet.name);
+              connectToSelectedEvmWallet(wallet);
+            } else {
+              // Multiple wallets available, show selection modal
+              console.log('📋 Multiple wallets available, showing selection modal');
+              showEvmWalletSelectionModal(availableEvmWallets, connectToSelectedEvmWallet);
+            }
+          };
+          connectBtn.textContent = 'CONNECT WALLET';
+          console.log('✅ Connect button configured with anti-auto-connection safeguards');
+        } else {
+          console.error('❌ Connect button not found');
+        }
+        
+        // --- EVM WALLET DETECTION FUNCTIONS ---
+        function detectAvailableEvmWallets() {
+          const wallets = [];
+          
+          if (window.ethereum) {
+            // Check for multiple providers
+            if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+              window.ethereum.providers.forEach((provider, index) => {
+                if (provider.isMetaMask && !provider.isPhantom) {
+                  wallets.push({
+                    name: 'MetaMask',
+                    icon: '🦊',
+                    provider: provider,
+                    type: 'metamask'
+                  });
+                } else if (provider.isCoinbaseWallet) {
+                  wallets.push({
+                    name: 'Coinbase Wallet',
+                    icon: '🔵',
+                    provider: provider,
+                    type: 'coinbase'
+                  });
+                } else if (provider.isRainbow) {
+                  wallets.push({
+                    name: 'Rainbow',
+                    icon: '🌈',
+                    provider: provider,
+                    type: 'rainbow'
+                  });
+                } else if (provider.isTrust) {
+                  wallets.push({
+                    name: 'Trust Wallet',
+                    icon: '🛡️',
+                    provider: provider,
+                    type: 'trust'
+                  });
+                } else if (provider.isPhantom && !provider.isMetaMask) {
+                  wallets.push({
+                    name: 'Phantom (EVM)',
+                    icon: '👻',
+                    provider: provider,
+                    type: 'phantom-evm'
+                  });
+                }
+              });
+            } else {
+              // Single provider
+              if (window.ethereum.isMetaMask && !window.ethereum.isPhantom) {
+                wallets.push({
+                  name: 'MetaMask',
+                  icon: '🦊',
+                  provider: window.ethereum,
+                  type: 'metamask'
+                });
+              } else if (window.ethereum.isCoinbaseWallet) {
+                wallets.push({
+                  name: 'Coinbase Wallet',
+                  icon: '🔵',
+                  provider: window.ethereum,
+                  type: 'coinbase'
+                });
+              } else if (window.ethereum.isPhantom) {
+                wallets.push({
+                  name: 'Phantom (EVM)',
+                  icon: '👻',
+                  provider: window.ethereum,
+                  type: 'phantom-evm'
+                });
+              } else {
+                wallets.push({
+                  name: 'Unknown EVM Wallet',
+                  icon: '💼',
+                  provider: window.ethereum,
+                  type: 'unknown'
+                });
+              }
+            }
+          }
+          
+          return wallets;
+        }
+
+        function showEvmWalletSelectionModal(wallets, callback) {
+          const modal = document.createElement('div');
+          modal.className = 'wallet-modal-overlay';
+          modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease-out;
+          `;
+          
+          const walletsHtml = wallets.map(wallet => `
+            <button class="wallet-select-btn" data-wallet-type="${wallet.type}" style="
+              display: flex;
+              align-items: center;
+              gap: 1rem;
+              width: 100%;
+              padding: 1rem;
+              margin: 0.5rem 0;
+              border: 2px solid #00eaff;
+              border-radius: 12px;
+              background: rgba(0, 234, 255, 0.1);
+              color: white;
+              cursor: pointer;
+              transition: all 0.2s;
+              font-size: 1.1rem;
+            ">
+              <div style="flex: 1; text-align: left;">
+                <div style="font-weight: bold;">${wallet.name}</div>
+                <div style="font-size: 0.9rem; color: #ccc;">Base Network</div>
+              </div>
+              <span style="color: #00eaff;">→</span>
+            </button>
+          `).join('');
+          
+          modal.innerHTML = `
+            <div style="
+              background: linear-gradient(135deg, #1a1a2e, #16213e);
+              border: 2px solid #00eaff;
+              border-radius: 16px;
+              box-shadow: 0 0 30px rgba(0, 234, 255, 0.3);
+              max-width: 500px;
+              width: 90vw;
+              overflow: hidden;
+            ">
+              <div style="
+                padding: 1.5rem;
+                border-bottom: 1px solid rgba(0, 234, 255, 0.2);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              ">
+                <div>
+                  <h3 style="margin: 0; color: #00eaff; font-size: 1.25rem;">Select Base Wallet</h3>
+                  <p style="margin: 0.5rem 0 0 0; color: #ccc; font-size: 0.9rem;">Choose your wallet for Base network</p>
+                </div>
+                <button class="close-modal" style="
+                  background: none;
+                  border: none;
+                  color: #00eaff;
+                  font-size: 1.5rem;
+                  cursor: pointer;
+                ">×</button>
+              </div>
+              <div style="padding: 1.5rem;">
+                ${walletsHtml}
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(modal);
+          
+          // Handle wallet selection
+          modal.querySelectorAll('.wallet-select-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const walletType = btn.dataset.walletType;
+              const selectedWallet = wallets.find(w => w.type === walletType);
+              document.body.removeChild(modal);
+              
+              if (selectedWallet && callback) {
+                callback(selectedWallet);
+              }
+            });
+            
+            btn.addEventListener('mouseenter', () => {
+              btn.style.background = 'rgba(0, 234, 255, 0.2)';
+              btn.style.transform = 'translateY(-2px)';
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+              btn.style.background = 'rgba(0, 234, 255, 0.1)';
+              btn.style.transform = 'translateY(0)';
+            });
+          });
+          
+          // Handle close
+          modal.querySelector('.close-modal').addEventListener('click', () => {
+            document.body.removeChild(modal);
+          });
+          
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              document.body.removeChild(modal);
+            }
+          });
+        }
+
+        async function connectToSelectedEvmWallet(selectedWallet) {
+          console.log('🔵 Connecting to selected EVM wallet:', selectedWallet.name);
+          
+          const connectBtn = document.getElementById('connectWalletBtn');
+          connectBtn.textContent = 'CONNECTING...';
+          connectBtn.disabled = true;
+          
+          try {
+            // Use the specific provider for this wallet
+            const accounts = await selectedWallet.provider.request({ method: 'eth_requestAccounts' });
+            
+            if (accounts.length > 0) {
+              // Switch to Base network if not already on it
+              try {
+                await selectedWallet.provider.request({
+                  method: 'wallet_switchEthereumChain',
+                  params: [{ chainId: '0x2105' }], // Base mainnet
+                });
+              } catch (switchError) {
+                // If the chain doesn't exist, add it
+                if (switchError.code === 4902) {
+                  await selectedWallet.provider.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                      chainId: '0x2105',
+                      chainName: 'Base',
+                      nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                      rpcUrls: [RPC_CONFIG.getBaseEndpoint()],
+                      blockExplorerUrls: ['https://basescan.org']
+                    }]
+                  });
+                }
+              }
+              
+              // Update global state
+              window.ethereum = selectedWallet.provider;
+              window.signer = new ethers.providers.Web3Provider(selectedWallet.provider).getSigner();
+              
+              // Update UI
+              document.getElementById('walletAddress').textContent = accounts[0];
+              connectBtn.textContent = 'WALLET CONNECTED';
+              connectBtn.disabled = false;
+              
+              console.log('✅ Connected to', selectedWallet.name, 'with address:', accounts[0]);
+              
+              // Update balance and locks display
+              await updateBalance();
+              await loadUserLocks();
+              
+            } else {
+              throw new Error('No accounts returned from wallet');
+            }
+          } catch (error) {
+            console.error('❌ Failed to connect to', selectedWallet.name, ':', error);
+            connectBtn.textContent = 'CONNECT WALLET';
+            connectBtn.disabled = false;
+            
+            // Re-block auto-connection on error
+            window.WALLET_AUTO_CONNECTION_BLOCKED = true;
+            
+            alert('Failed to connect to ' + selectedWallet.name + ': ' + error.message);
+          }
+        }
+      } else {
+        console.log('⏳ Wallet system not ready, waiting...');
+        setTimeout(waitForWalletSystem, 100);
+      }
+    }
+    
+    // Initialize token furnace style wallet connection
+    console.log('✅ Base Locking: Token furnace style wallet system ready');
+
+    // Debug function to test wallet system
+    window.debugWalletSystem = function() {
+      console.log('🔍 DEBUG: Wallet System Status');
+      console.log('• window.wildWestWallet exists:', !!window.wildWestWallet);
+      console.log('• BASE_LOCKING_HANDLES_WALLET_BUTTON:', window.BASE_LOCKING_HANDLES_WALLET_BUTTON);
+      
+      if (window.wildWestWallet) {
+        console.log('• isConnected:', window.wildWestWallet.isConnected);
+        console.log('• account:', window.wildWestWallet.account);
+        console.log('• currentChain:', window.wildWestWallet.currentChain);
+        console.log('• isConnecting:', window.wildWestWallet.isConnecting);
+      }
+      
+      const connectBtn = document.getElementById('connectWalletBtn');
+      console.log('• Connect button exists:', !!connectBtn);
+      console.log('• Connect button onclick:', connectBtn?.onclick);
+      console.log('• Connect button text:', connectBtn?.textContent);
+      
+      return {
+        walletSystem: !!window.wildWestWallet,
+        connectButton: !!connectBtn,
+        buttonHandler: !!connectBtn?.onclick
+      };
+    };
+
+    // Debug function to manually test connection
+    window.testConnection = async function() {
+      console.log('🧪 Testing wallet connection manually...');
+      try {
+        await connectWallet();
+      } catch (error) {
+        console.error('❌ Manual test failed:', error);
+      }
+    };
+
+    console.log('💡 Debug functions available:');
+    console.log('• debugWalletSystem() - Check wallet system status');
+    console.log('• testConnection() - Manually test wallet connection');
+
+    // Load and display the lock creation fee
+    async function loadLockCreationFee() {
+      try {
+        if (lockingFeeCalculator.isFreeService()) {
+          // Service is now completely free for everyone!
+          document.getElementById('feeAmount').textContent = '🎉 Completely FREE!';
+          document.getElementById('feeDisplay').style.background = 'rgba(0,255,0,0.1)';
+          document.getElementById('feeDisplay').style.borderColor = '#00ff00';
+          document.querySelector('#feeDisplay div:first-child').textContent = '🎉 FREE TOKEN LOCKING';
+          document.querySelector('#feeDisplay div:first-child').style.color = '#00ff00';
+        } else {
+          // Fallback logic (should not execute since fee is $0)
+          const isExempt = userAddress && lockingFeeCalculator.isExemptFromFees(userAddress, 'base');
+          if (isExempt) {
+            document.getElementById('feeAmount').textContent = 'FREE (Exempt Address)';
+            document.getElementById('feeDisplay').style.background = 'rgba(0,255,0,0.1)';
+            document.getElementById('feeDisplay').style.borderColor = '#00ff00';
+          } else {
+            const feeAmount = await lockingFeeCalculator.getFormattedETHFee();
+            document.getElementById('feeAmount').textContent = feeAmount;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load fee:', error);
+        // Even on error, default to free since we set USD_FEE_AMOUNT to 0
+        document.getElementById('feeAmount').textContent = '🎉 FREE - No fees required!';
+        document.getElementById('feeDisplay').style.background = 'rgba(0,255,0,0.1)';
+        document.getElementById('feeDisplay').style.borderColor = '#00ff00';
+      }
+    }
+
+    // Load fee when page loads
+    loadLockCreationFee();
+
+    document.getElementById('lockForm').onsubmit = async function(e) {
+      e.preventDefault();
+      if (!signer) {
+        alert('Connect wallet first!');
+        return;
+      }
+      const tokenAddress = document.getElementById('tokenAddress').value.trim();
+      const beneficiary = document.getElementById('beneficiary').value.trim();
+      const lockName = document.getElementById('lockName').value.trim();
+      const unlockDays = parseInt(document.getElementById('unlockDays').value, 10) || 0;
+      const unlockHours = parseInt(document.getElementById('unlockHours').value, 10) || 0;
+      const unlockMinutes = parseInt(document.getElementById('unlockMinutes').value, 10) || 0;
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = '';
+      if (!tokenAddress || !beneficiary || !lockName) {
+        statusDiv.textContent = 'Fill all fields.';
+        return;
+      }
+      try {
+        // Get token decimals
+        const erc20 = new ethers.Contract(tokenAddress, [
+          {"constant":false,"inputs":[{"name":"spender","type":"address"},{"name":"value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"type":"function"},
+          {"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"}
+        ], signer);
+        const decimals = await erc20.decimals();
+        // Convert amount to correct decimals
+        const amountRaw = document.getElementById('amount').value.trim();
+        const amount = ethers.utils.parseUnits(amountRaw, decimals);
+        const now = Math.floor(Date.now() / 1000);
+        const releaseTime = now + (unlockDays * 86400) + (unlockHours * 3600) + (unlockMinutes * 60);
+        // Approve tokens
+        statusDiv.textContent = 'Approving tokens...';
+        const approveTx = await erc20.approve(FACTORY_ADDRESS, amount);
+        await approveTx.wait();
+        
+        // Small delay to ensure allowance propagates
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Check if user needs to pay fees (now always false since service is free)
+        const isExempt = lockingFeeCalculator.isFreeService() || lockingFeeCalculator.isExemptFromFees(userAddress, 'base');
+        
+        if (!isExempt) {
+          // This block should never execute since service is now free
+          statusDiv.textContent = 'Sending lock creation fee...';
+          const lockCreationFee = await lockingFeeCalculator.getETHFeeAmount();
+          const feeTx = await signer.sendTransaction({
+            to: FEE_COLLECTOR_ADDRESS,
+            value: lockCreationFee
+          });
+          await feeTx.wait();
+        } else {
+          statusDiv.textContent = 'No fees required - Creating lock for free! 🎉';
+        }
+        
+        // Call the factory to create a new lock
+        statusDiv.textContent = 'Creating lock...';
+        const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
+        const tx = await factory.createLock(
+          tokenAddress,
+          beneficiary,
+          unlockDays,
+          unlockHours,
+          unlockMinutes,
+          amount,
+          lockName
+        );
+        await tx.wait();
+        statusDiv.textContent = 'Lock created!';
+        loadUserLocks();
+      } catch (err) {
+        statusDiv.textContent = 'Error: ' + (err.message || err);
+      }
+    };
+
+    // Display user's locks (requires factory with event logs or lock registry)
+    async function loadUserLocks() {
+      console.log('🔍 loadUserLocks called');
+      console.log('📍 Provider available:', !!provider);
+      console.log('📍 User address:', userAddress);
+      
+      const userLocksList = document.getElementById('userLocks');
+      userLocksList.innerHTML = '';
+      
+      if (!provider || !userAddress) {
+        console.log('❌ Cannot load locks: missing provider or userAddress');
+        const li = document.createElement('li');
+        li.textContent = 'Connect wallet to view your locks.';
+        li.style.color = '#888';
+        li.style.textAlign = 'center';
+        userLocksList.appendChild(li);
+        return;
+      }
+      
+      try {
+        console.log('🏭 Creating factory contract...');
+        
+        // Create proper ethers provider from wallet provider
+        const ethersProvider = new ethers.providers.Web3Provider(provider);
+        console.log('✅ Created ethers provider:', !!ethersProvider);
+        
+        const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, ethersProvider);
+        
+        // Get locks where user is creator
+        console.log('📞 Calling getUserLocks for creator locks:', userAddress);
+        const creatorLockAddresses = await factory.getUserLocks(userAddress);
+        console.log('📦 Found creator lock addresses:', creatorLockAddresses);
+        
+        // Get locks where user is beneficiary by scanning events
+        console.log('� Scanning for beneficiary locks...');
+        let beneficiaryLockAddresses = [];
+        try {
+          const filter = factory.filters.LockCreated(null, null, userAddress); // beneficiary filter
+          const events = await factory.queryFilter(filter, 0, 'latest');
+          beneficiaryLockAddresses = events.map(event => event.args.lock);
+          console.log('�📦 Found beneficiary lock addresses:', beneficiaryLockAddresses);
+        } catch (eventErr) {
+          console.log('⚠️ Could not scan beneficiary events:', eventErr.message);
+        }
+        
+        // Combine and deduplicate lock addresses
+        const allLockAddresses = [...new Set([...creatorLockAddresses, ...beneficiaryLockAddresses])];
+        console.log('📊 Total unique locks found:', allLockAddresses.length);
+        console.log('📋 All lock addresses:', allLockAddresses);
+        
+        if (allLockAddresses.length === 0) {
+          const li = document.createElement('li');
+          li.textContent = 'No locks found. Create a lock or check if any locks have you as beneficiary.';
+          userLocksList.appendChild(li);
+          return;
+        }
+        for (const lockAddr of allLockAddresses) {
+          console.log(`🔍 Processing lock ${allLockAddresses.indexOf(lockAddr) + 1}/${allLockAddresses.length}: ${lockAddr}`);
+          
+          try {
+            const lock = new ethers.Contract(lockAddr, LOCK_ABI, ethersProvider);
+            const [name, amount, releaseTime, released, beneficiary] = await Promise.all([
+              lock.lockName(),
+              lock.amount(), 
+              lock.releaseTime(),
+              lock.released(),
+              lock.beneficiary()
+            ]);
+            
+            console.log(`📝 Lock details: ${name}, Amount: ${amount.toString()}, Released: ${released}, Beneficiary: ${beneficiary}`);
+            
+            if (released) {
+              console.log(`⏭️ Skipping released lock: ${name}`);
+              continue; // Skip claimed locks
+            }
+          const now = Math.floor(Date.now() / 1000);
+          
+          // Determine user's relationship to this lock
+          const isCreator = creatorLockAddresses.includes(lockAddr);
+          const isBeneficiary = beneficiary.toLowerCase() === userAddress.toLowerCase();
+          
+          let userRole;
+          if (isCreator && isBeneficiary) {
+            userRole = 'Creator & Beneficiary';
+          } else if (isCreator) {
+            userRole = 'Creator';
+          } else if (isBeneficiary) {
+            userRole = 'Beneficiary';
+          } else {
+            userRole = 'Viewer';
+          }
+          
+          // Format amount for display
+          let formattedAmount = amount;
+          let symbol = '';
+          try {
+            const token = new ethers.Contract(await lock.token(), [
+              {"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"},
+              {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"type":"function"}
+            ], ethersProvider);
+            const [decimals, sym] = await Promise.all([
+              token.decimals(),
+              token.symbol()
+            ]);
+            formattedAmount = ethers.utils.formatUnits(amount, decimals);
+            symbol = sym;
+          } catch (tokenErr) {
+            console.log('❌ Could not get token info:', tokenErr.message);
+            // Fallback to ETH formatting if token contract fails
+            formattedAmount = ethers.utils.formatEther(amount);
+            symbol = 'UNKNOWN';
+          }
+
+          // Card container
+          const li = document.createElement('li');
+          li.className = 'wildwest-lock-card';
+          li.style.maxWidth = '420px';
+          li.style.minWidth = '420px';
+          li.style.width = '420px';
+          li.style.minHeight = '320px'; // Changed from height to minHeight
+          li.style.marginBottom = '18px';
+          li.style.borderRadius = '20px';
+          li.style.padding = '38px 18px 18px 18px'; // Increased bottom padding
+          li.style.boxSizing = 'border-box';
+          li.style.position = 'relative';
+          // Get token address for display/copy
+          const tokenAddr = await lock.token();
+          li.innerHTML = `
+            <img src="../images/locked.png" class="lock-img-card" alt="Lock" />
+            <div class="wildwest-label">WILDWEST LOCK</div>
+            <div class="lock-title">${name}</div>
+            <div class="lock-info" style="color:#dc267f;font-weight:600;">YOUR ROLE: ${userRole}</div>
+            <div class="lock-info">AMOUNT: <span title="${amount.toString()}" style="font-family:monospace;">${formattedAmount}${symbol ? ' ' + symbol : ''}</span></div>
+            <div class="lock-info">BENEFICIARY: <span style="font-family:monospace;">${beneficiary}</span></div>
+            <div class="lock-info">TOKEN: <span title="${tokenAddr}" class="copy-token" style="cursor:pointer;color:#6c8cff;">${tokenAddr.slice(0, 6)}...${tokenAddr.slice(-4)}</span></div>
+            <div class="lock-info">UNLOCKS: ${new Date(releaseTime * 1000).toLocaleString()}</div>
+            <div class="lock-status ${(released ? 'claimed' : (now >= releaseTime ? 'claimable' : 'locked'))}">
+              ${(released ? 'CLAIMED' : (now >= releaseTime ? 'CLAIMABLE' : 'LOCKED'))}
+            </div>
+          `;
+
+          // Fix lock image size to match Solana card
+          if (!document.getElementById('lock-img-card-style')) {
+            const style = document.createElement('style');
+            style.id = 'lock-img-card-style';
+            style.textContent = `
+              .lock-img-card {
+                position: absolute;
+                top: 18px;
+                left: 14px;
+                width: 44px;
+                height: 44px;
+                max-width: 44px;
+                max-height: 44px;
+                aspect-ratio: 1/1;
+                object-fit: contain;
+                z-index: 12;
+                background: transparent;
+                border-radius: 10px;
+                border: none;
+                padding: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px #0004;
+              }
+            `;
+            document.head.appendChild(style);
+          }
+
+          // Copy token address to clipboard
+          li.querySelector('.copy-token').onclick = function() {
+            navigator.clipboard.writeText(tokenAddr);
+            this.textContent = 'COPIED!';
+            setTimeout(() => { this.textContent = tokenAddr.slice(0, 6) + '...' + tokenAddr.slice(-4); }, 1200);
+          };
+
+          // --- EMBED ICON AT TOP RIGHT ---
+          const embedIcon = document.createElement('span');
+          embedIcon.className = 'embed-icon';
+          embedIcon.title = 'Copy embed widget code';
+          embedIcon.style.position = 'absolute';
+          embedIcon.style.top = '18px';
+          embedIcon.style.right = '18px';
+          embedIcon.style.cursor = 'pointer';
+          embedIcon.style.zIndex = '20';
+          embedIcon.style.display = 'flex';
+          embedIcon.style.alignItems = 'center';
+          embedIcon.style.justifyContent = 'center';
+          embedIcon.style.width = '28px';
+          embedIcon.style.height = '28px';
+          embedIcon.style.background = 'rgba(76,108,255,0.10)';
+          embedIcon.style.borderRadius = '7px';
+          embedIcon.style.transition = 'background 0.18s';
+          embedIcon.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5" width="14" height="10" rx="2" stroke="#6c8cff" stroke-width="2" fill="none"/><path d="M7 9L5 10L7 11" stroke="#6c8cff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 9L15 10L13 11" stroke="#6c8cff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+          let embedIconTimeout = null;
+          embedIcon.onclick = () => {
+            showWidgetModal(lockAddr);
+          };
+          li.appendChild(embedIcon);
+
+          // --- ACTION BUTTONS FLEX CONTAINER ---
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'lock-actions';
+          actionsDiv.style.display = 'flex';
+          actionsDiv.style.flexWrap = 'wrap';
+          actionsDiv.style.gap = '8px';
+          actionsDiv.style.justifyContent = 'center';
+          actionsDiv.style.marginTop = '8px'; // reduce gap above buttons
+          actionsDiv.style.marginBottom = '0'; // ensure no extra margin at bottom
+
+          // Basescan link button
+          const shareBtn = document.createElement('button');
+          shareBtn.textContent = 'COPY BASESCAN LINK';
+          shareBtn.title = 'Copy the Basescan contract link for this lock to your clipboard';
+          shareBtn.onclick = () => {
+            const url = `https://basescan.org/address/${lockAddr}`;
+            navigator.clipboard.writeText(url);
+            shareBtn.textContent = 'COPIED!';
+            setTimeout(() => shareBtn.textContent = 'COPY BASESCAN LINK', 1200);
+          };
+          actionsDiv.appendChild(shareBtn);
+
+          // Claim button if claimable and not claimed
+          if (!released && now >= releaseTime && beneficiary.toLowerCase() === userAddress.toLowerCase()) {
+            const claimBtn = document.createElement('button');
+            claimBtn.textContent = 'CLAIM';
+            claimBtn.style.background = '#2ecc71';
+            claimBtn.style.color = 'white';
+            claimBtn.style.fontWeight = 'bold';
+            claimBtn.onclick = async () => {
+              if (!signer) {
+                alert('Please connect your wallet first!');
+                return;
+              }
+              
+              try {
+                claimBtn.textContent = 'CLAIMING...';
+                claimBtn.disabled = true;
+                
+                console.log('🎯 Claiming lock:', lockAddr);
+                const lockWithSigner = new ethers.Contract(lockAddr, LOCK_ABI, signer);
+                const tx = await lockWithSigner.release();
+                
+                console.log('⏳ Transaction sent:', tx.hash);
+                await tx.wait();
+                
+                console.log('✅ Claim successful!');
+                alert('Tokens claimed successfully!');
+                loadUserLocks(); // Reload to update status
+              } catch (err) {
+                console.error('❌ Claim failed:', err);
+                alert('Claim failed: ' + (err.message || err));
+                claimBtn.textContent = 'CLAIM';
+                claimBtn.disabled = false;
+              }
+            };
+            actionsDiv.appendChild(claimBtn);
+          }
+
+          li.appendChild(actionsDiv);
+          userLocksList.appendChild(li);
+          
+          } catch (lockErr) {
+            console.error(`❌ Error processing lock ${lockAddr}:`, lockErr);
+            const li = document.createElement('li');
+            li.textContent = `Error loading lock ${lockAddr.slice(0,6)}...${lockAddr.slice(-4)}: ${lockErr.message}`;
+            li.style.color = '#ff6c6c';
+            userLocksList.appendChild(li);
+          }
+        }
+      } catch (err) {
+        console.error('❌ Error in loadUserLocks:', err);
+        const li = document.createElement('li');
+        li.textContent = 'Error loading locks: ' + (err.message || err);
+        li.style.color = '#ff6c6c';
+        userLocksList.appendChild(li);
+      }
+    }
+
+    // Function to claim tokens from a lock
+    async function claimLock(lockAddress) {
+      if (!signer) {
+        alert('Please connect your wallet first!');
+        return;
+      }
+      
+      try {
+        console.log('🔓 Claiming lock:', lockAddress);
+        const ethersProvider = new ethers.providers.Web3Provider(provider);
+        const lock = new ethers.Contract(lockAddress, LOCK_ABI, ethersProvider.getSigner());
+        
+        const tx = await lock.release();
+        console.log('📤 Claim transaction sent:', tx.hash);
+        
+        // Show status
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = 'Claiming tokens...';
+        statusDiv.style.color = '#ff8c00';
+        
+        await tx.wait();
+        
+        statusDiv.textContent = 'Tokens claimed successfully!';
+        statusDiv.style.color = '#00e676';
+        
+        // Refresh the locks list
+        setTimeout(() => {
+          loadUserLocks();
+          statusDiv.textContent = '';
+        }, 2000);
+        
+      } catch (error) {
+        console.error('❌ Error claiming lock:', error);
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = 'Error claiming tokens: ' + error.message;
+        statusDiv.style.color = '#ff6b6b';
+      }
+    }
+
+    // Make claimLock globally available
+    window.claimLock = claimLock;
+
+    document.getElementById('setSelfBeneficiary').onclick = function() {
+      if (userAddress) {
+        document.getElementById('beneficiary').value = userAddress;
+      } else {
+        alert('Connect wallet first!');
+      }
+    };
+
+    async function fetchTokenInfo() {
+      const tokenAddress = document.getElementById('tokenAddress').value.trim();
+      const tokenInfoDiv = document.getElementById('tokenInfo');
+      
+      console.log('🔍 fetchTokenInfo called with:', tokenAddress);
+      console.log('🔍 provider available:', !!provider);
+      console.log('🔍 userAddress available:', !!userAddress);
+      
+      tokenInfoDiv.textContent = '';
+      
+      if (!tokenAddress) {
+        console.log('❌ No token address provided');
+        return;
+      }
+      
+      if (!ethers.utils.isAddress(tokenAddress)) {
+        console.log('❌ Invalid token address');
+        tokenInfoDiv.textContent = 'Invalid token address';
+        return;
+      }
+      
+      if (!provider) {
+        console.log('❌ No provider available');
+        tokenInfoDiv.textContent = 'Connect wallet first to view token info';
+        return;
+      }
+      
+      try {
+        tokenInfoDiv.textContent = 'Loading token info...';
+        console.log('🔄 Creating ethers provider...');
+        
+        // Create proper ethers provider from wallet provider
+        const ethersProvider = new ethers.providers.Web3Provider(provider);
+        console.log('✅ Ethers provider created');
+        
+        const erc20 = new ethers.Contract(tokenAddress, [
+          {"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"type":"function"},
+          {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"type":"function"},
+          {"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"},
+          {"constant":true,"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"type":"function"}
+        ], ethersProvider);
+        
+        console.log('🔄 Fetching token details...');
+        
+        // First get basic token info (name, symbol, decimals)
+        const [name, symbol, decimals] = await Promise.all([
+          erc20.name(),
+          erc20.symbol(),
+          erc20.decimals()
+        ]);
+        
+        console.log('✅ Token info fetched:', { name, symbol, decimals });
+        
+        // If we have userAddress, get balance too
+        let balanceText = '';
+        if (userAddress) {
+          try {
+            const balance = await erc20.balanceOf(userAddress);
+            const formattedBalance = ethers.utils.formatUnits(balance, decimals);
+            balanceText = ` | Balance: ${formattedBalance} ${symbol}`;
+            console.log('✅ Balance fetched:', formattedBalance);
+          } catch (balanceErr) {
+            console.log('⚠️ Could not fetch balance:', balanceErr.message);
+            balanceText = ' | Balance: Unable to fetch';
+          }
+        }
+        
+        tokenInfoDiv.textContent = `Name: ${name} | Symbol: ${symbol}${balanceText}`;
+        tokenInfoDiv.style.color = '#008080';
+        
+      } catch (err) {
+        console.error('❌ Error fetching token info:', err);
+        tokenInfoDiv.textContent = 'Could not fetch token info: ' + err.message;
+        tokenInfoDiv.style.color = '#ff6b6b';
+      }
+    }
+    document.getElementById('tokenAddress').addEventListener('input', function() {
+      // Debounce to avoid too many requests
+      clearTimeout(window._tokenInfoTimeout);
+      window._tokenInfoTimeout = setTimeout(fetchTokenInfo, 400);
+    });
+
+    document.getElementById('refreshLocksBtn').onclick = function() {
+      loadUserLocks();
+      document.getElementById('status').textContent = 'Lock list refreshed.';
+      setTimeout(()=>{document.getElementById('status').textContent='';}, 1200);
+    };
+    
+    // Widget Modal Functions
+    let currentLockAddress = null;
+    
+    function showWidgetModal(lockAddress) {
+      currentLockAddress = lockAddress;
+      document.getElementById('widgetModal').style.display = 'block';
+      document.getElementById('codeSection').style.display = 'none';
+      document.getElementById('copyCodeBtn').style.display = 'none';
+    }
+    
+    function closeWidgetModal() {
+      document.getElementById('widgetModal').style.display = 'none';
+      currentLockAddress = null;
+    }
+    
+    function selectWidgetType(type) {
+      if (!currentLockAddress) return;
+      
+      const baseUrl = window.location.origin;
+      let widgetUrl, dimensions;
+      
+      if (type === 'readonly') {
+        widgetUrl = `${baseUrl}/embed-base-lock.html?lock=${currentLockAddress}`;
+        dimensions = 'width="400" height="320"';
+      } else {
+        widgetUrl = `${baseUrl}/embed-base-lock-interactive.html?lock=${currentLockAddress}`;
+        dimensions = 'width="400" height="380"';
+      }
+      
+      const iframeCode = `<iframe 
+  src="${widgetUrl}" 
+  ${dimensions} 
+  style="border:none;border-radius:20px;box-shadow:0 2px 12px #0003;">
+</iframe>`;
+      
+      document.getElementById('widgetCode').textContent = iframeCode;
+      document.getElementById('codeSection').style.display = 'block';
+      document.getElementById('copyCodeBtn').style.display = 'inline-block';
+    }
+    
+    function copyWidgetCode() {
+      const codeText = document.getElementById('widgetCode').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = document.getElementById('copyCodeBtn');
+        const originalText = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        btn.style.background = '#00e676';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '#6c8cff';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy code:', err);
+        alert('Failed to copy code. Please select and copy manually.');
+      });
+    }
+    
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+      const modal = document.getElementById('widgetModal');
+      if (e.target === modal) {
+        closeWidgetModal();
+      }
+    });
+  </script>
+
+  <!-- Widget Configuration Modal -->
+  <div id="widgetModal" class="widget-modal">
+    <div class="widget-modal-content">
+      <h2>🔗 Create Your Widget</h2>
+      <p style="text-align: center; color: #b8c0d0; margin-bottom: 2em;">
+        Choose the type of widget you'd like to embed on your website:
+      </p>
+      
+      <div class="widget-option" onclick="selectWidgetType('readonly')">
+        <div class="preview-size">400×320</div>
+        <h3>📖 Read-Only Widget</h3>
+        <p>Perfect for displaying lock information without wallet interaction. Shows lock details, token amounts, unlock dates, and links to Base Explorer. Ideal for portfolios, documentation, or informational pages.</p>
+      </div>
+      
+      <div class="widget-option" onclick="selectWidgetType('interactive')">
+        <div class="preview-size">400×380</div>
+        <h3>⚡ Interactive Widget</h3>
+        <p>Full-featured widget with wallet connect and claim functionality. Users can connect their MetaMask wallet and claim unlocked tokens directly from your website. Perfect for dApps and user dashboards.</p>
+      </div>
+      
+      <div id="codeSection" style="display: none;">
+        <h3 style="color: #6c8cff; margin-top: 2em;">Your Widget Code:</h3>
+        <div id="widgetCode" class="code-display"></div>
+        <p style="color: #b8c0d0; font-size: 0.9em; text-align: center;">
+          Copy this code and paste it anywhere on your website!
+        </p>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="modal-btn" id="copyCodeBtn" onclick="copyWidgetCode()" style="display: none;">📋 Copy Code</button>
+        <button class="modal-btn secondary" onclick="closeWidgetModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copyright Footer -->
+  <footer style="
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+    border-top: 1px solid rgba(255, 174, 0, 0.3);
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: #fffbe7;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+    text-shadow: 0 0 4px #000, 0 0 2px #ffae00;
+  ">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 1rem;">
+        <span style="color: #ffae00; font-weight: 600; font-size: 1.1rem; text-shadow: 0 0 8px #ffae00;">WILDWEST LAUNCHPAD</span>
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="margin-bottom: 1rem;">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
+          background: linear-gradient(135deg, #0088cc, #00aaff);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          TELEGRAM
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
+          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          X
+        </a>
+      </div>
+      
+      <!-- $WILDW Token Contract Address -->
+      <div style="margin-bottom: 1rem; font-size: 0.85rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <span style="color: #ff6b35; font-weight: 600; text-shadow: 0 0 4px #ff6b35;">$WILDW TOKEN (BASE):</span>
+        </div>
+        <span style="color: #fffbe7; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">
+          0x8129609E5303910464FCe3022a809fA44455Fe9A
+        </span>
+      </div>
+      
+      <div style="margin-bottom: 0.5rem;">
+        © 2025 Wild West Launchpad. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

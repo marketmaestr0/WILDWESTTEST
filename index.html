@@ -1,0 +1,4199 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wild West Launchpad</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Environment Configuration (must load first) -->
+  <script src="js/env-config.js"></script>
+  <!-- Enhanced Mobile Wallet Support -->
+  <script src="js/mobile-wallet-bridge.js"></script>
+  <!-- Mobile Wallet Detection & Connection -->
+  <script src="js/mobile-wallet-detector.js?v=3"></script>
+  <!-- Mobile Wallet Integration -->
+  <script src="js/mobile-wallet-integration.js"></script>
+  <!-- Legal Disclaimer & Mobile Guidance -->
+  <script src="js/legal-disclaimer.js"></script>
+  <!-- Mobile Wallet Debug Tools (localhost only) -->
+  <script>
+    if (window.location.hostname === 'localhost' || window.location.search.includes('debug=mobile')) {
+      const script = document.createElement('script');
+      script.src = 'js/mobile-wallet-debug.js';
+      document.head.appendChild(script);
+    }
+  </script>
+  <!-- Production Configuration (GitHub Secrets injection) -->
+  <script src="js/production-config.js"></script>
+  <!-- RPC Configuration -->
+  <script src="js/rpc-config.js"></script>
+  <!-- Performance optimizations for wallet browsers -->
+  <script src="js/wallet-performance.js"></script>
+  <!-- API Efficiency Monitoring -->
+  <script src="js/api-audit.js"></script>
+  <!-- Console Filter - Universal console control (cache-busted) -->
+  <script src="js/console-filter.js?v=20250808"></script>
+  <!-- Secure Configuration -->
+  <script src="js/token-config.js"></script>
+  <script src="js/secure-config.js"></script>
+  <!-- Development Environment Injection -->
+  <script src="js/dev-env-inject.js"></script>
+  <!-- Development Token Injection (localhost only) -->
+  <script>
+    // Only load development token injection on localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+      // Check if dev-token-inject.js exists before loading
+      fetch('js/dev-token-inject.js', { method: 'HEAD' })
+        .then(response => {
+          if (response.ok && response.status === 200) {
+            const script = document.createElement('script');
+            script.src = 'js/dev-token-inject.js';
+            script.onerror = () => {
+              console.log('🔍 Dev token injection file failed to load (normal for production)');
+            };
+            document.head.appendChild(script);
+          } else {
+            console.log('🔍 Dev token injection file not found (normal for production)');
+          }
+        })
+        .catch(() => {
+          // File doesn't exist, ignore silently
+          console.log('🔍 Dev token injection file not available (normal for production)');
+        });
+    }
+  </script>
+  <!-- Payment Configuration -->
+  <script src="js/payment-config.js"></script>
+  <!-- Multi-wallet Management -->
+  <script src="js/multi-wallet-manager.js"></script>
+  <!-- Wallet Integration -->
+  <script src="js/wallet.js"></script>
+  <!-- Unified wallet connection system (fixes all connection issues) -->
+  <script src="js/unified-wallet-connection.js"></script>
+  <!-- Token Furnace Style Wallet Modal System -->
+  <script>
+    // Token Furnace Style Wallet Modal Implementation
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 DOM loaded, deferring wallet setup to avoid conflicts');
+      // Removed early setupIndexWallet() call to prevent dropdown conflicts
+    });
+
+    function showDirectWalletModal() {
+      console.log('🚀 showDirectWalletModal called!');
+      
+      // Remove any existing modal first
+      const existingModal = document.getElementById('chainSelectionModal');
+      if (existingModal) {
+        existingModal.remove();
+        console.log('🧹 Removed existing modal');
+      }
+      
+      // Detect available wallets
+      const availableWallets = {
+        ethereum: [],
+        solana: []
+      };
+      
+      // Detect Ethereum/Base wallets
+      if (window.ethereum) {
+        // Check for multiple providers
+        const providers = window.ethereum.providers || [window.ethereum];
+        
+        providers.forEach(provider => {
+          if (provider.isMetaMask) {
+            availableWallets.ethereum.push({name: 'MetaMask', provider: provider});
+          }
+          if (provider.isCoinbaseWallet) {
+            availableWallets.ethereum.push({name: 'Coinbase Wallet', provider: provider});
+          }
+          if (provider.isRabby) {
+            availableWallets.ethereum.push({name: 'Rabby Wallet', provider: provider});
+          }
+          if (provider.isTrust) {
+            availableWallets.ethereum.push({name: 'Trust Wallet', provider: provider});
+          }
+        });
+        
+        // If no specific wallet detected but ethereum exists, add as generic
+        if (availableWallets.ethereum.length === 0) {
+          availableWallets.ethereum.push({name: 'Ethereum Wallet', provider: window.ethereum});
+        }
+      }
+      
+      // Detect Solana wallets
+      const solanaWallets = [];
+      
+      // Phantom - check multiple locations
+      if (window.phantom?.solana?.isPhantom) {
+        solanaWallets.push({name: 'Phantom', provider: window.phantom.solana});
+      } else if (window.solana?.isPhantom) {
+        solanaWallets.push({name: 'Phantom', provider: window.solana});
+      }
+      
+      // Other Solana wallets
+      if (window.solflare && !solanaWallets.find(w => w.name === 'Solflare')) {
+        solanaWallets.push({name: 'Solflare', provider: window.solflare});
+      }
+      if (window.backpack && !solanaWallets.find(w => w.name === 'Backpack')) {
+        solanaWallets.push({name: 'Backpack', provider: window.backpack});
+      }
+      if (window.glow && !solanaWallets.find(w => w.name === 'Glow')) {
+        solanaWallets.push({name: 'Glow', provider: window.glow});
+      }
+      if (window.slope && !solanaWallets.find(w => w.name === 'Slope')) {
+        solanaWallets.push({name: 'Slope', provider: window.slope});
+      }
+      
+      availableWallets.solana = solanaWallets;
+      
+      console.log('🔍 Detected wallets:', availableWallets);
+      
+      // Create modal with consistent styling
+      const modal = document.createElement('div');
+      modal.id = 'chainSelectionModal'; // Add unique ID for reliable targeting
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;
+        z-index: 10000; animation: fadeIn 0.2s ease-out;
+      `;
+      
+      // Generate wallet options HTML
+      let walletOptionsHTML = '';
+      
+      if (availableWallets.ethereum.length > 0) {
+        walletOptionsHTML += '<h4 style="color: #00eaff; margin: 1rem 0 0.5rem 0; font-size: 1rem;">Base Network (Ethereum)</h4>';
+        availableWallets.ethereum.forEach((wallet, index) => {
+          walletOptionsHTML += `
+            <button onclick="connectSpecificWallet('ethereum', ${index})" style="
+              display: block; width: 100%; margin: 8px 0; padding: 12px 16px;
+              background: linear-gradient(135deg, #0052ff, #0041cc);
+              color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
+              transition: all 0.3s ease; text-align: center;
+            " onmouseover="this.style.background='linear-gradient(135deg, #0066ff, #0052ff)'; this.style.borderColor='#00eaff'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='linear-gradient(135deg, #0052ff, #0041cc)'; this.style.borderColor='rgba(0, 234, 255, 0.3)'; this.style.transform='translateY(0)'">
+              Connect ${wallet.name}
+            </button>
+          `;
+        });
+      }
+      
+      if (availableWallets.solana.length > 0) {
+        walletOptionsHTML += '<h4 style="color: #00eaff; margin: 1rem 0 0.5rem 0; font-size: 1rem;">Solana Network</h4>';
+        availableWallets.solana.forEach((wallet, index) => {
+          walletOptionsHTML += `
+            <button onclick="connectSpecificWallet('solana', ${index})" style="
+              display: block; width: 100%; margin: 8px 0; padding: 12px 16px;
+              background: linear-gradient(135deg, #9945ff, #7c3aed);
+              color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
+              transition: all 0.3s ease; text-align: center;
+            " onmouseover="this.style.background='linear-gradient(135deg, #a855f7, #9945ff)'; this.style.borderColor='#00eaff'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='linear-gradient(135deg, #9945ff, #7c3aed)'; this.style.borderColor='rgba(0, 234, 255, 0.3)'; this.style.transform='translateY(0)'">
+              Connect ${wallet.name}
+            </button>
+          `;
+        });
+      }
+      
+      if (availableWallets.ethereum.length === 0 && availableWallets.solana.length === 0) {
+        // Check if user is on mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        walletOptionsHTML = `
+          <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+            <h4 style="color: #ff6b6b; margin-bottom: 1rem;">No Wallets Detected</h4>
+            ${isMobile ? `
+              <div style="
+                background: rgba(0, 234, 255, 0.1);
+                border: 1px solid #00eaff;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                text-align: center;
+              ">
+                <p style="margin: 0; color: #00eaff; font-weight: 600;">📱 Mobile User?</p>
+                <p style="margin: 0.5rem 0 0 0; color: #c0c0c0; font-size: 0.9rem;">
+                  Open this site inside your wallet browser (MetaMask, Phantom, etc.) instead of your regular browser.
+                </p>
+              </div>
+            ` : ''}
+            <p style="margin-bottom: 1rem; color: #c0c0c0;">Please install a wallet to continue:</p>
+            <div style="text-align: left;">
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://metamask.io" target="_blank" style="color: #00eaff;">MetaMask</a> (for Base/Ethereum)</p>
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://phantom.app" target="_blank" style="color: #00eaff;">Phantom</a> (for Solana + Ethereum)</p>
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://wallet.coinbase.com" target="_blank" style="color: #00eaff;">Coinbase Wallet</a> (for Base/Ethereum)</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      modal.innerHTML = `
+        <div style="
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          border: 2px solid #00eaff;
+          border-radius: 16px;
+          box-shadow: 0 0 30px rgba(0, 234, 255, 0.3);
+          max-width: 400px;
+          width: 90vw;
+          max-height: 80vh;
+          overflow-y: auto;
+          animation: slideUp 0.3s ease-out;
+          font-family: 'Orbitron', sans-serif;
+        ">
+          <div style="
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 234, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+            <h3 style="margin: 0; color: #00eaff; font-size: 1.25rem; font-weight: 600;">Connect Wallet</h3>
+            <button class="close-modal-btn" style="
+              background: none;
+              border: none;
+              color: #00eaff;
+              font-size: 1.5rem;
+              cursor: pointer;
+              padding: 0;
+              width: 30px;
+              height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 50%;
+              transition: background-color 0.2s;
+            " onmouseover="this.style.backgroundColor='rgba(0, 234, 255, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">×</button>
+          </div>
+          <div style="padding: 1.5rem;">
+            ${walletOptionsHTML}
+            <button class="cancel-modal-btn" style="
+              display: block; width: 100%; margin-top: 1rem; padding: 10px;
+              background: rgba(102, 102, 102, 0.8); color: white;
+              border: 1px solid rgba(0, 234, 255, 0.2); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(102, 102, 102, 1)'; this.style.borderColor='rgba(0, 234, 255, 0.4)'" onmouseout="this.style.background='rgba(102, 102, 102, 0.8)'; this.style.borderColor='rgba(0, 234, 255, 0.2)'">
+              Cancel
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Add close functionality after modal is added to DOM
+      const closeBtn = modal.querySelector('.close-modal-btn');
+      const cancelBtn = modal.querySelector('.cancel-modal-btn');
+      
+      function closeModal() {
+        console.log('🚪 Closing chain selection modal');
+        if (modal && modal.parentNode) {
+          modal.remove();
+        }
+        // Fallback cleanup - remove any lingering modals
+        const existingModal = document.getElementById('chainSelectionModal');
+        if (existingModal) {
+          existingModal.remove();
+        }
+      }
+      
+      // Store reference for external access
+      window.closeChainSelectionModal = closeModal;
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+      }
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+      }
+      
+      // Close when clicking outside the modal
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+      
+      // Store available wallets for connection functions
+      window.availableWallets = availableWallets;
+    }
+
+    // Specific wallet connection function
+    window.connectSpecificWallet = async function(network, walletIndex) {
+      console.log(`🔗 Connecting to wallet ${walletIndex} on ${network} network`);
+      
+      try {
+        if (network === 'ethereum') {
+          const wallet = window.availableWallets.ethereum[walletIndex];
+          if (!wallet) {
+            throw new Error(`Wallet not found at index ${walletIndex}`);
+          }
+          
+          console.log(`📋 Connecting to ${wallet.name} with provider:`, wallet.provider);
+          
+          // Use the specific provider for this wallet
+          const accounts = await wallet.provider.request({ method: 'eth_requestAccounts' });
+          if (accounts.length > 0) {
+            // Switch to Base network if not already on it
+            try {
+              await wallet.provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x2105' }], // Base mainnet
+              });
+            } catch (switchError) {
+              // If the chain doesn't exist, add it
+              if (switchError.code === 4902) {
+                await wallet.provider.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x2105',
+                    chainName: 'Base',
+                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                    rpcUrls: ['https://mainnet.base.org'],
+                    blockExplorerUrls: ['https://basescan.org']
+                  }]
+                });
+              }
+            }
+            
+            // Update UI
+            currentAddress = accounts[0];
+            currentChain = 'base';
+            currentProvider = wallet.provider;
+            currentEvmProvider = wallet.provider;
+            currentSolanaProvider = null;
+            
+            updateWalletDisplay();
+            
+            // Close modal reliably
+            if (window.closeChainSelectionModal) {
+              window.closeChainSelectionModal();
+            } else {
+              // Fallback
+              const modal = document.getElementById('chainSelectionModal');
+              if (modal) modal.remove();
+            }
+            
+            console.log(`✅ ${wallet.name} connected successfully!`);
+          }
+        } else if (network === 'solana') {
+          const wallet = window.availableWallets.solana[walletIndex];
+          if (!wallet) {
+            throw new Error(`Wallet not found at index ${walletIndex}`);
+          }
+          
+          console.log(`📋 Connecting to ${wallet.name} with provider:`, wallet.provider);
+          
+          // Use the specific provider for this wallet
+          const response = await wallet.provider.connect();
+          
+          // Update UI
+          currentAddress = response.publicKey.toString();
+          currentChain = 'solana';
+          currentProvider = wallet.provider;
+          currentSolanaProvider = wallet.provider;
+          currentEvmProvider = null;
+          
+          updateWalletDisplay();
+          
+          // Close modal reliably
+          if (window.closeChainSelectionModal) {
+            window.closeChainSelectionModal();
+          } else {
+            // Fallback
+            const modal = document.getElementById('chainSelectionModal');
+            if (modal) modal.remove();
+          }
+          
+          console.log(`✅ ${wallet.name} connected successfully!`);
+        }
+      } catch (error) {
+        const walletName = network === 'ethereum' ? 
+          window.availableWallets.ethereum[walletIndex]?.name : 
+          window.availableWallets.solana[walletIndex]?.name;
+        console.error(`❌ ${walletName} connection failed:`, error);
+      }
+    };
+
+    function updateWalletDisplay() {
+      const walletBtnText = document.getElementById('walletBtnText');
+      if (walletBtnText && currentAddress) {
+        const shortAddress = currentAddress.substring(0, 6) + '...' + currentAddress.substring(currentAddress.length - 4);
+        walletBtnText.textContent = shortAddress;
+      }
+    }
+
+    function setupIndexWallet() {
+      console.log('🔧 Setting up index wallet connection');
+      
+      const connectBtn = document.getElementById('connectWalletBtn');
+      if (!connectBtn) {
+        console.error('❌ Connect wallet button not found');
+        return;
+      }
+      
+      // Remove existing event listeners and set up new one
+      const newButton = connectBtn.cloneNode(true);
+      connectBtn.parentNode.replaceChild(newButton, connectBtn);
+      
+      newButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔗 Connect button clicked, showing modal');
+        showChainSelectionModal();
+      });
+      
+      console.log('✅ Index wallet setup complete');
+    }
+
+    // Global variables for wallet state
+    let currentAddress = null;
+    let currentChain = null;
+    let currentProvider = null;
+    let currentEvmProvider = null;
+    let currentSolanaProvider = null;
+
+    // Make functions globally accessible
+    window.showDirectWalletModal = showDirectWalletModal;
+    window.setupIndexWallet = setupIndexWallet;
+  </script>
+  <!-- GitHub Actions Uploader (core functionality) -->
+  <script src="js/github-actions-uploader.js"></script>
+  <!-- GitHub Image Uploader (admin panel wrapper) -->
+  <script src="js/github-image-uploader.js"></script>
+  <!-- Ethers.js for Web3 functionality -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <!-- Solana Web3.js for Solana support -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <!-- Banner Configuration and Rotation -->
+  <script src="js/banner-config.js" onload="console.log('✅ banner-config.js loaded')" onerror="console.error('❌ banner-config.js failed to load')"></script>
+  <script src="js/banner-rotation.js" onload="console.log('✅ banner-rotation.js loaded')" onerror="console.error('❌ banner-rotation.js failed to load')"></script>
+  <script>
+    // Debug banner script loading
+    console.log('🔍 Checking banner objects after script tags:');
+    console.log('  - window.BANNER_CONFIG exists:', !!window.BANNER_CONFIG);
+    console.log('  - window.bannerRotationManager exists:', !!window.bannerRotationManager);
+    if (window.BANNER_CONFIG) {
+      console.log('  - BANNER_CONFIG type:', typeof window.BANNER_CONFIG);
+    }
+    if (window.bannerRotationManager) {
+      console.log('  - bannerRotationManager type:', typeof window.bannerRotationManager);
+    }
+  </script>
+  <!-- Add Google Fonts for Ewert, UnifrakturMaguntia, Creepster -->
+  <link href="https://fonts.googleapis.com/css2?family=Ewert&family=UnifrakturMaguntia&family=Creepster&display=swap" rel="stylesheet">
+  <style>
+    .wildwest-title {
+      font-family: 'Ewert', 'UnifrakturMaguntia', 'Creepster', cursive;
+      font-size: 7.5em;
+      letter-spacing: 0.14em;
+      margin-bottom: 0.1em;
+      margin-top: 0.1em;
+      text-align: center;
+      display: block;
+      background: linear-gradient(90deg, #00eaff 0%, #00fff7 25%, #ffffff 50%, #00fff7 75%, #00eaff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      filter: none; /* No blur for crisp text */
+      animation: none; /* Static - no animation */
+      text-shadow:
+        0 0 10px #00eaff,
+        0 0 5px #00fff7,
+        0 0 2px #ffffff,
+        0 0 1px #00eaff,
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+      transform: translateZ(0);
+    }
+    .wildwest-subtitle {
+      display: block;
+      text-align: center;
+      font-family: 'Orbitron', 'Ewert', 'UnifrakturMaguntia', 'Creepster', Arial, sans-serif;
+      font-size: 1.25em;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+      color: #ffffff;
+      margin-top: -0.3em;
+      margin-bottom: 0.5em;
+      animation: none; /* Static - no animation */
+      text-shadow: 
+        0 0 6px #00eaff, 
+        0 0 3px #00fff7, 
+        0 0 1px #fff,
+        1px 1px 3px rgba(0, 0, 0, 0.9);
+      filter: none; /* No blur for crisp text */
+      background: linear-gradient(90deg, #ffffff 0%, #00eaff 50%, #ffffff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Mobile title and subtitle improvements - Crisp and eye-catching */
+    @media (max-width: 768px) {
+      body .wildwest-title {
+        font-size: 5.0em !important;
+        letter-spacing: 0.1em !important;
+        animation: mobileWildwestGlow 3s linear infinite, mobileTextPulse 2s ease-in-out infinite alternate !important;
+        background: linear-gradient(45deg, #00eaff, #00fff7, #ffffff, #00eaff, #fff) !important;
+        background-size: 400% 400% !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        color: transparent !important;
+        filter: none !important; /* Remove blur filters for crisp text */
+        text-shadow: 
+          0 0 8px #00eaff,
+          0 0 4px #00fff7,
+          0 0 2px #ffffff,
+          2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+        transform: translateZ(0) !important;
+        will-change: background-position, transform !important;
+        backface-visibility: hidden !important;
+      }
+      
+      body .wildwest-subtitle {
+        font-size: 1.1em !important;
+        letter-spacing: 0.1em !important;
+        animation: mobileSubtitleShine 2.5s ease-in-out infinite alternate !important;
+        text-shadow: 0 0 6px #00eaff, 0 0 3px #00fff7, 0 0 1px #fff, 1px 1px 3px rgba(0, 0, 0, 0.9) !important;
+        filter: none !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body .wildwest-title {
+        font-size: 4.0em !important;
+        letter-spacing: 0.08em !important;
+        animation: mobileWildwestGlow 3s linear infinite, mobileTextPulse 2s ease-in-out infinite alternate !important;
+        background: linear-gradient(45deg, #00eaff, #00fff7, #ffffff, #00eaff, #fff) !important;
+        background-size: 400% 400% !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        color: transparent !important;
+        filter: none !important; /* Remove blur filters for crisp text */
+        text-shadow: 
+          0 0 6px #00eaff,
+          0 0 3px #00fff7,
+          0 0 1px #ffffff,
+          2px 2px 3px rgba(0, 0, 0, 0.8) !important;
+        transform: translateZ(0) !important;
+        will-change: background-position, transform !important;
+        backface-visibility: hidden !important;
+      }
+      
+      body .wildwest-subtitle {
+        font-size: 1em !important;
+        letter-spacing: 0.08em !important;
+        animation: mobileSubtitleShine 2.5s ease-in-out infinite alternate !important;
+        text-shadow: 0 0 4px #00eaff, 0 0 2px #00fff7, 1px 1px 2px rgba(0, 0, 0, 0.9) !important;
+        filter: none !important;
+      }
+    }
+    
+    /* Mobile-optimized keyframes - Crisp and eye-catching */
+    @keyframes mobileWildwestGlow {
+      0% { 
+        background-position: 0% 0%; 
+        text-shadow: 
+          0 0 8px #00eaff,
+          0 0 4px #00fff7,
+          0 0 2px #ffffff,
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+        transform: translateZ(0) scale(1);
+      }
+      33% { 
+        background-position: 50% 50%; 
+        text-shadow: 
+          0 0 10px #00fff7,
+          0 0 5px #00eaff,
+          0 0 3px #ffffff,
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+        transform: translateZ(0) scale(1.02);
+      }
+      66% { 
+        background-position: 100% 100%; 
+        text-shadow: 
+          0 0 12px #ffffff,
+          0 0 6px #00eaff,
+          0 0 4px #00fff7,
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+        transform: translateZ(0) scale(1.01);
+      }
+      100% { 
+        background-position: 0% 0%; 
+        text-shadow: 
+          0 0 8px #00eaff,
+          0 0 4px #00fff7,
+          0 0 2px #ffffff,
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+        transform: translateZ(0) scale(1);
+      }
+    }
+    
+    @keyframes mobileTextPulse {
+      0% { 
+        transform: translateZ(0) scale(1);
+        text-shadow: 
+          0 0 8px #00eaff,
+          0 0 4px #00fff7,
+          0 0 2px #ffffff,
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+      100% { 
+        transform: translateZ(0) scale(1.03);
+        text-shadow: 
+          0 0 12px #00fff7,
+          0 0 6px #00eaff,
+          0 0 4px #ffffff,
+          2px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+    }
+    
+    @keyframes mobileSubtitleShine {
+      0% { 
+        text-shadow: 0 0 6px #00eaff, 0 0 3px #00fff7, 0 0 1px #fff, 1px 1px 3px rgba(0, 0, 0, 0.9);
+        opacity: 0.9;
+      }
+      100% { 
+        text-shadow: 0 0 10px #00fff7, 0 0 5px #00eaff, 0 0 3px #fff, 1px 1px 3px rgba(0, 0, 0, 0.9);
+        opacity: 1;
+      }
+    }
+    
+    /* Disable reduce-motion for title animation - always show the effect */
+    @media (prefers-reduced-motion: reduce) {
+      .wildwest-title {
+        animation: wildwestBlueGlow 4s linear infinite, flickerBlue 2.2s infinite alternate !important;
+      }
+      
+      /* On mobile, use the crisp mobile animations even with reduced motion */
+      @media (max-width: 768px) {
+        body .wildwest-title {
+          animation: mobileWildwestGlow 3s linear infinite, mobileTextPulse 2s ease-in-out infinite alternate !important;
+        }
+      }
+    }
+    .arcade-emoji-link {
+      position: absolute;
+      top: 1.1em;
+      right: 2em;
+      z-index: 10;
+      text-decoration: none;
+      transition: filter 0.2s;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    }
+    .arcade-emoji {
+      font-size: 2.1em;
+      filter: drop-shadow(0 0 8px #00fff7) drop-shadow(0 0 16px #00eaff) drop-shadow(0 0 2px #fff);
+      text-shadow: 
+        3px 3px 6px rgba(0, 0, 0, 1),
+        2px 2px 4px rgba(0, 0, 0, 0.8),
+        0 0 12px #00fff7, 
+        0 0 6px #00eaff, 
+        0 0 1px #fff;
+      animation: neonShine 2.5s infinite alternate, neonPulse 1.7s infinite alternate;
+      user-select: none;
+      vertical-align: middle;
+      transition: filter 0.2s;
+    }
+    .arcade-label {
+      display: block;
+      font-family: 'Orbitron', 'Ewert', Arial, sans-serif;
+      font-size: 0.75em;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: #00eaff;
+      margin-top: -0.2em;
+      text-align: center;
+      text-shadow: 
+        3px 3px 6px rgba(0, 0, 0, 1),
+        2px 2px 4px rgba(0, 0, 0, 0.9),
+        0 0 8px #00fff7, 
+        0 0 2px #00eaff, 
+        0 0 1px #fff;
+      filter: drop-shadow(0 0 4px #00eaff);
+      background: linear-gradient(90deg, #00eaff 0%, #00fff7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      pointer-events: none;
+      user-select: none;
+    }
+    @keyframes neonShine {
+      0% { filter: drop-shadow(0 0 8px #00fff7) drop-shadow(0 0 16px #00eaff); }
+      100% { filter: drop-shadow(0 0 32px #00fff7) drop-shadow(0 0 48px #00eaff); }
+    }
+    @keyframes neonPulse {
+      0% { opacity: 0.85; }
+      100% { opacity: 1; }
+    }
+    @media (max-width: 600px) {
+      .wildwest-title {
+        font-size: 3.2em;
+        margin-top: 0.6em;
+        margin-bottom: 0.25em;
+        letter-spacing: 0.11em;
+        word-break: break-word;
+        max-width: 98vw;
+        line-height: 1.08;
+      }
+      .wildwest-subtitle {
+        font-size: 1em;
+        margin-bottom: 0.3em;
+      }
+      .arcade-emoji { font-size: 1.6em; }
+      .arcade-emoji-link { 
+        top: 0.4em; 
+        right: 0.5em; 
+        background: rgba(0, 0, 0, 0.95);
+        border-radius: 12px;
+        padding: 8px 6px 6px 6px;
+        backdrop-filter: blur(12px);
+        border: 2px solid rgba(0, 234, 255, 0.8);
+        max-width: 65px;
+        z-index: 15;
+        box-shadow: 
+          0 0 15px rgba(0, 234, 255, 0.4),
+          0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      .arcade-label { 
+        font-size: 0.72em; 
+        text-shadow: 
+          2px 2px 4px rgba(0, 0, 0, 1),
+          1px 1px 2px rgba(0, 0, 0, 0.9),
+          0 0 15px #00fff7, 
+          0 0 8px #00eaff, 
+          0 0 3px #fff;
+        font-weight: 900;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: none !important;
+      }
+      .connect-btn.switch-btn {
+        width: 88vw;
+        max-width: 340px;
+        margin: 1.1em auto 0.7em auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.98em;
+        padding: 0.6em 0.2em 0.5em 0.2em;
+        border-radius: 10px;
+        box-sizing: border-box;
+        text-align: center;
+        line-height: 1.1;
+        gap: 0.5em;
+      }
+      #walletBtnText {
+        position: relative;
+        top: -1px;
+      }
+      .wallet-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2em;
+      }
+      .chain-name {
+        font-size: 0.75em;
+        font-weight: 600;
+        opacity: 0.8;
+        letter-spacing: 0.5px;
+      }
+      .wallet-dropdown {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+    @media (max-width: 400px) {
+      .wildwest-title {
+        font-size: 3.5em;
+        margin-top: 0.5em;
+        margin-bottom: 0.18em;
+        letter-spacing: 0.08em;
+      }
+      .wildwest-subtitle {
+        font-size: 1.1em;
+        margin-bottom: 0.2em;
+      }
+      .arcade-emoji { font-size: 1.1em; }
+      .arcade-emoji-link { 
+        top: 0.6em; 
+        right: 0.3em; 
+        background: rgba(0, 0, 0, 0.9);
+        border-radius: 8px;
+        padding: 4px 6px;
+        backdrop-filter: blur(10px);
+        border: 1px solid #00d4ff;
+        width: 40px;
+        height: 32px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 15;
+        box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+      }
+      .arcade-label { 
+        font-size: 0.5em; 
+        text-shadow: 0 0 5px #00eaff;
+        font-weight: 700;
+        color: #00eaff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: none !important;
+      }
+      .arcade-label { 
+        font-size: 0.65em; 
+        text-shadow: 
+          2px 2px 4px rgba(0, 0, 0, 1),
+          1px 1px 2px rgba(0, 0, 0, 0.9),
+          0 0 15px #00fff7, 
+          0 0 8px #00eaff, 
+          0 0 3px #fff;
+        font-weight: 900;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: none !important;
+      }
+      .connect-btn.switch-btn {
+        width: 94vw;
+        max-width: 98vw;
+        font-size: 0.92em;
+        padding: 0.4em 0.1em 0.4em 0.1em;
+        margin: 0.8em auto 0.4em auto;
+        border-radius: 8px;
+        text-align: center;
+        line-height: 1.1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5em;
+      }
+      #walletBtnText {
+        position: relative;
+        top: -1px;
+      }
+      .wallet-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2em;
+      }
+      .chain-name {
+        font-size: 0.65em;
+        font-weight: 600;
+        opacity: 0.8;
+        letter-spacing: 0.5px;
+      }
+    }
+    /* Enhanced dropdown styles for better mobile/desktop compatibility */
+    .launch-token-dropdown,
+    .staking-dropdown,
+    .token-locking-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .launch-token-menu,
+    .staking-menu,
+    .token-locking-menu {
+      /* FORCE HIDDEN BY DEFAULT - Override any show classes */
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      position: absolute;
+      left: 0;
+      top: 100%;
+      background: rgba(30, 34, 44, 0.98);
+      border: 1px solid rgba(0, 234, 255, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      padding: 0.5em 0;
+      z-index: 1000;
+      min-width: 180px;
+      margin-top: 2px;
+    }
+    
+    /* Mobile dropdown show class - overrides display: none !important */
+    .mobile-dropdown-show {
+      display: block !important;
+    }
+    
+    .launch-token-menu a,
+    .staking-menu a,
+    .token-locking-menu a {
+      display: block;
+      padding: 0.6em 1em;
+      color: #00eaff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9em;
+      transition: all 0.2s ease;
+      border: none;
+      background: none;
+    }
+    
+    /* DISABLED: Show dropdowns on hover - now using click-based modal system */
+    /* 
+    .launch-token-dropdown:hover .launch-token-menu,
+    .staking-dropdown:hover .staking-menu,
+    .token-locking-dropdown:hover .token-locking-menu {
+      display: block !important;
+    }
+    */
+    
+    .launch-token-menu a:hover,
+    .staking-menu a:hover,
+    .token-locking-menu a:hover {
+      background: rgba(0, 234, 255, 0.15);
+      color: #ffffff;
+    }
+    
+    /* FREE Sticker for Token Locking and Token Furnace */
+    .token-locking-dropdown,
+    .token-furnace-item {
+      position: relative;
+    }
+    
+    .free-sticker {
+      position: absolute;
+      top: -8px;
+      right: -12px;
+      background: linear-gradient(135deg, #00ff41, #00cc33);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 
+        0 0 8px rgba(0, 255, 65, 0.6),
+        0 0 16px rgba(0, 255, 65, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+      animation: freeGlow 2s ease-in-out infinite alternate;
+      z-index: 10;
+      pointer-events: none;
+      border: 1px solid rgba(0, 255, 65, 0.8);
+      white-space: nowrap;
+    }
+    
+    @keyframes freeGlow {
+      0% {
+        box-shadow: 
+          0 0 8px rgba(0, 255, 65, 0.6),
+          0 0 16px rgba(0, 255, 65, 0.3),
+          0 2px 4px rgba(0, 0, 0, 0.3);
+        transform: scale(1);
+      }
+      100% {
+        box-shadow: 
+          0 0 12px rgba(0, 255, 65, 0.8),
+          0 0 24px rgba(0, 255, 65, 0.5),
+          0 2px 6px rgba(0, 0, 0, 0.4);
+        transform: scale(1.05);
+      }
+    }
+    
+    /* Mobile adjustments for FREE sticker */
+    @media (max-width: 768px) {
+      .free-sticker {
+        font-size: 0.55rem;
+        padding: 1px 4px;
+        top: -6px;
+        right: -8px;
+        border-radius: 6px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .free-sticker {
+        font-size: 0.5rem;
+        padding: 1px 3px;
+        top: -5px;
+        right: -6px;
+        border-radius: 5px;
+        letter-spacing: 0.3px;
+      }
+    }
+
+    /* Mobile optimizations for dropdowns */
+    @media (max-width: 768px) {
+      /* DISABLED: Hover effects already disabled above - now using click-based modal system */
+      /*
+      .launch-token-dropdown:hover .launch-token-menu,
+      .staking-dropdown:hover .staking-menu,
+      .token-locking-dropdown:hover .token-locking-menu {
+        display: none !important;
+      }
+      */
+      
+      /* Simple mobile dropdown display */
+      .launch-token-menu,
+      .staking-menu,
+      .token-locking-menu {
+        position: fixed !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        min-width: 250px !important;
+        max-width: 320px !important;
+        width: 85vw !important;
+        z-index: 9999 !important;
+        background: rgba(20, 24, 34, 0.98) !important;
+        border: 2px solid rgba(0, 234, 255, 0.5) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+      }
+      
+      /* Remove backdrop CSS approach and let JS handle it */
+      
+      .launch-token-menu a,
+      .staking-menu a,
+      .token-locking-menu a {
+        padding: 1em;
+        font-size: 1.1em;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 234, 255, 0.1);
+      }
+      
+      .launch-token-menu a:last-child,
+      .staking-menu a:last-child,
+      .token-locking-menu a:last-child {
+        border-bottom: none;
+      }
+      
+      /* Make dropdown triggers more touch-friendly */
+      .launch-token-dropdown > a,
+      .staking-dropdown > a,
+      .token-locking-dropdown > a {
+        padding: 0.8em 1em !important;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0, 234, 255, 0.2);
+      }
+    }
+    
+    /* Desktop navigation optimization */
+    @media (min-width: 701px) {
+      .main-nav {
+        width: 100%;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .main-nav ul {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0 2rem;
+        box-sizing: border-box;
+        list-style: none;
+      }
+      .main-nav li {
+        flex: 1;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+      .main-nav a {
+        padding: 0.5em 0.2em;
+        font-size: 0.9em;
+        white-space: nowrap;
+        display: block;
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      /* Ensure dropdowns don't break layout */
+      .staking-dropdown,
+      .token-locking-dropdown,
+      .launch-token-dropdown {
+        position: relative;
+        display: block;
+        width: 100%;
+      }
+    }
+    
+    /* SIMPLE BULLETPROOF DROPDOWN CSS */
+    .dropdown-menu {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(20, 24, 34, 0.98);
+      border: 2px solid #00eaff;
+      border-radius: 15px;
+      padding: 20px;
+      z-index: 9999;
+      min-width: 250px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+      pointer-events: auto;
+    }
+    
+    .dropdown-menu.show {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    /* EMERGENCY OVERRIDE - Force specific dropdowns hidden until clicked */
+    #launch-menu,
+    #staking-menu,
+    #locking-menu {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    /* Only show when explicitly activated by click */
+    #launch-menu.show,
+    #staking-menu.show,
+    #locking-menu.show {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      position: absolute !important;
+      top: 100% !important;
+      left: 0 !important;
+      transform: none !important;
+      z-index: 1000 !important;
+      background: linear-gradient(135deg, rgba(26, 30, 46, 0.95), rgba(16, 20, 36, 0.98)) !important;
+      border: 2px solid rgba(0, 234, 255, 0.8) !important;
+      border-radius: 16px !important;
+      padding: 12px 0 !important;
+      min-width: 200px !important;
+      margin-top: 8px !important;
+      box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.7),
+        0 5px 15px rgba(0, 234, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+      backdrop-filter: blur(15px) !important;
+      animation: dropdownSlide 0.2s ease-out !important;
+    }
+
+    @keyframes dropdownSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #launch-menu.show a,
+    #staking-menu.show a,
+    #locking-menu.show a {
+      display: block !important;
+      padding: 12px 20px !important;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-weight: 600 !important;
+      font-size: 15px !important;
+      transition: all 0.3s ease !important;
+      border-left: 3px solid transparent !important;
+      background: transparent !important;
+    }
+
+    #launch-menu.show a:hover,
+    #staking-menu.show a:hover,
+    #locking-menu.show a:hover {
+      background: linear-gradient(90deg, rgba(0, 234, 255, 0.2), rgba(0, 234, 255, 0.1)) !important;
+      color: #00eaff !important;
+      border-left: 3px solid #00eaff !important;
+      padding-left: 25px !important;
+      transform: translateX(5px) !important;
+    }
+
+    /* Mobile-specific dropdown positioning */
+    @media (max-width: 768px) {
+      #launch-menu.show,
+      #staking-menu.show,
+      #locking-menu.show {
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        min-width: 280px !important;
+        max-width: 85vw !important;
+        padding: 0 !important;
+        border-radius: 16px !important;
+        border: 2px solid rgba(0, 234, 255, 0.8) !important;
+        background: linear-gradient(135deg, rgba(20, 25, 40, 0.98), rgba(30, 35, 50, 0.95)) !important;
+        box-shadow: 
+          0 20px 40px rgba(0, 0, 0, 0.8),
+          0 0 30px rgba(0, 234, 255, 0.3) !important;
+        animation: mobileDropdownSlide 0.25s ease-out !important;
+        overflow: hidden !important;
+        margin-top: 8px !important;
+        z-index: 2000 !important;
+      }
+      
+      @keyframes mobileDropdownSlide {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+      
+      #launch-menu.show a,
+      #staking-menu.show a,
+      #locking-menu.show a {
+        display: block !important;
+        padding: 20px 25px !important;
+        font-size: 17px !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        color: #ffffff !important;
+        text-decoration: none !important;
+        border-bottom: 1px solid rgba(0, 234, 255, 0.15) !important;
+        border-left: none !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        transition: all 0.2s ease !important;
+        position: relative !important;
+      }
+
+      #launch-menu.show a:first-child,
+      #staking-menu.show a:first-child,
+      #locking-menu.show a:first-child {
+        border-top-left-radius: 14px !important;
+        border-top-right-radius: 14px !important;
+      }
+      
+      #launch-menu.show a:last-child,
+      #staking-menu.show a:last-child,
+      #locking-menu.show a:last-child {
+        border-bottom: none !important;
+        border-bottom-left-radius: 14px !important;
+        border-bottom-right-radius: 14px !important;
+      }
+
+      #launch-menu.show a:hover,
+      #staking-menu.show a:hover,
+      #locking-menu.show a:hover,
+      #launch-menu.show a:active,
+      #staking-menu.show a:active,
+      #locking-menu.show a:active {
+        background: linear-gradient(90deg, rgba(0, 234, 255, 0.2), rgba(0, 234, 255, 0.1)) !important;
+        color: #00eaff !important;
+        transform: none !important;
+        padding-left: 25px !important;
+        box-shadow: none !important;
+      }
+
+      /* Ensure parent dropdown containers have relative positioning */
+      .launch-token-dropdown,
+      .staking-dropdown,
+      .token-locking-dropdown {
+        position: relative !important;
+      }
+
+      /* Remove the close hint - it's not needed */
+      #launch-menu.show::before,
+      #staking-menu.show::before,
+      #locking-menu.show::before {
+        display: none !important;
+      }
+    }
+    
+    .dropdown-menu li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      pointer-events: auto;
+    }
+    
+    .dropdown-menu a {
+      display: block;
+      padding: 15px 20px;
+      color: #00eaff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 18px;
+      border-radius: 8px;
+      margin: 8px 0;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
+    
+    .dropdown-menu a:hover,
+    .dropdown-menu a:active,
+    .dropdown-menu a:focus {
+      background: #00eaff;
+      color: #1a1e2e;
+      border-color: #00eaff;
+    }
+    
+    /* Desktop positioning */
+    @media (min-width: 769px) {
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        transform: none;
+        min-width: 180px;
+        padding: 10px 0;
+      }
+      
+      .dropdown-menu a {
+        padding: 12px 20px;
+        font-size: 14px;
+        text-align: left;
+        margin: 0;
+      }
+    }
+    
+    /* Compact navigation for smaller desktop screens */
+    @media (min-width: 701px) and (max-width: 1200px) {
+      .main-nav ul {
+        padding: 0 1rem;
+      }
+      .main-nav a {
+        padding: 0.4em 0.1em;
+        font-size: 0.85em;
+      }
+    }
+    /* Extra compact for very wide screens */
+    @media (min-width: 1201px) {
+      .main-nav ul {
+        padding: 0 3rem;
+      }
+      .main-nav a {
+        padding: 0.6em 0.3em;
+        font-size: 1em;
+      }
+    }
+    /* Mobile-specific improvements for symmetry */
+    @media (max-width: 768px) {
+      .main-nav {
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden;
+      }
+      
+      .main-nav ul {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .main-nav li {
+        width: 100%;
+        text-align: center;
+      }
+      
+      .main-nav a {
+        display: block;
+        padding: 0.8rem 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        background: rgba(30, 34, 44, 0.8);
+        border: 1px solid rgba(0, 234, 255, 0.3);
+        border-radius: 10px;
+        margin: 0.25rem 0;
+      }
+      
+      .main-nav a:hover {
+        background: rgba(0, 234, 255, 0.1);
+        border-color: rgba(0, 234, 255, 0.6);
+      }
+      
+      /* Dropdown menus on mobile */
+      .launch-token-menu,
+      .staking-menu,
+      .token-locking-menu {
+        position: static;
+        display: none;
+        background: rgba(20, 24, 34, 0.95);
+        border-radius: 8px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .launch-token-menu a,
+      .staking-menu a,
+      .token-locking-menu a {
+        margin: 0.25rem 0;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main-nav ul {
+        padding: 0.5rem;
+      }
+      
+      .main-nav a {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.9rem;
+      }
+      
+      .project-grid {
+        padding: 0;
+        align-items: center;
+      }
+      
+      .project-slot {
+        width: 280px;
+        min-width: 280px;
+        max-width: 280px;
+        margin: 0 auto;
+      }
+      
+      .search-container {
+        max-width: 280px;
+      }
+      
+      .load-more-btn {
+        width: 280px;
+        max-width: 280px;
+      }
+    }
+    
+    /* Trending Widget Container */
+    .trending-widget-container {
+      width: 100%;
+      background: transparent;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .trending-widget-container iframe {
+      display: block;
+      width: 100%;
+      background: transparent;
+      height: 2350px; /* Desktop: 4 rows + headers/margins + load more button */
+      min-height: 2350px; /* Ensure minimum height */
+    }
+    
+    /* Responsive iframe heights */
+    @media (max-width: 768px) {
+      .trending-widget-container iframe {
+        height: 3500px; /* Increased for mobile 2-column layout */
+        min-height: 3500px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .trending-widget-container iframe {
+        height: 6000px; /* Increased for mobile single-column layout */
+        min-height: 6000px;
+      }
+    }
+    
+    /* Trending Projects Section */
+    .trending-section {
+      padding: 2rem 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(0, 234, 255, 0.2);
+    }
+    
+    .trending-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .trending-category {
+      margin-bottom: 3rem;
+    }
+    
+    .trending-title {
+      font-family: 'Orbitron', Arial, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      text-align: center;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      text-shadow: 
+        0 0 5px #00eaff, 
+        0 0 2px #00fff7,
+        0 0 1px #fff,
+        1px 1px 2px rgba(0, 0, 0, 0.9);
+      filter: drop-shadow(0 0 4px #00eaff);
+      background: linear-gradient(90deg, #ffffff 0%, #00eaff 50%, #ffffff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .project-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    /* UNIVERSAL PROJECT CARD SIZING - FORCE ALL CARDS TO BE IDENTICAL */
+    .project-slot,
+    .all-projects-grid .project-slot,
+    .project-grid .project-slot,
+    .trending-section .project-slot {
+      background: rgba(30, 34, 44, 0.8) !important;
+      border: 1px solid rgba(0, 234, 255, 0.3) !important;
+      border-radius: 15px !important;
+      padding: 1.5rem !important;
+      width: 300px !important;
+      min-width: 300px !important;
+      max-width: 300px !important;
+      text-align: center !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 4px 15px rgba(0, 234, 255, 0.1) !important;
+      display: block !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+    }
+    
+    /* UNIVERSAL PROJECT CARD HOVER - FORCE ALL CARDS TO HAVE SAME HOVER */
+    .project-slot:hover,
+    .all-projects-grid .project-slot:hover,
+    .project-grid .project-slot:hover,
+    .trending-section .project-slot:hover {
+      transform: translateY(-5px) !important;
+      border-color: rgba(0, 234, 255, 0.6) !important;
+      box-shadow: 0 8px 25px rgba(0, 234, 255, 0.2) !important;
+    }
+    
+    /* UNIVERSAL PROJECT GRID LAYOUT - FORCE ALL GRIDS TO BE IDENTICAL */
+    .project-grid,
+    .all-projects-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      justify-items: center !important;
+      gap: 2rem !important;
+      margin-bottom: 3rem !important;
+      max-width: 1200px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    .project-slot {
+      background: rgba(30, 34, 44, 0.8);
+      border: 1px solid rgba(0, 234, 255, 0.3);
+      border-radius: 15px;
+      padding: 1.5rem;
+      width: 300px;
+      min-width: 300px;
+      max-width: 300px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 234, 255, 0.1);
+    }
+    
+    .project-slot:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0, 234, 255, 0.6);
+      box-shadow: 0 8px 25px rgba(0, 234, 255, 0.2);
+    }
+    
+    .project-rank {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #00eaff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .project-name {
+      font-size: 1.1rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .project-mcap,
+    .project-volume,
+    .project-status {
+      font-size: 0.9rem;
+      color: #00fff7;
+      font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+      .project-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      
+      /* UNIFIED: Make explore section grid match trending section exactly */
+      .all-projects-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        width: 100% !important;
+        max-width: 350px !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        margin-bottom: 8rem !important; /* Keep extra bottom spacing for load more button */
+      }
+      
+      /* FORCE both grids to be identical */
+      .project-grid,
+      .all-projects-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        width: 100% !important;
+        max-width: 350px !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+      }
+      
+      /* FORCE all containers to be identical width - USE TRENDING APPROACH */
+      .trending-category,
+      .explore-container {
+        max-width: 400px !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+      
+      /* FORCE all project slots to be identical */
+      .trending-section .project-slot,
+      .explore-section .project-slot,
+      .project-grid .project-slot,
+      .all-projects-grid .project-slot {
+        width: 100% !important;
+        min-width: auto !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+      }
+      
+      .trending-title {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        text-shadow: 
+          0 0 3px #00eaff, 
+          0 0 1px #00fff7,
+          1px 1px 2px rgba(0, 0, 0, 0.9);
+        filter: drop-shadow(0 0 2px #00eaff);
+      }
+      
+      .trending-category {
+        margin-bottom: 3rem;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto 3rem auto;
+      }
+      
+      .trending-section {
+        padding: 2rem 1rem;
+      }
+      
+      /* FORCE explore section to match trending section padding exactly */
+      .explore-section {
+        padding: 2rem 1rem !important;
+      }
+      
+      .trending-container {
+        width: 100%;
+        max-width: none;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .project-grid {
+        max-width: 300px;
+        gap: 0.8rem;
+      }
+      
+      /* Keep consistent card sizing on mobile - Adjust for better mobile fit */
+      .project-slot,
+      .all-projects-grid .project-slot,
+      .project-grid .project-slot,
+      .trending-section .project-slot {
+        padding: 1.2rem !important;
+        /* Slightly smaller width for better mobile fit */
+        width: 280px !important;
+        min-width: 280px !important;
+        max-width: 280px !important;
+      }
+      
+      .trending-title {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 
+          0 0 2px #00eaff, 
+          0 0 1px #00fff7,
+          1px 1px 1px rgba(0, 0, 0, 0.9);
+        filter: drop-shadow(0 0 1px #00eaff);
+      }
+      
+      .trending-category {
+        margin-bottom: 2rem;
+        max-width: 320px;
+      }
+      
+      .trending-section {
+        padding: 1.5rem 0.5rem;
+      }
+    }
+    
+    /* Explore More Projects Section */
+    .explore-section {
+      padding: 3rem 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(0, 234, 255, 0.1);
+    }
+    
+    /* Mobile responsive padding for explore section */
+    @media (max-width: 480px) {
+      .explore-section {
+        padding: 2rem 0.5rem 4rem 0.5rem; /* Extra bottom padding */
+      }
+    }
+    
+    .explore-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .search-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 3rem;
+      position: relative;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+      gap: 15px;
+    }
+    
+    .search-bar {
+      width: 100%;
+      padding: 18px 25px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #ffffff;
+      background: rgba(30, 34, 44, 0.95);
+      border: 2px solid rgba(0, 234, 255, 0.5);
+      border-radius: 20px;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: center;
+      letter-spacing: 0;
+      box-sizing: border-box;
+      box-shadow: 0 4px 15px rgba(0, 234, 255, 0.1);
+    }
+    
+    .search-bar::placeholder {
+      color: rgba(0, 234, 255, 0.8);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0;
+    }
+    
+    .search-bar:focus {
+      border-color: rgba(0, 234, 255, 0.9);
+      box-shadow: 0 0 25px rgba(0, 234, 255, 0.3), 0 4px 20px rgba(0, 234, 255, 0.2);
+      background: rgba(30, 34, 44, 1);
+      transform: translateY(-2px);
+    }
+    
+    .search-btn {
+      position: static;
+      padding: 18px 20px;
+      font-size: 1.1rem;
+      background: rgba(0, 234, 255, 0.15);
+      border: 2px solid rgba(0, 234, 255, 0.5);
+      border-radius: 20px;
+      color: #00eaff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 234, 255, 0.1);
+      flex-shrink: 0;
+    }
+    
+    .search-btn:hover {
+      border-color: rgba(0, 234, 255, 0.8);
+      background: rgba(0, 234, 255, 0.25);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(0, 234, 255, 0.3);
+    }
+    
+    .all-projects-grid .project-slot {
+      background: rgba(30, 34, 44, 0.8);
+      border: 1px solid rgba(0, 234, 255, 0.3);
+      border-radius: 15px;
+      padding: 1.5rem;
+      width: 300px;
+      min-width: 300px;
+      max-width: 300px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 234, 255, 0.1);
+    }
+    
+    .all-projects-grid .project-slot:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0, 234, 255, 0.6);
+      box-shadow: 0 8px 25px rgba(0, 234, 255, 0.2);
+    }
+    
+    .pagination-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .load-more-btn {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #00eaff;
+      background: rgba(30, 34, 44, 0.9);
+      border: 1px solid rgba(0, 234, 255, 0.4);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0, 234, 255, 0.1);
+    }
+    
+    .load-more-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 234, 255, 0.6);
+      box-shadow: 0 8px 25px rgba(0, 234, 255, 0.2);
+      background: rgba(0, 234, 255, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+      .search-container {
+        max-width: 350px;
+        margin: 0 auto 2rem auto;
+      }
+      
+      .search-bar {
+        font-size: 1rem;
+        padding: 15px 60px 15px 15px;
+      }
+      
+      .search-btn {
+        padding: 8px 12px;
+        font-size: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      /* Further mobile optimization */
+      .header {
+        padding: 0.5rem 0.25rem;
+      }
+      
+      .trending-section,
+      .explore-section {
+        padding: 1rem 0.25rem;
+      }
+      
+      .main-nav ul {
+        padding: 0.25rem;
+      }
+      
+      .main-nav a {
+        padding: 0.7rem 0.5rem;
+        font-size: 0.9rem;
+      }
+      
+      .search-container {
+        padding: 0 0.125rem;
+      }
+      
+      .all-projects-grid {
+        padding: 0 0.125rem;
+        gap: 0.8rem;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        max-width: 350px !important;
+        margin: 0 auto !important;
+      }
+      
+      .all-projects-grid .project-slot {
+        width: 100% !important;
+        min-width: auto !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+      }
+      
+      .project-grid {
+        padding: 0 0.125rem;
+      }
+      
+      .load-more-btn {
+        width: calc(100% - 0.5rem);
+        margin: 0 0.25rem;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+      }
+      
+      .explore-container {
+        padding: 0 0.125rem;
+      }
+    }
+      
+      .load-more-btn {
+        width: 300px;
+        max-width: 300px;
+        padding: 15px 20px;
+        font-size: 1rem;
+        margin: 0 auto;
+      }
+      
+      .explore-section {
+        padding: 3rem 1rem;
+      }
+      
+      .explore-container {
+        width: 100%;
+        max-width: none;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .pagination-container {
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 3rem !important; /* Add spacing from cards above on mobile */
+      }
+    
+    /* DESKTOP OVERRIDE - ENSURE 300PX CARDS ON DESKTOP */
+    @media (min-width: 769px) {
+      .project-slot,
+      .all-projects-grid .project-slot,
+      .project-grid .project-slot,
+      .trending-section .project-slot {
+        width: 280px !important; /* Changed from 300px to 280px for better mobile fit */
+        min-width: 280px !important;
+        max-width: 280px !important;
+        padding: 1.2rem !important; /* Reduced padding for mobile */
+        display: block !important;
+        margin: 0 !important;
+      }
+      
+      .project-grid,
+      .all-projects-grid {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 2rem !important;
+      }
+    }
+    
+    /* Mobile-first responsive improvements */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+        overflow-x: hidden;
+      }
+      
+      .header {
+        padding: 1rem 0.5rem;
+      }
+      
+      /* MOBILE OVERRIDE - ENSURE ALL CARDS ARE SAME SIZE ON MOBILE */
+      .project-slot,
+      .all-projects-grid .project-slot,
+      .project-grid .project-slot,
+      .trending-section .project-slot {
+        width: 100% !important;
+        min-width: auto !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 1rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+      }
+      
+      .project-grid,
+      .all-projects-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        padding: 0 0.25rem !important;
+      }
+      
+      /* Fix sections to prevent horizontal overflow */
+      .trending-section,
+      .explore-section {
+        padding: 1.5rem 0.25rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      /* Ensure all containers respect mobile viewport */
+      .explore-container,
+      .trending-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 0.25rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      /* Fix trending categories */
+      .trending-category {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto 2rem auto;
+        padding: 0 0.25rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .trending-title {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+        text-shadow: 
+          0 0 3px #00eaff, 
+          0 0 1px #00fff7,
+          1px 1px 2px rgba(0, 0, 0, 0.9);
+        filter: drop-shadow(0 0 2px #00eaff);
+      }
+      
+      /* Fix navigation menu */
+      .main-nav {
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden;
+      }
+      
+      .main-nav ul {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.25rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      /* Fix project grid overflow for mobile */
+      .all-projects-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto 2rem auto;
+        padding: 0 0.25rem;
+        box-sizing: border-box;
+      }
+      
+      /* Fix search container */
+      .search-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto 1.5rem auto;
+        padding: 0 0.25rem;
+        box-sizing: border-box;
+      }
+      
+      /* Fix load more button */
+      .load-more-btn {
+        max-width: 100%;
+        width: calc(100% - 1rem);
+        margin: 0 0.5rem;
+        display: block;
+        box-sizing: border-box;
+      }
+      
+      /* Ensure all content respects mobile viewport */
+      * {
+        box-sizing: border-box;
+      }
+      
+      /* Improve tap targets for mobile */
+      button, .wallet-connect-btn, .load-more-btn, .advertise-btn {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        font-size: 13px;
+      }
+      
+      .header {
+        padding: 0.8rem 0.25rem;
+      }
+      
+      section {
+        padding: 1rem 0.25rem;
+      }
+      
+      /* Smaller margins for very small screens */
+      .trending-section,
+      .explore-section {
+        margin: 0.5rem 0;
+        padding: 1rem 0.125rem;
+      }
+      
+      /* Force trending categories to center on very small screens */
+      .trending-category {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto 1.5rem auto;
+        padding: 0 0.125rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .trending-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 0.125rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .project-slot {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        padding: 0.8rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      /* Extra spacing for load more button on small mobile */
+      .pagination-container {
+        margin-top: 4rem !important; /* Even more spacing on small screens */
+      }
+    }
+    
+    .ad-banner {
+      padding: 2rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Force advertise buttons to be visible */
+    .advertise-btn {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 1000 !important;
+      margin: 1rem auto !important;
+      background: linear-gradient(135deg, var(--panel-80) 0%, var(--panel) 100%);
+      color: var(--yellow);
+      border: 2px solid var(--yellow);
+      padding: 15px 30px;
+      border-radius: 0;
+      font-weight: 900;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        0 0 20px rgba(0, 234, 255, 0.3),
+        inset 0 0 20px rgba(0, 234, 255, 0.1);
+      font-family: 'Orbitron', Arial, sans-serif;
+    }
+    
+    .advertise-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 234, 255, 0.4), transparent);
+      transition: left 0.5s;
+    }
+    
+    .advertise-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #000 0%, #1a1a1a 50%, #2d2d2d 100%);
+      color: #fff;
+      border-color: #fff;
+      box-shadow: 
+        0 0 30px rgba(0, 234, 255, 0.6),
+        inset 0 0 30px rgba(0, 234, 255, 0.2),
+        0 5px 15px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 0 10px #00eaff;
+    }
+    
+    .advertise-btn:hover::before {
+      left: 100%;
+    }
+    
+    .advertise-btn:active {
+      transform: scale(0.98);
+    }
+    
+    /* Top Ad Banner - Silver */
+    .top-ad {
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--violet) 50%);
+      border-top: 2px solid var(--yellow);
+      border-bottom: 2px solid var(--yellow);
+    }
+    
+    .top-ad::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 80%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(192, 192, 192, 0.823), transparent);
+      animation: shimmer 3s infinite;
+    }
+    
+    /* Bottom Ad Banner - Silver */
+    .bottom-ad {
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--violet) 50%);
+      border-top: 2px solid var(--yellow);
+      border-bottom: 2px solid var(--yellow);
+      margin-top: 2rem;
+    }
+    
+    .bottom-ad::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 80%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(192, 192, 192, 0.823), transparent);
+      animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .ad-container {
+      max-width: 1500px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .ad-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 1500px;
+      height: 500px;
+      padding: 2rem;
+      background: var(--panel-80);
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Custom banner styling */
+    .ad-content .custom-banner {
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+    
+    .ad-content:hover .custom-banner {
+      transform: scale(1.02);
+      filter: brightness(1.1);
+    }
+    
+    /* Silver styling for both ads (default advertising) */
+    .top-ad .ad-content,
+    .bottom-ad .ad-content {
+      border: 2px solid var(--yellow);
+    }
+    
+    .top-ad .ad-content:hover,
+    .bottom-ad .ad-content:hover {
+      transform: translateY(-3px);
+      border-color: rgba(192, 192, 192, 0.8);
+      box-shadow: 0 10px 30px var(--violet-shadow);
+      background: rgba(192, 192, 192, 0.08);
+    }
+    
+    /* Override hover for custom banners */
+    .ad-content:has(.custom-banner):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(0, 234, 255, 0.2);
+      border-color: rgba(0, 234, 255, 0.4);
+    }
+    
+    .top-ad .ad-text,
+    .bottom-ad .ad-text {
+      font-family: 'Orbitron', Arial, sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #c0c0c0;
+      text-shadow: 0 0 15px rgba(192, 192, 192, 0.6);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    
+    @media (max-width: 768px) {
+      .ad-banner {
+        padding: 1rem 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .ad-content {
+        height: 200px;
+        padding: 1rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+      
+      .ad-content img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+      
+      .top-ad .ad-text,
+      .bottom-ad .ad-text {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+        line-height: 1.4;
+      }
+      
+      .advertise-btn {
+        padding: 12px 24px !important;
+        font-size: 0.9rem !important;
+        margin: 1rem auto !important;
+        max-width: 280px;
+        width: calc(100% - 2rem);
+        box-sizing: border-box;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .ad-banner {
+        padding: 0.8rem 0.25rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .ad-content {
+        height: 160px;
+        width: 100%;
+        max-width: 100%;
+        padding: 0.8rem;
+        box-sizing: border-box;
+      }
+      
+      .ad-content img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .top-ad .ad-text,
+      .bottom-ad .ad-text {
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+      }
+      
+      .advertise-btn {
+        padding: 10px 20px !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 1px !important;
+        max-width: 260px;
+      }
+    }
+    
+  </style>
+</head>
+<body>
+<!-- Top chrome: fixed wrapper that always stays above the page -->
+  <div class="site-chrome">
+    <!-- Transaction Ticker Widget -->
+    <iframe
+      id="transaction-ticker-iframe"
+      src="transaction-ticker-widget.html"
+      scrolling="no"
+      title="Transaction Ticker">
+    </iframe>
+
+<!-- Nav Bar-->
+  <nav class="navbar">
+
+     <!-- Left: Logo -->
+    <div class="navlogo">WILD WEST</div>
+    
+     <!-- Center: Main Links -->
+    <ul class="nav-links">
+      <li><a href="index.html" aria-current="page">Home</a></li>
+
+      <li class="dropdown">
+       <a>Launch Token ▾</a>
+       <ul class="dropdown-menu">
+         <li><a href="launch_base.html">Base <br> (Coming soon!)</a></li>
+         <li><a href="launch_solana.html">Solana <br> (Coming soon!)</a></li>
+       </ul>
+     </li>
+
+      <li class="dropdown">
+       <a >Staking ▾</a>
+       <ul class="dropdown-menu">
+         <li><a href="staking_base.html">Base <br> (Coming soon!)</a></li>
+         <li><a href="staking_solana.html">Solana <br> (Coming soon!)</a></li>
+       </ul>
+     </li>
+
+      <li class="dropdown">
+       <a >Token Locking ▾</a>
+       <ul class="dropdown-menu">
+         <li><a href="locking_base.html">Base</a></li>
+         <li><a href="locking_solana.html">Solana</a></li>
+       </ul>
+     </li>
+
+     <li><a href="furnace.html">Token Furnace</a></li>
+     <li><a href="team.html">The Team</a></li>
+     <li><a href="team.html">Arcade</a></li>
+    </ul>
+
+    <!-- Right: Icons -->
+    <div class="nav-actions">
+      <!-- <a href="pages/wildwest-arcade.html" class="arcade-emoji-link" title="WildWest Arcade">
+        <span class="arcade-emoji">🕹️</span>
+        <span class="arcade-label">ARCADE</span>
+      </a> -->
+     <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
+       <img src="images/ICONS/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
+     </a>
+     <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
+       <img src="images/ICONS/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
+     </a>
+     <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank" rel="noopener">
+       <img src="images/ICONS/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener" class="nav-icon">
+     </a>
+     <a>Connect Wallet</a>
+  </div>
+  </nav>
+
+
+<!-- Hero Section -->
+  <section class="hero">
+  <div class="hero__bg" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <h1>WILD WEST</h1>
+      <p>LAUNCHPAD AND UTILITY HUB</p>
+    </div>
+  </section>
+
+
+    <!-- JavaScript for Parallax effect-->
+
+  <script>
+(function () {
+  const bg = document.querySelector('.hero__bg');
+  if (!bg) return;
+
+  const speed = 0.6; // lower = subtler effect
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduce) return; // skip for reduced motion users
+
+  let ticking = false;
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const y = window.scrollY * speed;
+        bg.style.transform = `translateY(${y}px)`;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+
+
+<!-- Top Ad Banner -->
+  <section class="ad-banner top-ad">
+    <div class="ad-container">
+      <div class="ad-content">
+        <span class="ad-text">ADVERTISE HERE</span>
+      </div>
+      <button class="advertise-btn" onclick="window.open('admin/banner-admin.html', '_blank')">
+        ADVERTISE HERE
+      </button>
+    </div>
+  </section>
+  
+  
+<!-- Embedded Trending Widget -->
+  <section class="trending-widget-container">
+    <iframe 
+      src="trending-widget-v2.html" 
+      width="100%" 
+      frameborder="0" 
+      scrolling="no"
+      style="border: none; background: transparent; height: 2350px; pointer-events: auto;"
+      id="trending-widget-iframe">
+    </iframe>
+    
+    <script>
+      // Iframe communication handler - height adjustment and modal positioning
+      let resizeTimeout;
+      window.addEventListener('message', function(event) {
+        // Handle iframe height adjustments
+        if (event.data && event.data.type === 'resize') {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            const iframe = document.getElementById('trending-widget-iframe');
+            if (iframe) {
+              const currentHeight = parseInt(iframe.style.height);
+              const newHeight = Math.max(event.data.height + 100, 2350); // Add small buffer
+              
+              // Only resize if significantly different to prevent infinite loops
+              if (Math.abs(newHeight - currentHeight) > 50) {
+                iframe.style.height = newHeight + 'px';
+                console.log(`📏 Adjusted iframe height to: ${newHeight}px`);
+              }
+            }
+          }, 100);
+        }
+        
+        // Handle widget modal positioning requests - DISABLED
+        if (event.data && event.data.type === 'scrollToWidget' && event.data.source === 'trending-widget') {
+          console.log('📡 Received scroll request from trending widget - IGNORING (no scroll mode)');
+          // NO SCROLLING - Modal appears in current viewport position
+        }
+      });
+    </script>
+  </section>
+  
+<!-- Bottom Ad Banner -->
+  <section class="ad-banner bottom-ad">
+    <div class="ad-container">
+      <div class="ad-content">
+        <span class="ad-text">ADVERTISE HERE</span>
+      </div>
+      <button class="advertise-btn" onclick="window.open('admin/banner-admin.html', '_blank')">
+        ADVERTISE HERE
+      </button>
+    </div>
+  </section>
+  
+  <script src="js/script.js"></script>
+  <script src="js/swap-widget.js?v=1"></script>
+  <script src="js/simple-buy.js?v=1"></script>
+  <script src="js/simple-sell.js?v=1"></script>
+  
+  <script>
+// Initialize volume chart provider
+(function() {
+  console.log('🚀 Volume chart system loading...');
+  console.log('📊 Volume chart system disabled - using trending widget instead');
+  
+  // Volume chart system disabled - replaced with modular trending widget
+  // initVolumeCharts();
+})();
+
+// Initialize dropdown menus properly
+(function() {
+  console.log('🚀 Dropdown system loading...');
+})();
+
+
+
+// Simple, reliable dropdown functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize all dropdown menus
+  const dropdowns = [
+    { btn: 'launchTokenDropdownBtn', menu: 'launchTokenMenu' },
+    { btn: 'stakingDropdownBtn', menu: 'stakingMenu' },
+    { btn: 'tokenLockingDropdownBtn', menu: 'tokenLockingMenu' }
+  ];
+
+  dropdowns.forEach(dropdown => {
+    const btn = document.getElementById(dropdown.btn);
+    const menu = document.getElementById(dropdown.menu);
+    
+    if (btn && menu) {
+      // Ensure menu is hidden initially
+      menu.style.display = 'none';
+      menu.style.visibility = 'visible';
+      
+      // Simple click handler - works on all devices
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close all other dropdowns first
+        dropdowns.forEach(otherDropdown => {
+          if (otherDropdown.menu !== dropdown.menu) {
+            const otherMenu = document.getElementById(otherDropdown.menu);
+            if (otherMenu) {
+              otherMenu.style.display = 'none';
+            }
+          }
+        });
+        
+        // Toggle current dropdown
+        if (menu.style.display === 'block') {
+          menu.style.display = 'none';
+        } else {
+          menu.style.display = 'block';
+        }
+      });
+      
+      // Close dropdown when clicking menu items
+      const menuLinks = menu.querySelectorAll('a');
+      menuLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          menu.style.display = 'none';
+        });
+      });
+    }
+  });
+  
+  // Close all dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    const isDropdownClick = e.target.closest('.launch-token-dropdown, .staking-dropdown, .token-locking-dropdown');
+    
+    if (!isDropdownClick) {
+      dropdowns.forEach(dropdown => {
+        const menu = document.getElementById(dropdown.menu);
+        if (menu) {
+          menu.style.display = 'none';
+        }
+      });
+    }
+  });
+  
+  // Test function for debugging
+  window.testDropdowns = function() {
+    console.log('🧪 Testing dropdown functionality...');
+    dropdowns.forEach(dropdown => {
+      const btn = document.getElementById(dropdown.btn);
+      const menu = document.getElementById(dropdown.menu);
+      console.log(`� ${dropdown.btn}:`, {
+        btnExists: !!btn,
+        menuExists: !!menu,
+        display: menu?.style.display || 'not set',
+        visibility: menu?.style.visibility || 'not set'
+      });
+    });
+  };
+  
+  console.log('✅ Dropdowns fixed');
+  
+  // Mobile wallet guidance function for improved mobile experience
+  window.showMobileWalletGuidance = function() {
+    // Remove any existing guidance modal
+    const existingModal = document.getElementById('mobileGuidanceModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'mobileGuidanceModal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;
+      z-index: 10000; animation: fadeIn 0.2s ease-out;
+    `;
+    
+    modal.innerHTML = `
+      <div style="
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border: 2px solid #00eaff;
+        border-radius: 16px;
+        box-shadow: 0 0 30px rgba(0, 234, 255, 0.3);
+        max-width: 400px;
+        width: 90vw;
+        animation: slideUp 0.3s ease-out;
+        font-family: 'Orbitron', sans-serif;
+      ">
+        <div style="
+          padding: 1.5rem;
+          border-bottom: 1px solid rgba(0, 234, 255, 0.2);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        ">
+          <h3 style="margin: 0; color: #00eaff; font-size: 1.25rem; font-weight: 600;">📱 Mobile Connection</h3>
+          <button onclick="this.closest('#mobileGuidanceModal').remove()" style="
+            background: none; border: none; color: #00eaff; font-size: 1.5rem;
+            cursor: pointer; padding: 0; width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: background-color 0.2s;
+          ">×</button>
+        </div>
+        <div style="padding: 1.5rem; text-align: center;">
+          <div style="
+            background: rgba(0, 234, 255, 0.1);
+            border: 1px solid #00eaff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+          ">
+            <p style="margin: 0; color: #00eaff; font-weight: 600;">📱 Mobile User?</p>
+            <p style="margin: 0.5rem 0 0 0; color: #c0c0c0; font-size: 0.9rem;">
+              Open this site inside your wallet browser instead of your regular browser.
+            </p>
+          </div>
+          <div style="text-align: left; margin-bottom: 1rem;">
+            <h4 style="color: #00eaff; margin-bottom: 0.5rem;">Popular Wallet Apps:</h4>
+            <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://metamask.io/download/" target="_blank" style="color: #00eaff;">MetaMask</a> - For Base/Ethereum</p>
+            <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://phantom.app/" target="_blank" style="color: #00eaff;">Phantom</a> - For Solana + Ethereum</p>
+            <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://wallet.coinbase.com/" target="_blank" style="color: #00eaff;">Coinbase Wallet</a> - For Base/Ethereum</p>
+            <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://trustwallet.com/" target="_blank" style="color: #00eaff;">Trust Wallet</a> - Multi-chain</p>
+          </div>
+          <div style="
+            background: rgba(255, 174, 0, 0.1);
+            border: 1px solid #ffae00;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+            color: #ffae00;
+          ">
+            💡 <strong>Tip:</strong> Copy this URL and paste it in your wallet's browser to connect!
+          </div>
+          <button onclick="this.closest('#mobileGuidanceModal').remove()" style="
+            display: block; width: 100%; margin-top: 1rem; padding: 12px;
+            background: linear-gradient(135deg, #0052ff, #0041cc);
+            color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+            cursor: pointer; font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+          ">
+            Got it!
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close when clicking outside
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  };
+});
+
+// Explore search + pagination is now managed by trending-loader.js
+document.addEventListener('DOMContentLoaded', function() {
+  // Note: Ad banner click functionality is now handled by banner-rotation.js
+  
+  // Wallet connection using unified-wallet-connection.js
+  console.log('🔗 Index page: Using unified wallet connection system');
+  console.log('🔍 Index page: Checking wallet systems...');
+  console.log('   - window.wildWestWallet exists:', !!window.wildWestWallet);
+  console.log('   - window.unifiedWalletConnection exists:', !!window.unifiedWalletConnection);
+  
+  // Initialize wallet connection when unified system is ready
+  const initializeWalletConnection = () => {
+    if (window.unifiedWalletConnection) {
+      console.log('✅ Unified wallet connection system is available');
+      
+      const connectBtn = document.getElementById('connectWalletBtn');
+      if (connectBtn) {
+        console.log('� Setting up wallet connect button with unified system');
+        
+        // Remove any existing event listeners
+        connectBtn.replaceWith(connectBtn.cloneNode(true));
+        const newConnectBtn = document.getElementById('connectWalletBtn');
+        
+        // Add click handler for unified wallet connection
+        newConnectBtn.addEventListener('click', async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          console.log('🔘 Unified wallet button clicked!');
+          
+          try {
+            if (window.wildWestWallet && window.wildWestWallet.isConnected) {
+              // Already connected, show disconnect option
+              const walletDropdown = document.getElementById('walletDropdownMenu');
+              if (walletDropdown) {
+                walletDropdown.style.display = walletDropdown.style.display === 'none' ? 'block' : 'none';
+              }
+            } else {
+              // Not connected, start connection process
+              console.log('� Starting unified wallet connection...');
+              await window.wildWestWallet.connectWallet();
+            }
+          } catch (error) {
+            console.error('❌ Wallet connection failed:', error);
+            
+            // Check if mobile device without wallet browser
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isWalletBrowser = /MetaMask|Trust|Coinbase|Rainbow|WalletConnect|Phantom/i.test(navigator.userAgent) || 
+                                   window.ethereum || window.solana;
+            
+            if (isMobile && !isWalletBrowser) {
+              // Mobile device but not in wallet browser - show guidance
+              console.log('📱 Mobile device detected - showing guidance instead of error');
+              window.showMobileWalletGuidance();
+            } else {
+              // Fallback to direct modal if unified system fails
+              if (typeof showDirectWalletModal === 'function') {
+                console.log('🔄 Falling back to direct wallet modal...');
+                showDirectWalletModal();
+              } else {
+                alert('Wallet connection failed. Please try again.');
+              }
+            }
+          }
+        });
+      }
+      
+      // Setup disconnect button
+      const disconnectBtn = document.getElementById('disconnectBtn');
+      if (disconnectBtn) {
+        disconnectBtn.addEventListener('click', function() {
+          console.log('🔌 Disconnecting wallet...');
+          if (window.wildWestWallet && window.wildWestWallet.disconnectWallet) {
+            window.wildWestWallet.disconnectWallet();
+          }
+          const walletDropdown = document.getElementById('walletDropdownMenu');
+          if (walletDropdown) {
+            walletDropdown.style.display = 'none';
+          }
+        });
+      }
+      
+    } else {
+      console.log('⏳ Unified wallet system not ready yet, retrying...');
+      setTimeout(initializeWalletConnection, 100);
+    }
+  };
+  
+  // Start initialization
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeWalletConnection);
+  } else {
+    initializeWalletConnection();
+  }
+  
+  // Initialize Secure Configuration System
+  console.log('🔒 Initializing secure configuration...');
+  if (window.SECURE_CONFIG) {
+    console.log('✅ SECURE_CONFIG already available');
+  } else {
+    console.log('⏳ Waiting for SECURE_CONFIG to load...');
+    // Wait a moment for SECURE_CONFIG to initialize
+    setTimeout(() => {
+      if (window.SECURE_CONFIG) {
+        console.log('✅ SECURE_CONFIG loaded successfully');
+        initializeBannerSystem();
+      } else {
+        console.warn('⚠️ SECURE_CONFIG not available, banner system may have limited functionality');
+        initializeBannerSystem();
+      }
+    }, 100);
+  }
+  
+  // Initialize Banner System
+  let bannerInitRetries = 0;
+  const maxBannerRetries = 50; // 5 seconds total
+  
+  function initializeBannerSystem() {
+    // Check if banner dependencies are loaded
+    if (!window.BANNER_CONFIG || !window.bannerRotationManager) {
+      bannerInitRetries++;
+      console.log(`⏳ Banner dependencies not ready yet, retrying in 100ms... (${bannerInitRetries}/${maxBannerRetries})`);
+      console.log('  - window.BANNER_CONFIG exists:', !!window.BANNER_CONFIG);
+      console.log('  - window.bannerRotationManager exists:', !!window.bannerRotationManager);
+      
+      if (bannerInitRetries < maxBannerRetries) {
+        // Retry after a short delay
+        setTimeout(initializeBannerSystem, 100);
+        return;
+      } else {
+        console.error('❌ Banner system initialization failed - dependencies not loaded after 5 seconds');
+        console.error('🔍 Available global objects:', Object.keys(window).filter(key => key.includes('banner') || key.includes('BANNER')));
+        return;
+      }
+    }
+    
+    // Initialize Banner Rotation System
+    console.log('🎯 Starting banner rotation system...');
+    console.log('✅ Banner dependencies loaded:');
+    console.log('  - BANNER_CONFIG:', !!window.BANNER_CONFIG);
+    console.log('  - bannerRotationManager:', !!window.bannerRotationManager);
+    
+    if (window.bannerRotationManager) {
+      window.bannerRotationManager.init().then(() => {
+        console.log('✅ Banner rotation system initialized');
+        
+        // Show current banner state after initialization
+        setTimeout(() => {
+          const topBanner = window.BANNER_CONFIG.getCurrentBanner('top');
+          const bottomBanner = window.BANNER_CONFIG.getCurrentBanner('bottom');
+          console.log('📊 Current Banner State After Init:');
+          console.log('🔝 Top Banner:', topBanner ? topBanner.projectName : 'Default "Advertise Here"');
+          console.log('⬇️ Bottom Banner:', bottomBanner ? bottomBanner.projectName : 'Default "Advertise Here"');
+          
+          // Check if banners are actually displayed
+          const topAdContent = document.querySelector('.top-ad .ad-content');
+          const bottomAdContent = document.querySelector('.bottom-ad .ad-content');
+          console.log('🖼️ Banner Display Status:');
+          console.log('🔝 Top ad content contains custom banner:', topAdContent?.innerHTML.includes('custom-banner'));
+          console.log('⬇️ Bottom ad content contains custom banner:', bottomAdContent?.innerHTML.includes('custom-banner'));
+        }, 1000);
+      }).catch(error => {
+        console.error('❌ Banner rotation system initialization failed:', error);
+        console.error('🔍 Error details:', error.message);
+        console.error('🔍 Error stack:', error.stack);
+        
+        // Try to set up default banners as fallback
+        console.log('🔄 Setting up fallback banners...');
+        if (window.BANNER_CONFIG) {
+          window.BANNER_CONFIG.setupDefaultBanners();
+        }
+      });
+    } else {
+      console.error('❌ Banner rotation manager not found');
+    }
+  }
+  
+  // Initialize banner system with retry logic
+  console.log('🚀 Initializing banner system with dependency check...');
+  initializeBannerSystem();
+  
+  // Also initialize when SECURE_CONFIG becomes available (for enhanced functionality)
+  if (!window.SECURE_CONFIG) {
+    setTimeout(() => {
+      if (window.SECURE_CONFIG) {
+        console.log('🔒 SECURE_CONFIG now available, re-initializing banner system...');
+        initializeBannerSystem();
+      }
+    }, 2000);
+  }
+  
+  // Debug functions for troubleshooting
+  window.debugTokenStatus = async function() {
+    console.log(`🔗 Connecting to wallet ${walletIndex} on ${network} network`);
+    
+    try {
+      if (network === 'ethereum') {
+        const wallet = window.availableWallets.ethereum[walletIndex];
+        if (!wallet) {
+          throw new Error(`Wallet not found at index ${walletIndex}`);
+        }
+        
+        console.log(`📋 Connecting to ${wallet.name} with provider:`, wallet.provider);
+        
+        // Use the specific provider for this wallet
+        const accounts = await wallet.provider.request({ method: 'eth_requestAccounts' });
+        if (accounts.length > 0) {
+          // Switch to Base network if not already on it
+          try {
+            await wallet.provider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x2105' }], // Base mainnet
+            });
+          } catch (switchError) {
+            // If the chain doesn't exist, add it
+            if (switchError.code === 4902) {
+              await wallet.provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x2105',
+                  chainName: 'Base',
+                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org']
+                }]
+              });
+            }
+          }
+          
+          // Update wildWestWallet state
+          if (window.wildWestWallet) {
+            window.wildWestWallet.provider = wallet.provider;
+            window.wildWestWallet.account = accounts[0];
+            window.wildWestWallet.currentChain = 'base';
+            window.wildWestWallet.isConnected = true;
+            
+            // Update UI
+            if (window.wildWestWallet.updateWalletUI) {
+              window.wildWestWallet.updateWalletUI();
+            }
+          }
+          
+          // Close modal
+          document.querySelector('[style*="position: fixed"]').remove();
+          
+          console.log(`✅ ${wallet.name} connected successfully!`);
+        }
+      } else if (network === 'solana') {
+        const wallet = window.availableWallets.solana[walletIndex];
+        if (!wallet) {
+          throw new Error(`Wallet not found at index ${walletIndex}`);
+        }
+        
+        console.log(`📋 Connecting to ${wallet.name} with provider:`, wallet.provider);
+        
+        // Use the specific provider for this wallet
+        const response = await wallet.provider.connect();
+        
+        if (response && response.publicKey) {
+          // Update wildWestWallet state
+          if (window.wildWestWallet) {
+            window.wildWestWallet.provider = wallet.provider;
+            window.wildWestWallet.account = response.publicKey.toString();
+            window.wildWestWallet.currentChain = 'solana';
+            window.wildWestWallet.isConnected = true;
+            
+            // Update UI
+            if (window.wildWestWallet.updateWalletUI) {
+              window.wildWestWallet.updateWalletUI();
+            }
+          }
+          
+          // Close modal
+          document.querySelector('[style*="position: fixed"]').remove();
+          
+          console.log(`✅ ${wallet.name} connected successfully!`);
+        }
+      }
+    } catch (error) {
+      const walletName = network === 'ethereum' ? 
+        window.availableWallets.ethereum[walletIndex]?.name : 
+        window.availableWallets.solana[walletIndex]?.name;
+      console.error(`❌ ${walletName} connection failed:`, error);
+      alert(`${walletName} connection failed: ${error.message}`);
+    }
+  };
+  
+  // Initialize Secure Configuration System
+  console.log('🔒 Initializing secure configuration...');
+  if (window.SECURE_CONFIG) {
+    console.log('✅ SECURE_CONFIG already available');
+  } else {
+    console.log('⏳ Waiting for SECURE_CONFIG to load...');
+    // Wait a moment for SECURE_CONFIG to initialize, but don't block banner system
+    setTimeout(() => {
+      if (window.SECURE_CONFIG) {
+        console.log('✅ SECURE_CONFIG loaded successfully');
+      } else {
+        console.warn('⚠️ SECURE_CONFIG not available, using fallback configuration');
+      }
+    }, 100);
+  }
+  
+  // If SECURE_CONFIG is already available, initialize immediately
+  if (window.SECURE_CONFIG) {
+    initializeBannerSystem();
+  }
+  
+  // Debug functions for troubleshooting
+  window.debugTokenStatus = function() {
+    console.log('🔍 Token Debug Information:');
+    console.log('  - window.PRODUCTION_CONFIG exists:', !!window.PRODUCTION_CONFIG);
+    console.log('  - window.PRODUCTION_CONFIG.token exists:', !!(window.PRODUCTION_CONFIG && window.PRODUCTION_CONFIG.token));
+    console.log('  - window.PRODUCTION_CONFIG.environment:', window.PRODUCTION_CONFIG ? window.PRODUCTION_CONFIG.environment : 'N/A');
+    console.log('  - window.SECURE_CONFIG exists:', !!window.SECURE_CONFIG);
+    
+    if (window.SECURE_CONFIG) {
+      const githubConfig = window.SECURE_CONFIG.getGitHubConfig();
+      console.log('  - GitHub config:', githubConfig);
+      console.log('  - Token available in config:', !!githubConfig.token);
+      console.log('  - Token length:', githubConfig.token ? githubConfig.token.length : 0);
+      console.log('  - Repository:', `${githubConfig.owner}/${githubConfig.repo}`);
+    }
+    
+    return {
+      productionConfig: window.PRODUCTION_CONFIG,
+      secureConfig: window.SECURE_CONFIG ? window.SECURE_CONFIG.getGitHubConfig() : null
+    };
+  };
+  
+  window.testGitHubAccess = async function() {
+    console.log('🧪 Testing GitHub API access...');
+    
+    if (!window.SECURE_CONFIG) {
+      console.error('❌ SECURE_CONFIG not available');
+      return false;
+    }
+    
+    const githubConfig = window.SECURE_CONFIG.getGitHubConfig();
+    if (!githubConfig.token) {
+      console.error('❌ No GitHub token available for testing');
+      return false;
+    }
+    
+    try {
+      const testUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}`;
+      console.log('🌐 Testing access to:', testUrl);
+      
+      const response = await fetch(testUrl, {
+        headers: {
+          'Authorization': `token ${githubConfig.token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      
+      if (response.ok) {
+        const repoData = await response.json();
+        console.log('✅ GitHub API access successful!');
+        console.log('📊 Repository info:', {
+          name: repoData.name,
+          private: repoData.private,
+          permissions: repoData.permissions
+        });
+        return true;
+      } else {
+        console.error('❌ GitHub API access failed:', response.status, response.statusText);
+        if (response.status === 404) {
+          console.error('   Possible causes: Repository not found, token invalid, or insufficient permissions');
+        } else if (response.status === 401) {
+          console.error('   Possible causes: Invalid token or token expired');
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ GitHub API test error:', error);
+      return false;
+    }
+  };
+  
+  window.checkGitHubSecret = function() {
+    console.log('🔐 GitHub Secret Configuration Check:');
+    console.log('   The PERSONAL_ACCESS_TOKEN should be configured in:');
+    console.log('   https://github.com/cowboytbc/wildwest-launchpad/settings/secrets/actions');
+    console.log('');
+    console.log('🔧 To fix the token issue:');
+    console.log('   1. Go to GitHub repository settings');
+    console.log('   2. Navigate to Secrets and variables → Actions');
+    console.log('   3. Add a new secret named: PERSONAL_ACCESS_TOKEN');
+    console.log('   4. Value should be a GitHub Personal Access Token with repo permissions');
+    console.log('   5. Push a commit to trigger the workflow and inject the token');
+    console.log('');
+    console.log('🚀 After adding the secret, the next deployment will inject the token into token-config.js');
+  };
+  
+  window.manualTokenTest = function(token) {
+    if (!token) {
+      console.log('💡 Usage: manualTokenTest("your_github_token_here")');
+      console.log('   This will temporarily set the token for testing');
+      return;
+    }
+    
+    console.log('🧪 Setting temporary token for testing...');
+    
+    // Set token in multiple places for maximum compatibility
+    window.MANUAL_GITHUB_TOKEN = token;
+    
+    // Temporarily override the token
+    if (window.PRODUCTION_CONFIG) {
+      window.PRODUCTION_CONFIG.token = token;
+      window.PRODUCTION_CONFIG.environment = 'manual-test';
+    }
+    
+    // Update ENV_CONFIG if available
+    if (window.ENV_CONFIG && typeof window.ENV_CONFIG.updateFromSecureAPI === 'function') {
+      window.ENV_CONFIG.updateFromSecureAPI({
+        github: { token: token }
+      });
+    }
+    
+    // Force refresh of SECURE_CONFIG
+    if (window.SECURE_CONFIG) {
+      window.SECURE_CONFIG.config = null; // Clear cache
+      console.log('🔄 Cleared SECURE_CONFIG cache');
+    }
+    
+    console.log('✅ Temporary token set in multiple locations');
+    console.log('🔄 Try running testGitHubAccess() now');
+    console.log('🔄 Or refresh banners with: inspectBottomBanner()');
+  };
+  
+  window.inspectBottomBanner = function() {
+    console.log('🔍 Inspecting current bottom banner data...');
+    
+    if (!window.BANNER_CONFIG) {
+      console.error('❌ BANNER_CONFIG not available');
+      return;
+    }
+    
+    const bottomBanners = window.BANNER_CONFIG.BOTTOM_BANNERS;
+    const currentBottom = window.BANNER_CONFIG.getCurrentBanner('bottom');
+    
+    console.log('📊 Bottom Banners Cache:', bottomBanners);
+    console.log('📊 Current Bottom Banner:', currentBottom);
+    
+    if (bottomBanners && bottomBanners.length > 0) {
+      console.log('🔍 First bottom banner details:');
+      const firstBanner = bottomBanners[0];
+      console.log('  - filename:', firstBanner.filename);
+      console.log('  - projectName:', firstBanner.projectName);
+      console.log('  - link:', firstBanner.link);
+      console.log('  - linkUrl:', firstBanner.linkUrl);
+      console.log('  - position:', firstBanner.position);
+      console.log('  - isDefault:', firstBanner.isDefault);
+      console.log('  - imageUrl:', firstBanner.imageUrl?.substring(0, 50) + '...');
+    }
+    
+    return {
+      bottomBanners,
+      currentBottom,
+      bannerCount: bottomBanners?.length || 0
+    };
+  };
+  
+  // NOTE: Wallet connection code removed - now using unified-wallet-connection.js system
+  console.log('🎯 Index page: Using unified wallet connection system');
+});
+  </script>
+
+  <!-- Banner System Debugging Functions -->
+  <script>
+  // Simple banner debugging functions
+  window.checkBannerStorage = function() {
+    console.log('📦 Checking banner storage...');
+    try {
+      const topBanners = localStorage.getItem('wildwest_top_banners');
+      const bottomBanners = localStorage.getItem('wildwest_bottom_banners');
+      
+      console.log('📊 Banner System Stats:', {
+        topBanners: topBanners ? JSON.parse(topBanners).length : 0,
+        bottomBanners: bottomBanners ? JSON.parse(bottomBanners).length : 0
+      });
+      
+      if (topBanners) {
+        const parsed = JSON.parse(topBanners);
+        console.log('🔝 Top Banners:');
+        parsed.forEach((banner, index) => {
+          console.log(`  ${index + 1}. ${banner.projectName} (${banner.id})`);
+          console.log(`     Image: ${banner.imageUrl}`);
+          if (!banner.imageUrl || banner.imageUrl === 'undefined') {
+            console.warn(`     ⚠️ This banner has undefined imageUrl!`);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error:', error);
+    }
+  };
+  
+  window.cleanBannerStorage = function() {
+    console.log('🧹 Cleaning banner storage...');
+    try {
+      const topBanners = localStorage.getItem('wildwest_top_banners');
+      if (topBanners) {
+        const parsed = JSON.parse(topBanners);
+        const cleaned = parsed.filter(banner => banner.imageUrl && banner.imageUrl !== 'undefined');
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem('wildwest_top_banners', JSON.stringify(cleaned));
+          console.log(`✅ Removed ${parsed.length - cleaned.length} banners with undefined URLs`);
+          if (window.bannerRotationManager) {
+            window.bannerRotationManager.updateBanners();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error:', error);
+    }
+  };
+  
+  window.fixBannerUrl = function(bannerId, newImageUrl) {
+    console.log('🔧 Fixing banner URL...');
+    if (!bannerId || !newImageUrl) {
+      console.error('Usage: fixBannerUrl("banner_1752406742544", "https://github.com/...");');
+      return;
+    }
+    
+    try {
+      const topBanners = localStorage.getItem('wildwest_top_banners');
+      if (topBanners) {
+        const banners = JSON.parse(topBanners);
+        const bannerIndex = banners.findIndex(banner => banner.id === bannerId);
+        if (bannerIndex !== -1) {
+          banners[bannerIndex].imageUrl = newImageUrl;
+          localStorage.setItem('wildwest_top_banners', JSON.stringify(banners));
+          console.log('✅ Banner URL updated');
+          if (window.bannerRotationManager) {
+            window.bannerRotationManager.updateBanners();
+          }
+        } else {
+          console.error('❌ Banner not found');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error:', error);
+    }
+  };
+  
+  window.refreshBanners = function() {
+    console.log('🔄 Refreshing banners...');
+    if (window.bannerRotationManager) {
+      window.bannerRotationManager.updateBanners();
+      console.log('✅ Done');
+    } else {
+      console.error('❌ Banner manager not found');
+    }
+  };
+  
+  window.debugBannerClicks = function() {
+    console.log('🔍 Debugging banner click functionality...');
+    
+    // Check if banner rotation manager exists
+    if (!window.bannerRotationManager) {
+      console.error('❌ Banner rotation manager not found');
+      return;
+    }
+    
+    // Check current banners
+    const topBanner = window.BANNER_CONFIG.getCurrentBanner('top');
+    const bottomBanner = window.BANNER_CONFIG.getCurrentBanner('bottom');
+    
+    console.log('📊 Current Banner State:');
+    console.log('🔝 Top Banner:', {
+      projectName: topBanner?.projectName,
+      linkUrl: topBanner?.linkUrl,
+      isDefault: topBanner?.isDefault,
+      imageUrl: topBanner?.imageUrl
+    });
+    console.log('⬇️ Bottom Banner:', {
+      projectName: bottomBanner?.projectName,
+      linkUrl: bottomBanner?.linkUrl,
+      isDefault: bottomBanner?.isDefault,
+      imageUrl: bottomBanner?.imageUrl
+    });
+    
+    // Check if click handlers are properly attached
+    const topAdContent = document.querySelector('.top-ad .ad-content');
+    const bottomAdContent = document.querySelector('.bottom-ad .ad-content');
+    
+    console.log('🖱️ Click Handler Status:');
+    console.log('� Top banner click handler:', topAdContent?.onclick ? 'Attached' : 'Missing');
+    console.log('⬇️ Bottom banner click handler:', bottomAdContent?.onclick ? 'Attached' : 'Missing');
+    
+    // Test click functionality
+    console.log('🧪 To test banner clicks:');
+    console.log('1. Click on a banner and watch this console');
+    console.log('2. You should see "📊 Banner Click Tracked" messages');
+    console.log('3. If banner has linkUrl, a new tab should open');
+    
+    return {
+      topBanner: topBanner,
+      bottomBanner: bottomBanner,
+      topClickHandler: !!topAdContent?.onclick,
+      bottomClickHandler: !!bottomAdContent?.onclick
+    };
+  };
+  
+  console.log('�💡 Banner functions: checkBannerStorage(), cleanBannerStorage(), fixBannerUrl(), refreshBanners(), debugBannerClicks()');
+  </script>
+  
+  <script>
+  // Additional banner management functions
+  window.clearAllBanners = function() {
+    console.log('🧹 Clearing all banners...');
+    
+    try {
+      // Clear local storage
+      localStorage.removeItem('wildwest_top_banners');
+      localStorage.removeItem('wildwest_bottom_banners');
+      console.log('✅ Cleared local storage banners');
+      
+      // Clear banner cache in BANNER_CONFIG
+      if (window.BANNER_CONFIG) {
+        window.BANNER_CONFIG._bannerCache = {
+          top: [],
+          bottom: [],
+          lastFetch: 0
+        };
+        console.log('✅ Cleared banner cache');
+      }
+      
+      // Refresh banners to show default state
+      if (window.bannerRotationManager) {
+        window.bannerRotationManager.updateBanners();
+        console.log('✅ Refreshed banner display');
+      }
+      
+      console.log('🎯 All banners cleared! You can now create new banners.');
+      console.log('⚠️ Note: To permanently remove banners, you need to delete them from GitHub repository');
+      console.log('📍 Banner Storage: https://github.com/cowboytbc/wildwest-banner-storage');
+      
+    } catch (error) {
+      console.error('❌ Error clearing banners:', error);
+    }
+  };
+  
+  console.log('💡 Updated functions: clearAllBanners() - Clear all banners and cache');
+  
+  // Test banner click functionality
+  window.testBannerClick = function() {
+    console.log('🧪 Testing banner click functionality...');
+    
+    // Check if banner system is loaded
+    if (!window.BANNER_CONFIG) {
+      console.error('❌ BANNER_CONFIG not loaded');
+      return;
+    }
+    
+    if (!window.bannerRotationManager) {
+      console.error('❌ bannerRotationManager not loaded');
+      return;
+    }
+    
+    // Get current banners
+    const topBanner = window.BANNER_CONFIG.getCurrentBanner('top');
+    const bottomBanner = window.BANNER_CONFIG.getCurrentBanner('bottom');
+    
+    console.log('📊 Current Banner State:');
+    console.log('🔝 Top Banner:', topBanner);
+    console.log('⬇️ Bottom Banner:', bottomBanner);
+    
+    // Check click handlers
+    const topAdContent = document.querySelector('.top-ad .ad-content');
+    const bottomAdContent = document.querySelector('.bottom-ad .ad-content');
+    
+    console.log('🖱️ Click Handlers:');
+    console.log('🔝 Top onclick:', topAdContent?.onclick);
+    console.log('⬇️ Bottom onclick:', bottomAdContent?.onclick);
+    
+    // Simulate clicks if banners exist
+    if (topBanner && !topBanner.isDefault) {
+      console.log('🧪 Simulating top banner click...');
+      console.log('🔗 Should open:', topBanner.linkUrl);
+      console.log('🖱️ Click handler function:', topAdContent.onclick);
+      
+      // Try different ways to trigger the click
+      console.log('📋 Testing click methods:');
+      
+      // Method 1: Direct onclick call
+      if (topAdContent.onclick) {
+        console.log('  1️⃣ Calling onclick directly...');
+        try {
+          topAdContent.onclick();
+        } catch (error) {
+          console.error('  ❌ Direct onclick failed:', error);
+        }
+      }
+      
+      // Method 2: Manual click event
+      console.log('  2️⃣ Creating manual click event...');
+      try {
+        const clickEvent = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true
+        });
+        topAdContent.dispatchEvent(clickEvent);
+      } catch (error) {
+        console.error('  ❌ Manual click event failed:', error);
+      }
+      
+      // Method 3: Direct window.open test
+      console.log('  3️⃣ Testing direct window.open...');
+      try {
+        const testWindow = window.open(topBanner.linkUrl, '_blank');
+        if (testWindow) {
+          console.log('  ✅ Direct window.open succeeded');
+          setTimeout(() => testWindow.close(), 1000); // Close after 1 second
+        } else {
+          console.log('  ⚠️ Direct window.open was blocked');
+        }
+      } catch (error) {
+        console.error('  ❌ Direct window.open failed:', error);
+      }
+    }
+    
+    if (bottomBanner && !bottomBanner.isDefault) {
+      console.log('🧪 Simulating bottom banner click...');
+      console.log('🔗 Should open:', bottomBanner.linkUrl);
+      if (bottomAdContent?.onclick) {
+        bottomAdContent.onclick();
+      } else {
+        console.error('❌ Bottom banner click handler not found');
+      }
+    }
+    
+    return {
+      topBanner,
+      bottomBanner,
+      topClickHandler: !!topAdContent?.onclick,
+      bottomClickHandler: !!bottomAdContent?.onclick
+    };
+  };
+  
+  // Test URL parsing from banner filenames
+  window.testUrlParsing = function() {
+    console.log('🧪 Testing URL parsing from banner filenames...');
+    
+    // Test cases for URL encoding/decoding
+    const testCases = [
+      'github-com',
+      'example-com',
+      'my-site-net',
+      'google-com-search',
+      'github-com-user-repo',
+      'app-example-io-dashboard',
+      'subdomain-domain-com-path-to-page'
+    ];
+    
+    console.log('� Testing URL reconstruction:');
+    
+    testCases.forEach(testUrl => {
+      // Simulate the URL reconstruction logic from banner-config.js
+      let linkUrl = testUrl;
+      
+      if (testUrl.includes('-')) {
+        const urlSegments = testUrl.split('-');
+        
+        if (urlSegments.length >= 2) {
+          const lastSegment = urlSegments[urlSegments.length - 1];
+          const commonTlds = ['com', 'org', 'net', 'io', 'co', 'ai', 'xyz', 'app', 'dev', 'tech', 'me', 'ly', 'tv', 'gg'];
+          
+          if (commonTlds.includes(lastSegment)) {
+            const domainParts = urlSegments.slice(0, -1);
+            if (domainParts.length === 1) {
+              linkUrl = domainParts[0] + '.' + lastSegment;
+            } else {
+              linkUrl = domainParts.join('.') + '.' + lastSegment;
+            }
+          } else {
+            let domainEndIndex = -1;
+            for (let i = 0; i < urlSegments.length; i++) {
+              if (commonTlds.includes(urlSegments[i])) {
+                domainEndIndex = i;
+                break;
+              }
+            }
+            
+            if (domainEndIndex > 0) {
+              const domainParts = urlSegments.slice(0, domainEndIndex);
+              const tld = urlSegments[domainEndIndex];
+              const pathParts = urlSegments.slice(domainEndIndex + 1);
+              
+              linkUrl = domainParts.join('.') + '.' + tld;
+              if (pathParts.length > 0) {
+                linkUrl += '/' + pathParts.join('/');
+              }
+            } else {
+              linkUrl = urlSegments[0] + '.' + urlSegments.slice(1).join('/');
+            }
+          }
+        }
+      }
+      
+      if (!linkUrl.startsWith('http')) {
+        linkUrl = `https://${linkUrl}`;
+      }
+      
+      console.log(`${testUrl} → ${linkUrl}`);
+    });
+  };
+  
+  // Force refresh banner system with click handlers
+  window.refreshBannerSystem = function() {
+    console.log('� Force refreshing banner system...');
+    
+    if (!window.BANNER_CONFIG) {
+      console.error('❌ BANNER_CONFIG not loaded');
+      return;
+    }
+    
+    if (!window.bannerRotationManager) {
+      console.error('❌ bannerRotationManager not loaded');
+      return;
+    }
+    
+    // Clear cache first
+    window.BANNER_CONFIG._bannerCache = {
+      top: [],
+      bottom: [],
+      lastFetch: 0
+    };
+    
+    // Fetch fresh data from GitHub
+    return window.BANNER_CONFIG.fetchBanners()
+      .then(() => {
+        console.log('✅ Fresh banner data fetched');
+        
+        // Update banners with new data
+        window.bannerRotationManager.updateBanners();
+        
+        // Wait a moment for DOM updates, then verify click handlers
+        setTimeout(() => {
+          const topBanner = window.BANNER_CONFIG.getCurrentBanner('top');
+          const bottomBanner = window.BANNER_CONFIG.getCurrentBanner('bottom');
+          
+          console.log('🔝 Top banner after refresh:', topBanner);
+          console.log('⬇️ Bottom banner after refresh:', bottomBanner);
+          
+          // Check click handlers
+          const topAdContent = document.querySelector('.top-ad .ad-content');
+          const bottomAdContent = document.querySelector('.bottom-ad .ad-content');
+          
+          console.log('🖱️ Click handlers after refresh:');
+          console.log('🔝 Top:', topAdContent?.onclick ? 'Attached' : 'Missing');
+          console.log('⬇️ Bottom:', bottomAdContent?.onclick ? 'Attached' : 'Missing');
+          
+        }, 500);
+        
+        return true;
+      })
+      .catch(error => {
+        console.error('❌ Error refreshing banner system:', error);
+        return false;
+      });
+  };
+  
+  console.log('💡 Refresh function: refreshBannerSystem() - Force refresh with click handlers');
+  
+  // Force fetch banners from GitHub for testing
+  window.fetchGitHubBanners = async function() {
+    console.log('🔄 Fetching banners from GitHub...');
+    
+    if (!window.BANNER_CONFIG) {
+      console.error('❌ BANNER_CONFIG not loaded');
+      return;
+    }
+    
+    try {
+      const success = await window.BANNER_CONFIG.fetchBanners();
+      console.log('📡 GitHub fetch result:', success);
+      
+      // Check what banners we got
+      const topBanners = window.BANNER_CONFIG._bannerCache.top;
+      const bottomBanners = window.BANNER_CONFIG._bannerCache.bottom;
+      
+      console.log('📊 Fetched Banners:');
+      console.log('🔝 Top banners:', topBanners.length, topBanners);
+      console.log('⬇️ Bottom banners:', bottomBanners.length, bottomBanners);
+      
+      // Update the display
+      if (window.bannerRotationManager) {
+        window.bannerRotationManager.updateBanners();
+        console.log('✅ Updated banner display');
+      }
+      
+      return { topBanners, bottomBanners };
+    } catch (error) {
+      console.error('❌ Error fetching banners:', error);
+      return null;
+    }
+  };
+  
+  console.log('💡 Additional functions: fetchGitHubBanners() - Force fetch banners from GitHub');
+  
+  // Direct banner test without dependencies
+  window.testBannerDirect = async function() {
+    console.log('🧪 Testing banner system directly...');
+    
+    try {
+      // Test direct GitHub API call
+      const topResponse = await fetch('https://api.github.com/repos/cowboytbc/wildwest-banner-storage/contents/banners/top');
+      const bottomResponse = await fetch('https://api.github.com/repos/cowboytbc/wildwest-banner-storage/contents/banners/bottom');
+      
+      if (topResponse.ok) {
+        const topFiles = await topResponse.json();
+        const topBanners = topFiles.filter(file => file.type === 'file' && file.name.endsWith('.jpg'));
+        console.log('✅ Found', topBanners.length, 'top banners');
+        
+        if (topBanners.length > 0) {
+          const banner = topBanners[0];
+          console.log('📷 Top banner:', banner.name);
+          console.log('🔗 Download URL:', banner.download_url);
+          
+          // Try to display the banner
+          const topAdContent = document.querySelector('.top-ad .ad-content');
+          if (topAdContent) {
+            topAdContent.innerHTML = `
+              <div style="width: 100%; height: 100%; background-image: url('${banner.download_url}'); background-size: cover; background-position: center; border-radius: 15px;">
+                <div style="position: absolute; bottom: 5px; right: 10px; background: rgba(0,0,0,0.7); color: #00eaff; padding: 2px 8px; border-radius: 4px; font-size: 0.7em;">
+                  Test Banner
+                </div>
+              </div>
+            `;
+            console.log('✅ Top banner displayed successfully');
+          }
+        }
+      }
+      
+      if (bottomResponse.ok) {
+        const bottomFiles = await bottomResponse.json();
+        const bottomBanners = bottomFiles.filter(file => file.type === 'file' && file.name.endsWith('.jpg'));
+        console.log('✅ Found', bottomBanners.length, 'bottom banners');
+        
+        if (bottomBanners.length > 0) {
+          const banner = bottomBanners[0];
+          console.log('📷 Bottom banner:', banner.name);
+          console.log('🔗 Download URL:', banner.download_url);
+          
+          // Try to display the banner
+          const bottomAdContent = document.querySelector('.bottom-ad .ad-content');
+          if (bottomAdContent) {
+            bottomAdContent.innerHTML = `
+              <div style="width: 100%; height: 100%; background-image: url('${banner.download_url}'); background-size: cover; background-position: center; border-radius: 15px;">
+                <div style="position: absolute; bottom: 5px; right: 10px; background: rgba(0,0,0,0.7); color: #00eaff; padding: 2px 8px; border-radius: 4px; font-size: 0.7em;">
+                  Test Banner
+                </div>
+              </div>
+            `;
+            console.log('✅ Bottom banner displayed successfully');
+          }
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ Direct banner test failed:', error);
+    }
+  };
+  
+  console.log('🧪 Direct test function: testBannerDirect() - Test banners without dependencies');
+  
+  // Test URL encoding/decoding for banners
+  window.testUrlEncoding = function() {
+    console.log('🧪 Testing URL encoding/decoding for banner filenames...');
+    
+    const testUrls = [
+      'https://example.com',
+      'https://app.example.com',
+      'https://example.com/page',
+      'https://subdomain.example.io',
+      'https://wildwestlaunchpad.com',
+      'https://docs.example.com/api/v1'
+    ];
+    
+    testUrls.forEach(originalUrl => {
+      // Simulate the encoding process from banner-admin.html
+      let sanitizedUrl = originalUrl
+        .replace(/^https?:\/\//, '') // Remove protocol
+        .replace(/\//g, '-') // Replace slashes with hyphens
+        .replace(/[^a-z0-9.-]/gi, '-') // Replace other special chars with hyphens
+        .replace(/-+/g, '-') // Remove multiple consecutive hyphens
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+      
+      // Simulate the decoding process from banner-config.js
+      let reconstructedUrl = sanitizedUrl;
+      
+      if (sanitizedUrl.includes('-')) {
+        const urlSegments = sanitizedUrl.split('-');
+        
+        if (urlSegments.length >= 2) {
+          const lastSegment = urlSegments[urlSegments.length - 1];
+          
+          // If last segment looks like a TLD
+          if (['com', 'org', 'net', 'io', 'co', 'ai', 'xyz', 'app', 'dev'].includes(lastSegment)) {
+            const domain = urlSegments.slice(0, -1).join('.') + '.' + lastSegment;
+            reconstructedUrl = domain;
+          } else {
+            reconstructedUrl = urlSegments[0] + '.' + urlSegments.slice(1).join('/');
+          }
+        }
+      }
+      
+      if (!reconstructedUrl.startsWith('http')) {
+        reconstructedUrl = `https://${reconstructedUrl}`;
+      }
+      
+      console.log(`🔗 ${originalUrl}`);
+      console.log(`   📝 Encoded: ${sanitizedUrl}`);
+      console.log(`   🔄 Decoded: ${reconstructedUrl}`);
+      console.log(`   ✅ Match: ${originalUrl === reconstructedUrl ? 'YES' : 'NO'}`);
+      console.log('');
+    });
+  };
+  
+  console.log('💡 URL testing: testUrlEncoding() - Test URL encoding/decoding for banners');
+  
+  // Manual banner system test function
+  window.testBannerSystemManual = async function() {
+    console.log('🧪 Manual Banner System Test...');
+    console.log('🔍 Step 1: Checking dependencies...');
+    console.log('  - window.BANNER_CONFIG exists:', !!window.BANNER_CONFIG);
+    console.log('  - window.bannerRotationManager exists:', !!window.bannerRotationManager);
+    
+    if (!window.BANNER_CONFIG || !window.bannerRotationManager) {
+      console.error('❌ Banner dependencies missing - cannot proceed');
+      return;
+    }
+    
+    console.log('🔍 Step 2: Testing GitHub API access...');
+    try {
+      const testUrl = 'https://api.github.com/repos/cowboytbc/wildwest-banner-storage/contents/banners/top';
+      console.log('📡 Testing URL:', testUrl);
+      
+      const response = await fetch(testUrl);
+      console.log('📊 API Response Status:', response.status, response.statusText);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ API Response Success - Found files:', data.length);
+        if (data.length > 0) {
+          console.log('📄 Sample files:', data.slice(0, 3).map(f => f.name));
+        }
+      } else {
+        const errorText = await response.text();
+        console.error('❌ API Response Error:', errorText);
+      }
+    } catch (apiError) {
+      console.error('❌ API Request Failed:', apiError);
+    }
+    
+    console.log('🔍 Step 3: Testing banner config fetch...');
+    try {
+      const fetchResult = await window.BANNER_CONFIG.fetchBanners();
+      console.log('📊 fetchBanners() result:', fetchResult);
+      
+      const topBanners = window.BANNER_CONFIG.TOP_BANNERS;
+      const bottomBanners = window.BANNER_CONFIG.BOTTOM_BANNERS;
+      console.log('📊 Loaded banners:', { 
+        top: topBanners.length, 
+        bottom: bottomBanners.length 
+      });
+      
+      if (topBanners.length > 0) {
+        console.log('🔝 Top banners:', topBanners.map(b => b.projectName));
+      }
+      if (bottomBanners.length > 0) {
+        console.log('⬇️ Bottom banners:', bottomBanners.map(b => b.projectName));
+      }
+    } catch (fetchError) {
+      console.error('❌ Banner fetch failed:', fetchError);
+    }
+    
+    console.log('🔍 Step 4: Testing banner rotation manager...');
+    try {
+      if (!window.bannerRotationManager.isInitialized) {
+        console.log('🚀 Initializing banner rotation manager...');
+        await window.bannerRotationManager.init();
+        console.log('✅ Banner rotation manager initialized');
+      } else {
+        console.log('✅ Banner rotation manager already initialized');
+      }
+      
+      // Force update banners
+      window.bannerRotationManager.updateBanners();
+      console.log('🔄 Banners updated');
+      
+    } catch (managerError) {
+      console.error('❌ Banner rotation manager failed:', managerError);
+    }
+    
+    console.log('🏁 Manual banner system test complete');
+  };
+  
+  // Add a test function to create sample banners for demonstration
+  window.createTestBanners = function() {
+    console.log('🧪 Creating test banners...');
+    
+    const testTopBanner = {
+      id: 'test-top-1',
+      projectName: 'CryptoCoin Demo',
+      imageUrl: 'https://via.placeholder.com/1500x200/ff6b6b/ffffff?text=CRYPTOCOIN+DEMO+-+TEST+BANNER',
+      linkUrl: 'https://example-crypto.com',
+      position: 'top',
+      duration: 7,
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      isDefault: false
+    };
+    
+    const testBottomBanner = {
+      id: 'test-bottom-1', 
+      projectName: 'NFT Project Demo',
+      imageUrl: 'https://via.placeholder.com/1500x200/4ecdc4/ffffff?text=NFT+PROJECT+DEMO+-+TEST+BANNER',
+      linkUrl: 'https://example-nft.com',
+      position: 'bottom',
+      duration: 3,
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      isDefault: false
+    };
+    
+    // Store in localStorage
+    localStorage.setItem('wildwest_top_banners', JSON.stringify([testTopBanner]));
+    localStorage.setItem('wildwest_bottom_banners', JSON.stringify([testBottomBanner]));
+    
+    console.log('✅ Test banners created and stored');
+    
+    // Update banner display
+    if (window.bannerRotationManager) {
+      window.bannerRotationManager.updateBanners();
+      console.log('🔄 Banner display updated');
+    }
+    
+    alert('🎉 Test banners created! You should see them displayed now.');
+  };
+  
+  window.clearTestBanners = function() {
+    localStorage.removeItem('wildwest_top_banners');
+    localStorage.removeItem('wildwest_bottom_banners');
+    
+    if (window.bannerRotationManager) {
+      window.bannerRotationManager.updateBanners();
+    }
+    
+    console.log('🧹 Test banners cleared');
+    alert('🧹 Test banners cleared! Back to default "Advertise Here" banners.');
+  };
+  
+  // GitHub Token Helper for Development
+  window.setGitHubToken = function(token) {
+    window.DEV_GITHUB_TOKEN = token;
+    console.log('✅ GitHub token set for development');
+    console.log('🔄 Refreshing banner system...');
+    if (window.bannerRotationManager) {
+      window.bannerRotationManager.init();
+    }
+  };
+
+  // Debug GitHub API
+  window.debugGitHubAPI = async function() {
+    console.log('🔍 Debugging GitHub API connection...');
+    
+    const config = window.SECURE_CONFIG.getGitHubConfig();
+    console.log('📊 GitHub Config:', {
+      owner: config.owner,
+      repo: config.repo,
+      folder: config.folder,
+      hasToken: !!config.token,
+      tokenLength: config.token ? config.token.length : 0
+    });
+    
+    if (!config.token) {
+      console.error('❌ No GitHub token found');
+      return;
+    }
+    
+    try {
+      const apiUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${config.folder}`;
+      console.log('🌐 Testing API URL:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `token ${config.token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      
+      console.log('📡 API Response Status:', response.status, response.statusText);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ API Success! Found files:', data.length);
+        data.forEach(file => {
+          console.log(`  📄 ${file.name} (${file.type})`);
+        });
+      } else {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+      }
+    } catch (error) {
+      console.error('❌ API Request Failed:', error);
+    }
+  };
+  
+  console.log('🧪 Test functions available:');
+  console.log('  createTestBanners() - Add sample banners');
+  console.log('  clearTestBanners() - Remove test banners');
+  console.log('  setGitHubToken("token") - Set GitHub token for real banners');
+  console.log('  debugGitHubAPI() - Debug GitHub API connection');
+  console.log('  deleteBottomBanners() - Delete all bottom banners');
+  console.log('  forceRefreshBanners() - Force refresh banner cache');
+  
+  // Debug function to inspect current banner data
+  window.inspectBottomBanner = function() {
+    console.log('🔍 Inspecting current bottom banner data...');
+    
+    const currentBanner = window.BANNER_CONFIG.getCurrentBanner('bottom');
+    console.log('📊 Current Bottom Banner:', currentBanner);
+    
+    const allBottomBanners = window.BANNER_CONFIG.BOTTOM_BANNERS;
+    console.log('📚 All Bottom Banners:', allBottomBanners);
+    
+    if (allBottomBanners.length > 0) {
+      console.log('🔍 First Bottom Banner Details:');
+      const firstBanner = allBottomBanners[0];
+      console.log('  - Project Name:', firstBanner.projectName);
+      console.log('  - Link:', firstBanner.link);
+      console.log('  - Link URL:', firstBanner.linkUrl);
+      console.log('  - Filename:', firstBanner.filename);
+      console.log('  - Is Default:', firstBanner.isDefault);
+      console.log('  - Full Object:', firstBanner);
+    }
+    
+    return {
+      current: currentBanner,
+      all: allBottomBanners
+    };
+  };
+  
+  console.log('  inspectBottomBanner() - Inspect bottom banner data');
+  </script>
+
+  <!-- Copyright Footer -->
+  <footer style="
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 1px solid rgba(0, 234, 255, 0.2);
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: #c0c0c0;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+  ">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 1.5rem;">
+        <span style="color: #00eaff; font-weight: 600; font-size: 1.1rem;">WILDWEST LAUNCHPAD</span>
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="margin-bottom: 1rem;">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
+          background: linear-gradient(135deg, #0088cc, #00aaff);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          TELEGRAM
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
+          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          X
+        </a>
+      </div>
+      
+      <!-- $WILDW Token Contract Address -->
+      <div style="margin-bottom: 1rem; font-size: 0.85rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <span style="color: #ffae00; font-weight: 600;">$WILDW TOKEN (BASE):</span>
+        </div>
+        <span style="color: #c0c0c0; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">
+          0x8129609E5303910464FCe3022a809fA44455Fe9A
+        </span>
+      </div>
+      
+      <div style="margin-bottom: 0.5rem;">
+        &copy; 2025 Wild West Launchpad. All rights reserved.
+      </div>
+    </div>
+  </footer>
+  
+</body>
+</html>

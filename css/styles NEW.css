@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@700&family=Orbitron:wght@700&display=swap');
+
+/* ========== DROPDOWNS ========== */
+.launch-token-dropdown,
+.staking-dropdown,
+.token-locking-dropdown,
+.wallet-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.launch-token-menu,
+.staking-menu,
+.token-locking-menu,
+.wallet-dropdown-menu,
+.wallet-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #18122B;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px #00f0ff44;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 200;
+  min-width: 150px;
+}
+
+.launch-token-menu li,
+.staking-menu li,
+.token-locking-menu li {
+  list-style: none;
+}
+
+.launch-token-menu a,
+.staking-menu a,
+.token-locking-menu a,
+.wallet-dropdown-menu button,
+.wallet-option {
+  display: block;
+  padding: 12px 20px;
+  font-size: 1em;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.launch-token-menu a:hover,
+.staking-menu a:hover,
+.token-locking-menu a:hover {
+  background: rgba(0, 234, 255, 0.2);
+  color: #00eaff;
+}
+
+.wallet-dropdown-menu button:hover,
+.wallet-option:hover {
+  background: #00f0ff22;
+  color: #00f0ff;
+}
+
+/* JS toggle */
+.dropdown-menu.show {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  z-index: 999999 !important;
+}
+
+/* Backdrop for mobile */
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 999998;
+  display: none;
+}
+.dropdown-backdrop.show { display: block; }
+
+/* Close button */
+.mobile-close-btn {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #00eaff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+}
+
+/* ========== BUTTONS ========== */
+.connect-btn,
+.mobile-wallet-button,
+.switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.connect-btn {
+  background: #3498db;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 20px;
+}
+.connect-btn.connected { background: #27ae60; }
+.connect-btn:hover { background: #217dbb; }
+
+.mobile-wallet-button {
+  background: linear-gradient(135deg, #00eaff, #0088cc);
+  color: #fff;
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 14px;
+  margin-left: 10px;
+  box-shadow: 0 4px 15px rgba(0,234,255,0.3);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-wallet-button:hover { transform: translateY(-2px); }
+.mobile-wallet-button:active { transform: scale(0.95); }
+
+.switch-btn {
+  gap: 10px;
+  border-radius: 20px;
+  padding: 10px 28px 10px 16px;
+  font-size: 1.1em;
+  min-width: 180px;
+  box-shadow: 0 0 16px 2px #00f0ff44;
+  background: linear-gradient(90deg, #18122B 60%, #00f0ff 100%);
+}
+.switch-btn.connected {
+  background: linear-gradient(90deg, #18122B 60%, #ff00cc 100%);
+  box-shadow: 0 0 24px 4px #ff00cc44;
+}
+
+/* Chain indicator */
+.chain-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  margin-right: 8px;
+}
+.switch-btn.evm .chain-indicator { background: #00f0ff; }
+.switch-btn.solana .chain-indicator { background: #ff00cc; }
+.switch-btn.disconnected .chain-indicator { background: #e74c3c; }
+
+/* ========== GENERAL ========== */
+body {
+  margin: 0;
+  font-family: 'Orbitron', Arial, sans-serif;
+  background: linear-gradient(135deg, #18122B 0%, #2D3250 100%);
+  color: #fff;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 32px 20px;
+  background: rgba(24,18,43,0.95);
+  box-shadow: 0 4px 32px #00f0ff33;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.wildwest {
+  font-family: 'Stardos Stencil', serif;
+  font-size: 2.5em;
+  letter-spacing: 2px;
+  color: #00f0ff;
+  text-shadow: 0 0 16px #00f0ff, 0 0 32px #00f0ff88, 2px 2px 0 #18122B;
+  margin-right: 10px;
+}
+
+.logo .subtitle {
+  font-size: 1.1em;
+  color: #fff;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px #ff00cc, 0 0 16px #00f0ff;
+  font-weight: 700;
+  margin-left: 8px;
+}

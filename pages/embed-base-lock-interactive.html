@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WILDWEST Base Lock Widget - Interactive</title>
+  <link rel="icon" type="image/png" href="../images/locked.png">
+  <!-- Console Filter - Universal console control -->
+  <script src="../js/console-filter.js"></script>
+  <!-- Legal Disclaimer System - Must load first for compliance -->
+  <script src="../js/legal-disclaimer.js"></script>
+  <!-- Core wallet dependencies -->
+  <script src="../js/wallet.js"></script>
+  <!-- Mobile Wallet Integration - Clean mobile experience -->
+  <script src="../js/mobile-wallet-detector.js"></script>
+  <script src="../js/mobile-wallet-integration.js"></script>
+  <!-- Production Configuration (GitHub Secrets injection) -->
+  <script src="../js/production-config.js"></script>
+  <!-- Development Configuration (Fallback endpoints for mobile/wallet browsers) -->
+  <script src="../js/dev-config.js"></script>
+  <script src="../js/rpc-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="../js/multi-wallet-manager.js"></script>
+  <script src="../js/wallet.js"></script>
+  <!-- Unified wallet connection system (fixes all connection issues) -->
+  <script src="../js/unified-wallet-connection.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-transform: uppercase;
+      color: #e6eaf3;
+      min-width: 0;
+    }
+    .widget-container {
+      background: linear-gradient(135deg, rgba(30,34,44,0.96) 60%, rgba(76,108,255,0.10) 100%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px #000a, 0 1.5px 8px #23272f88;
+      padding: 38px 22px 22px 22px;
+      width: 360px;
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      backdrop-filter: blur(7px) saturate(1.3);
+      border: 2.5px solid #4e6edb55;
+      transition: box-shadow 0.2s, border 0.2s;
+      overflow: hidden;
+      animation: widgetFadeIn 0.7s cubic-bezier(.4,2,.6,1) 1;
+      box-sizing: border-box;
+    }
+    @keyframes widgetFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .wildwest-label {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #6c8cff 0%, #4e6edb 100%);
+      color: #fff;
+      font-size: 1.02em;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+      border-radius: 8px;
+      padding: 5px 18px 4px 18px;
+      box-shadow: 0 2px 8px #6c8cff33;
+      z-index: 3;
+      text-align: center;
+      text-shadow: 0 2px 8px #0004, 0 1px 0 #23272f88;
+      border: 1.5px solid #232b3a;
+      user-select: text;
+    }
+    .lock-img {
+      position: relative;
+      display: block;
+      margin: 32px auto 0 auto;
+      width: 56px;
+      height: 56px;
+      aspect-ratio: 1/1;
+      border-radius: 14px;
+      object-fit: cover;
+      filter: drop-shadow(0 4px 24px #6c8cff66) drop-shadow(0 1px 8px #0006);
+      background: #232b3a;
+      border: 3px solid #6c8cff;
+      z-index: 2;
+      box-shadow: 0 2px 12px #6c8cff33;
+      transition: border 0.2s;
+      top: 0;
+      left: 0;
+      transform: none;
+    }
+    .lock-title {
+      font-size: 1.18em;
+      font-weight: 800;
+      margin-top: 18px;
+      margin-bottom: 6px;
+      text-align: center;
+      color: #e6eaf3;
+      letter-spacing: 0.04em;
+      text-shadow: 0 2px 8px #0004, 0 1px 0 #23272f88;
+      word-break: break-word;
+    }
+    .lock-info {
+      font-size: 1.08em;
+      margin-bottom: 2px;
+      color: #b8c0d0;
+      text-align: center;
+      font-weight: 600;
+    }
+    .lock-status {
+      font-size: 1.08em;
+      margin-top: 10px;
+      font-weight: 700;
+      text-align: center;
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #232b3a 60%, #4e6edb22 100%);
+      box-shadow: 0 2px 8px #6c8cff22;
+      letter-spacing: 0.08em;
+      border: 1.5px solid #353a45;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      margin-bottom: 2px;
+    }
+    .lock-status.locked {
+      color: #6c8cff;
+      border-color: #6c8cff55;
+      background: linear-gradient(90deg, #232b3a 60%, #4e6edb22 100%);
+    }
+    .lock-status.claimable {
+      color: #00e676;
+      border-color: #00e67699;
+      background: linear-gradient(90deg, #232b3a 60%, #00e67622 100%);
+      box-shadow: 0 0 16px #00e67655, 0 2px 8px #6c8cff22;
+      animation: claimGlow 1.2s infinite alternate;
+    }
+    @keyframes claimGlow {
+      from { box-shadow: 0 0 16px #00e67655, 0 2px 8px #6c8cff22; }
+      to { box-shadow: 0 0 32px #00e676cc, 0 2px 8px #6c8cff22; }
+    }
+    .lock-status.claimed {
+      color: #b8c0d0;
+      border-color: #6c6c6c55;
+      background: linear-gradient(90deg, #232b3a 60%, #6c6c6c22 100%);
+      text-decoration: line-through;
+    }
+    
+    /* Wallet Connect Styles */
+    .wallet-section {
+      margin-top: 12px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .connect-btn {
+      background: linear-gradient(90deg, #6c8cff 0%, #4e6edb 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.9em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px #6c8cff33;
+    }
+    .connect-btn:hover {
+      background: linear-gradient(90deg, #4e6edb 0%, #6c8cff 100%);
+      box-shadow: 0 4px 16px #6c8cff55;
+    }
+    .connect-btn:disabled {
+      background: #353a45;
+      color: #888;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .wallet-info {
+      font-size: 0.8em;
+      color: #b8c0d0;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .claim-btn {
+      background: linear-gradient(90deg, #00e676 0%, #00c853 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px #00e67633;
+      animation: claimPulse 2s infinite alternate;
+    }
+    .claim-btn:hover {
+      background: linear-gradient(90deg, #00c853 0%, #00e676 100%);
+      box-shadow: 0 4px 16px #00e67655;
+    }
+    .claim-btn:disabled {
+      background: #353a45;
+      color: #888;
+      cursor: not-allowed;
+      box-shadow: none;
+      animation: none;
+    }
+    @keyframes claimPulse {
+      from { box-shadow: 0 2px 8px #00e67633; }
+      to { box-shadow: 0 4px 16px #00e67655, 0 0 20px #00e67644; }
+    }
+    .basescan-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.85em;
+      color: #fff;
+      background: linear-gradient(90deg, #6c8cff 0%, #4e6edb 100%);
+      border-radius: 6px;
+      padding: 6px 14px;
+      text-decoration: none;
+      font-weight: 700;
+      box-shadow: 0 2px 8px #6c8cff33;
+      border: none;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+      letter-spacing: 0.04em;
+    }
+    .basescan-link:hover {
+      background: linear-gradient(90deg, #4e6edb 0%, #6c8cff 100%);
+      box-shadow: 0 4px 12px #6c8cff55;
+    }
+    .error-msg {
+      color: #ff6b6b;
+      font-size: 0.8em;
+      text-align: center;
+      margin-top: 4px;
+      text-transform: none;
+    }
+    .success-msg {
+      color: #00e676;
+      font-size: 0.8em;
+      text-align: center;
+      margin-top: 4px;
+      text-transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="wildwest-label">BASE LOCK</div>
+    <img src="../images/locked.png" alt="Lock" class="lock-img" onerror="this.style.display='none'">
+    <div class="lock-title" id="lockName">Loading...</div>
+    <div class="lock-info" id="lockRole" style="color:#dc267f;font-weight:600;"></div>
+    <div class="lock-info" id="lockAmount"></div>
+    <div class="lock-info" id="lockBeneficiary"></div>
+    <div class="lock-info" id="lockToken"></div>
+    <div class="lock-info" id="lockUnlock"></div>
+    <div class="lock-status" id="lockStatus"></div>
+    
+    <div class="wallet-section">
+      <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+      <div class="wallet-info" id="walletInfo"></div>
+      <button class="claim-btn" id="claimBtn" onclick="claimTokens()" style="display:none;">Claim Tokens</button>
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="success-msg" id="successMsg"></div>
+    </div>
+    
+    <a href="#" target="_blank" class="basescan-link" id="basescanLink">View on BaseScan</a>
+  </div>
+
+  <script>
+    // Local storage key for tracking created locks
+    const CREATED_LOCKS_KEY = 'wildwest_created_locks_base';
+    const FACTORY_ADDRESS = "0xaaDf8d2919C824BD5573e19F43D7a6aFe4867b56";
+    
+    // Function to track a newly created lock
+    function trackCreatedLock(lockAddress, creatorAddress) {
+      console.log('💾 BASE WIDGET: TRACKING NEW LOCK CREATION:');
+      console.log(`   Lock Address: ${lockAddress}`);
+      console.log(`   Creator: ${creatorAddress}`);
+      
+      try {
+        const existing = JSON.parse(localStorage.getItem(CREATED_LOCKS_KEY) || '{}');
+        const lockCount = Object.keys(existing).length;
+        console.log(`   Previous tracked locks: ${lockCount}`);
+        
+        existing[lockAddress] = creatorAddress;
+        localStorage.setItem(CREATED_LOCKS_KEY, JSON.stringify(existing));
+        
+        const newLockCount = Object.keys(existing).length;
+        console.log(`   Updated tracked locks: ${newLockCount}`);
+        console.log('✅ BASE WIDGET: Lock successfully tracked in local storage');
+        
+        // Log all tracked locks for debugging
+        console.log('📋 BASE WIDGET: All tracked locks:');
+        Object.entries(existing).forEach(([lock, creator], index) => {
+          console.log(`   ${index + 1}. ${lock} → ${creator}`);
+        });
+        
+      } catch (err) {
+        console.error('❌ BASE WIDGET: Error tracking created lock:', err);
+        console.error('   Error type:', err.constructor.name);
+        console.error('   Error message:', err.message);
+      }
+    }
+    
+    // Function to check if current user created a lock (from local storage)
+    function isLockCreatedLocally(lockAddress, userAddress) {
+      console.log('🔍 BASE WIDGET: Checking local storage for lock creation:');
+      console.log(`   Lock Address: ${lockAddress}`);
+      console.log(`   User Address: ${userAddress || 'null'}`);
+      
+      if (!userAddress) {
+        console.log('   └─ No user address provided');
+        return false;
+      }
+      
+      try {
+        const existing = JSON.parse(localStorage.getItem(CREATED_LOCKS_KEY) || '{}');
+        const lockCount = Object.keys(existing).length;
+        console.log(`   Total tracked locks in storage: ${lockCount}`);
+        
+        const storedCreator = existing[lockAddress];
+        const isMatch = storedCreator && storedCreator.toLowerCase() === userAddress.toLowerCase();
+        
+        console.log(`   Stored creator for this lock: ${storedCreator || 'null'}`);
+        console.log(`   Creator matches current user: ${isMatch}`);
+        
+        return isMatch;
+      } catch (err) {
+        console.error('❌ BASE WIDGET: Error checking local created locks:', err);
+        return false;
+      }
+    }
+
+    // Function to find the creator of a lock by analyzing creation transaction
+    async function findLockCreator(lockAddress, provider) {
+      console.log('🔍 BASE WIDGET: CREATOR DETECTION START for lock:', lockAddress);
+      
+      try {
+        // Get lock contract info first
+        console.log('📡 BASE WIDGET: Fetching lock contract info...');
+        const lockContract = new ethers.Contract(lockAddress, LOCK_ABI, provider);
+        
+        // Get creation transaction by looking for contract deployment
+        console.log('📥 BASE WIDGET: Searching for creation transaction...');
+        
+        // Method 1: Try to get creation transaction hash from factory events
+        console.log('🏭 BASE WIDGET: METHOD 1: Checking factory events...');
+        
+        try {
+          const factoryAbi = [
+            "event LockCreated(address indexed lockAddress, address indexed token, address indexed beneficiary, uint256 releaseTime, uint256 amount, string lockName, address creator)"
+          ];
+          const factory = new ethers.Contract(FACTORY_ADDRESS, factoryAbi, provider);
+          
+          // Look for LockCreated events with this lock address
+          const filter = factory.filters.LockCreated(lockAddress);
+          const events = await factory.queryFilter(filter);
+          
+          console.log(`📊 BASE WIDGET: Found ${events.length} creation events for this lock`);
+          
+          if (events.length > 0) {
+            const event = events[0]; // Take the first (and should be only) event
+            const creator = event.args.creator;
+            
+            console.log('🎯 BASE WIDGET: Creator found from factory event:', creator);
+            console.log(`   Event block: ${event.blockNumber}`);
+            console.log(`   Transaction hash: ${event.transactionHash}`);
+            
+            return creator;
+          } else {
+            console.log('❌ BASE WIDGET: No creation events found in factory');
+          }
+        } catch (factoryError) {
+          console.log('⚠️ BASE WIDGET: Factory event lookup failed:', factoryError.message);
+        }
+        
+        // Method 2: Analyze creation transaction directly
+        console.log('📜 BASE WIDGET: METHOD 2: Analyzing contract creation...');
+        
+        try {
+          // Get contract code to confirm it exists
+          const code = await provider.getCode(lockAddress);
+          if (code === '0x') {
+            console.log('❌ BASE WIDGET: Lock address is not a contract');
+            return null;
+          }
+          
+          console.log('✅ BASE WIDGET: Lock contract confirmed');
+          console.log('🔍 BASE WIDGET: Note: Direct creation transaction analysis requires additional RPC calls');
+          console.log('   └─ For widget performance, relying on factory events or local storage');
+          
+        } catch (codeError) {
+          console.log('❌ BASE WIDGET: Error checking contract code:', codeError.message);
+        }
+        
+        console.log('🔍 BASE WIDGET: CREATOR DETECTION END: Limited success');
+        return null;
+        
+      } catch (error) {
+        console.error('❌ BASE WIDGET: Error in findLockCreator:', error);
+        console.error('   Error type:', error.constructor.name);
+        console.error('   Error message:', error.message);
+        if (error.stack) {
+          console.error('   Stack trace:', error.stack);
+        }
+        console.log('🔍 BASE WIDGET: CREATOR DETECTION END: Error occurred');
+        return null;
+      }
+    }
+
+    // Lock ABI - minimal for demo
+    const LOCK_ABI = [
+      {"constant":true,"inputs":[],"name":"lockName","outputs":[{"name":"","type":"string"}],"type":"function"},
+      {"constant":true,"inputs":[],"name":"amount","outputs":[{"name":"","type":"uint256"}],"type":"function"},
+      {"constant":true,"inputs":[],"name":"releaseTime","outputs":[{"name":"","type":"uint256"}],"type":"function"},
+      {"constant":true,"inputs":[],"name":"released","outputs":[{"name":"","type":"bool"}],"type":"function"},
+      {"constant":true,"inputs":[],"name":"token","outputs":[{"name":"","type":"address"}],"type":"function"},
+      {"constant":true,"inputs":[],"name":"beneficiary","outputs":[{"name":"","type":"address"}],"type":"function"},
+      {"constant":false,"inputs":[],"name":"release","outputs":[],"type":"function"}
+    ];
+
+    // Get lock address from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const lockAddr = urlParams.get('lock');
+    
+    let provider = null;
+    let signer = null;
+    let userAddress = null;
+    let lockData = null;
+
+    // Connect to wallet using centralized wallet.js
+    async function connectWallet() {
+      try {
+        // Use centralized wallet.js with 'base' parameter
+        const connected = await window.wildWestWallet.connectWallet('base');
+        if (connected) {
+          provider = window.wildWestWallet.provider;
+          signer = window.wildWestWallet.signer;
+          userAddress = window.wildWestWallet.account;
+          
+          updateWalletUI();
+          checkClaimability();
+          showSuccess('Wallet connected successfully!');
+        }
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        showError('Failed to connect wallet: ' + error.message);
+      }
+    }
+
+    function updateWalletUI() {
+      const connectBtn = document.getElementById('connectBtn');
+      const walletInfo = document.getElementById('walletInfo');
+      
+      if (userAddress) {
+        connectBtn.textContent = 'Connected';
+        connectBtn.disabled = true;
+        walletInfo.textContent = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+      } else {
+        connectBtn.textContent = 'Connect Wallet';
+        connectBtn.disabled = false;
+        walletInfo.textContent = '';
+      }
+    }
+
+    function checkClaimability() {
+      const claimBtn = document.getElementById('claimBtn');
+      
+      if (!lockData || !userAddress) {
+        claimBtn.style.display = 'none';
+        return;
+      }
+
+      const isClaimable = !lockData.released && 
+                         Date.now() >= lockData.releaseTime * 1000 &&
+                         userAddress.toLowerCase() === lockData.beneficiary.toLowerCase();
+
+      if (isClaimable) {
+        claimBtn.style.display = 'block';
+        claimBtn.disabled = false;
+      } else {
+        claimBtn.style.display = 'none';
+      }
+    }
+
+    async function claimTokens() {
+      if (!signer || !lockAddr) {
+        showError('Wallet not connected or invalid lock address');
+        return;
+      }
+
+      try {
+        const claimBtn = document.getElementById('claimBtn');
+        claimBtn.disabled = true;
+        claimBtn.textContent = 'Claiming...';
+
+        const lock = new ethers.Contract(lockAddr, LOCK_ABI, signer);
+        const tx = await lock.release();
+        
+        showSuccess('Transaction sent! Waiting for confirmation...');
+        await tx.wait();
+        
+        showSuccess('Tokens claimed successfully!');
+        loadLock(); // Refresh lock data
+        
+      } catch (error) {
+        console.error('Claim error:', error);
+        showError('Failed to claim tokens: ' + error.message);
+      } finally {
+        const claimBtn = document.getElementById('claimBtn');
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'Claim Tokens';
+      }
+    }
+
+    function showError(message) {
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      errorMsg.textContent = message;
+      successMsg.textContent = '';
+      setTimeout(() => errorMsg.textContent = '', 5000);
+    }
+
+    function showSuccess(message) {
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      successMsg.textContent = message;
+      errorMsg.textContent = '';
+      setTimeout(() => successMsg.textContent = '', 5000);
+    }
+
+    async function loadLock() {
+      if (!lockAddr || !/^0x[a-fA-F0-9]{40}$/.test(lockAddr)) {
+        document.getElementById('lockName').textContent = 'Invalid lock address';
+        document.getElementById('lockAmount').textContent = '';
+        document.getElementById('lockUnlock').textContent = '';
+        document.getElementById('lockStatus').textContent = '';
+        document.getElementById('basescanLink').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('basescanLink').href = `https://basescan.org/address/${lockAddr}`;
+
+      try {
+        const rpcProvider = new ethers.providers.JsonRpcProvider(window.RPC_CONFIG ? window.RPC_CONFIG.getBaseEndpoint() : 'https://mainnet.base.org');
+        const lock = new ethers.Contract(lockAddr, LOCK_ABI, rpcProvider);
+        
+        const [name, amount, releaseTime, released, tokenAddr, beneficiary] = await Promise.all([
+          lock.lockName(),
+          lock.amount(),
+          lock.releaseTime(),
+          lock.released(),
+          lock.token(),
+          lock.beneficiary()
+        ]);
+
+        // Store lock data
+        lockData = { name, amount, releaseTime, released, tokenAddr, beneficiary };
+
+        // Get token symbol/decimals
+        let formattedAmount = amount;
+        let symbol = '';
+        try {
+          const token = new ethers.Contract(tokenAddr, [
+            {"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"},
+            {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"type":"function"}
+          ], rpcProvider);
+          const [decimals, sym] = await Promise.all([
+            token.decimals(),
+            token.symbol()
+          ]);
+          formattedAmount = ethers.utils.formatUnits(amount, decimals);
+          symbol = sym;
+        } catch {}
+
+        document.getElementById('lockName').textContent = name;
+        
+        // Role detection - will be updated when wallet connects
+        let userRole = 'Viewer';
+        if (window.wildWestWallet && window.wildWestWallet.account) {
+          const userAddress = window.wildWestWallet.account.toLowerCase();
+          const beneficiaryAddress = beneficiary.toLowerCase();
+          if (userAddress === beneficiaryAddress) {
+            userRole = 'Beneficiary';
+          }
+        }
+        
+        document.getElementById('lockRole').textContent = `YOUR ROLE: ${userRole}`;
+        document.getElementById('lockAmount').textContent = `AMOUNT: ${formattedAmount}${symbol ? ' ' + symbol : ''}`;
+        document.getElementById('lockBeneficiary').textContent = `BENEFICIARY: ${beneficiary.slice(0, 6)}...${beneficiary.slice(-4)}`;
+        document.getElementById('lockToken').textContent = `TOKEN: ${tokenAddr.slice(0, 6)}...${tokenAddr.slice(-4)}`;
+        document.getElementById('lockUnlock').textContent = `UNLOCKS: ${new Date(releaseTime * 1000).toLocaleString()}`;
+        
+        const statusDiv = document.getElementById('lockStatus');
+        const now = Math.floor(Date.now()/1000);
+        
+        if (released) {
+          statusDiv.textContent = 'CLAIMED';
+          statusDiv.className = 'lock-status claimed';
+        } else if (now >= releaseTime) {
+          statusDiv.textContent = 'CLAIMABLE';
+          statusDiv.className = 'lock-status claimable';
+        } else {
+          statusDiv.textContent = 'LOCKED';
+          statusDiv.className = 'lock-status locked';
+        }
+
+        checkClaimability();
+        
+      } catch (err) {
+        console.error('Lock loading error:', err);
+        document.getElementById('lockName').textContent = 'Error loading lock';
+        document.getElementById('lockRole').textContent = '';
+        document.getElementById('lockAmount').textContent = '';
+        document.getElementById('lockBeneficiary').textContent = '';
+        document.getElementById('lockToken').textContent = '';
+        document.getElementById('lockUnlock').textContent = '';
+        document.getElementById('lockStatus').textContent = '';
+      }
+    }
+
+    // Auto-connect if wallet is already connected
+    async function checkExistingConnection() {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        userAddress = window.ethereum.selectedAddress;
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        updateWalletUI();
+        checkClaimability();
+      }
+    }
+
+    // Listen for account changes
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+          userAddress = null;
+          provider = null;
+          signer = null;
+        } else {
+          userAddress = accounts[0];
+        }
+        updateWalletUI();
+        checkClaimability();
+      });
+    }
+
+    // Initialize
+    loadLock();
+    // SECURITY: Don't auto-check wallet connections - let user connect manually
+    // checkExistingConnection();
+  </script>
+
+  <!-- Copyright Footer -->
+  <footer style="
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+    border-top: 1px solid rgba(255, 174, 0, 0.3);
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: #fffbe7;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+    text-shadow: 0 0 4px #000, 0 0 2px #ffae00;
+  ">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 1rem;">
+        <span style="color: #ffae00; font-weight: 600; font-size: 1.1rem; text-shadow: 0 0 8px #ffae00;">WILDWEST LAUNCHPAD</span>
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="margin-bottom: 1rem;">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
+          background: linear-gradient(135deg, #0088cc, #00aaff);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.25rem;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          TELEGRAM
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
+          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.25rem;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          X
+        </a>
+      </div>
+      
+      <!-- $WILDW Token Contract Address -->
+      <div style="margin-bottom: 1rem; font-size: 0.7rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <span style="color: #ff6b35; font-weight: 600; text-shadow: 0 0 4px #ff6b35;">$WILDW TOKEN (BASE):</span>
+        </div>
+        <span style="color: #fffbe7; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 3px 6px; border-radius: 3px; font-size: 0.65rem;">
+          0x8129609E5303910464FCe3022a809fA44455Fe9A
+        </span>
+      </div>
+      
+      <div style="margin-bottom: 0.5rem; font-size: 0.8rem;">
+        © 2025 Wild West Launchpad. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

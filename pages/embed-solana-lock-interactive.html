@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WILDWEST Solana Lock Widget - Interactive</title>
+  <link rel="icon" type="image/png" href="../images/locked.png">
+  <!-- Console Filter - Universal console control -->
+  <script src="../js/console-filter.js"></script>
+  <!-- Legal Disclaimer System - Must load first for compliance -->
+  <script src="../js/legal-disclaimer.js"></script>
+  <!-- Core wallet dependencies -->
+  <script src="../js/wallet.js"></script>
+  <!-- Mobile Wallet Integration - Clean mobile experience -->
+  <script src="../js/mobile-wallet-detector.js"></script>
+  <script src="../js/mobile-wallet-integration.js"></script>
+  <!-- Production Configuration (GitHub Secrets injection) -->
+  <script src="../js/production-config.js"></script>
+  <!-- Development Configuration (Fallback endpoints for mobile/wallet browsers) -->
+  <script src="../js/dev-config.js"></script>
+  <!-- RPC Configuration -->
+  <script src="../js/rpc-config.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
+  <script src="../js/multi-wallet-manager.js"></script>
+  <script src="../js/wallet.js"></script>
+  <!-- Unified wallet connection system (fixes all connection issues) -->
+  <script src="../js/unified-wallet-connection.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-transform: uppercase;
+      color: #e6eaf3;
+      min-width: 0;
+    }
+    .widget-container {
+      background: linear-gradient(135deg, rgba(30,34,44,0.96) 60%, rgba(220,38,127,0.10) 100%);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px #000a, 0 1.5px 8px #23272f88;
+      padding: 38px 22px 22px 22px;
+      width: 360px;
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      backdrop-filter: blur(7px) saturate(1.3);
+      border: 2.5px solid #dc267f55;
+      transition: box-shadow 0.2s, border 0.2s;
+      overflow: hidden;
+      animation: widgetFadeIn 0.7s cubic-bezier(.4,2,.6,1) 1;
+      box-sizing: border-box;
+    }
+    @keyframes widgetFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .wildwest-label {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #dc267f 0%, #ff6b35 100%);
+      color: #fff;
+      font-size: 1.02em;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+      border-radius: 8px;
+      padding: 5px 18px 4px 18px;
+      box-shadow: 0 2px 8px #dc267f33;
+      z-index: 3;
+      text-align: center;
+      text-shadow: 0 2px 8px #0004, 0 1px 0 #23272f88;
+      border: 1.5px solid #232b3a;
+      user-select: text;
+    }
+    .lock-img {
+      position: relative;
+      display: block;
+      margin: 32px auto 0 auto;
+      width: 56px;
+      height: 56px;
+      aspect-ratio: 1/1;
+      border-radius: 14px;
+      object-fit: cover;
+      filter: drop-shadow(0 4px 24px #dc267f66) drop-shadow(0 1px 8px #0006);
+      background: #232b3a;
+      border: 3px solid #dc267f;
+      z-index: 2;
+      box-shadow: 0 2px 12px #dc267f33;
+      transition: border 0.2s;
+      top: 0;
+      left: 0;
+      transform: none;
+    }
+    .lock-title {
+      font-size: 1.18em;
+      font-weight: 800;
+      margin-top: 18px;
+      margin-bottom: 6px;
+      text-align: center;
+      color: #e6eaf3;
+      letter-spacing: 0.04em;
+      text-shadow: 0 2px 8px #0004, 0 1px 0 #23272f88;
+      word-break: break-word;
+    }
+    .lock-info {
+      font-size: 1.08em;
+      margin-bottom: 2px;
+      color: #b8c0d0;
+      text-align: center;
+      font-weight: 600;
+    }
+    .lock-status {
+      font-size: 1.08em;
+      margin-top: 10px;
+      font-weight: 700;
+      text-align: center;
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #232b3a 60%, #dc267f22 100%);
+      box-shadow: 0 2px 8px #dc267f22;
+      letter-spacing: 0.08em;
+      border: 1.5px solid #353a45;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      margin-bottom: 2px;
+    }
+    .lock-status.locked {
+      color: #dc267f;
+      border-color: #dc267f55;
+      background: linear-gradient(90deg, #232b3a 60%, #dc267f22 100%);
+    }
+    .lock-status.claimable {
+      color: #ff6b35;
+      border-color: #ff6b3599;
+      background: linear-gradient(90deg, #232b3a 60%, #ff6b3522 100%);
+      box-shadow: 0 0 16px #ff6b3555, 0 2px 8px #dc267f22;
+      animation: claimGlow 1.2s infinite alternate;
+    }
+    @keyframes claimGlow {
+      from { box-shadow: 0 0 16px #ff6b3555, 0 2px 8px #dc267f22; }
+      to { box-shadow: 0 0 32px #ff6b35cc, 0 2px 8px #dc267f22; }
+    }
+    .lock-status.claimed {
+      color: #b8c0d0;
+      border-color: #6c6c6c55;
+      background: linear-gradient(90deg, #232b3a 60%, #6c6c6c22 100%);
+      text-decoration: line-through;
+    }
+    
+    /* Wallet Connect Styles */
+    .wallet-section {
+      margin-top: 12px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .connect-btn {
+      background: linear-gradient(90deg, #dc267f 0%, #ff6b35 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.9em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px #dc267f33;
+    }
+    .connect-btn:hover {
+      background: linear-gradient(90deg, #ff6b35 0%, #dc267f 100%);
+      box-shadow: 0 4px 16px #dc267f55;
+    }
+    .connect-btn:disabled {
+      background: #353a45;
+      color: #888;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .wallet-info {
+      font-size: 0.8em;
+      color: #b8c0d0;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .claim-btn {
+      background: linear-gradient(90deg, #ff6b35 0%, #dc267f 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px #ff6b3533;
+      animation: claimPulse 2s infinite alternate;
+    }
+    .claim-btn:hover {
+      background: linear-gradient(90deg, #dc267f 0%, #ff6b35 100%);
+      box-shadow: 0 4px 16px #ff6b3555;
+    }
+    .claim-btn:disabled {
+      background: #353a45;
+      color: #888;
+      cursor: not-allowed;
+      box-shadow: none;
+      animation: none;
+    }
+    @keyframes claimPulse {
+      from { box-shadow: 0 2px 8px #ff6b3533; }
+      to { box-shadow: 0 4px 16px #ff6b3555, 0 0 20px #ff6b3544; }
+    }
+    .explorer-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.85em;
+      color: #fff;
+      background: linear-gradient(90deg, #dc267f 0%, #ff6b35 100%);
+      border-radius: 6px;
+      padding: 6px 14px;
+      text-decoration: none;
+      font-weight: 700;
+      box-shadow: 0 2px 8px #dc267f33;
+      border: none;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+      letter-spacing: 0.04em;
+    }
+    .explorer-link:hover {
+      background: linear-gradient(90deg, #ff6b35 0%, #dc267f 100%);
+      box-shadow: 0 4px 12px #dc267f55;
+    }
+    .error-msg {
+      color: #ff6b6b;
+      font-size: 0.8em;
+      text-align: center;
+      margin-top: 4px;
+      text-transform: none;
+    }
+    .success-msg {
+      color: #ff6b35;
+      font-size: 0.8em;
+      text-align: center;
+      margin-top: 4px;
+      text-transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="wildwest-label">SOLANA LOCK</div>
+    <img src="../images/locked.png" alt="Lock" class="lock-img" onerror="this.style.display='none'">
+    <div class="lock-title" id="lockName">Loading...</div>
+    <div class="lock-info" id="userRole" style="color:#dc267f;font-weight:600;"></div>
+    <div class="lock-info" id="lockAmount"></div>
+    <div class="lock-info" id="lockBeneficiary"></div>
+    <div class="lock-info" id="lockCreator"></div>
+    <div class="lock-info" id="lockUnlock"></div>
+    <div class="lock-status" id="lockStatus"></div>
+    
+    <div class="wallet-section">
+      <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+      <div class="wallet-info" id="walletInfo"></div>
+      <button class="claim-btn" id="claimBtn" onclick="claimTokens()" style="display:none;">Claim Tokens</button>
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="success-msg" id="successMsg"></div>
+    </div>
+    
+    <a href="#" target="_blank" class="explorer-link" id="explorerLink">View on Solana Explorer</a>
+  </div>
+
+  <script>
+    // Get lock address from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const lockAddr = urlParams.get('lock');
+    
+    let connection = null;
+    let wallet = null;
+    let userAddress = null;
+    let lockData = null;
+
+    // Your Solana timelock program
+    const PROGRAM_ID = new solanaWeb3.PublicKey("8AqhFyokcMouAf9rruTdnDxVmnNyvn5f4Gf71FJDLXyV");
+    
+    // Initialize Solana connection
+    connection = new solanaWeb3.Connection(window.RPC_CONFIG ? window.RPC_CONFIG.getSolanaEndpoint() : 'https://api.mainnet-beta.solana.com');
+
+    // Local storage key for tracking created locks
+    const CREATED_LOCKS_KEY = 'wildwest_created_locks';
+    
+    // Function to track a newly created lock
+    function trackCreatedLock(lockAddress, creatorAddress) {
+      console.log('💾 WIDGET: TRACKING NEW LOCK CREATION:');
+      console.log(`   Lock Address: ${lockAddress}`);
+      console.log(`   Creator: ${creatorAddress}`);
+      
+      try {
+        const existing = JSON.parse(localStorage.getItem(CREATED_LOCKS_KEY) || '{}');
+        const lockCount = Object.keys(existing).length;
+        console.log(`   Previous tracked locks: ${lockCount}`);
+        
+        existing[lockAddress] = creatorAddress;
+        localStorage.setItem(CREATED_LOCKS_KEY, JSON.stringify(existing));
+        
+        const newLockCount = Object.keys(existing).length;
+        console.log(`   Updated tracked locks: ${newLockCount}`);
+        console.log('✅ WIDGET: Lock successfully tracked in local storage');
+        
+        // Log all tracked locks for debugging
+        console.log('📋 WIDGET: All tracked locks:');
+        Object.entries(existing).forEach(([lock, creator], index) => {
+          console.log(`   ${index + 1}. ${lock} → ${creator}`);
+        });
+        
+      } catch (err) {
+        console.error('❌ WIDGET: Error tracking created lock:', err);
+        console.error('   Error type:', err.constructor.name);
+        console.error('   Error message:', err.message);
+      }
+    }
+    
+    // Function to check if current user created a lock (from local storage)
+    function isLockCreatedLocally(lockAddress, userAddress) {
+      console.log('🔍 WIDGET: Checking local storage for lock creation:');
+      console.log(`   Lock Address: ${lockAddress}`);
+      console.log(`   User Address: ${userAddress || 'null'}`);
+      
+      if (!userAddress) {
+        console.log('   └─ No user address provided');
+        return false;
+      }
+      
+      try {
+        const existing = JSON.parse(localStorage.getItem(CREATED_LOCKS_KEY) || '{}');
+        const lockCount = Object.keys(existing).length;
+        console.log(`   Total tracked locks in storage: ${lockCount}`);
+        
+        const storedCreator = existing[lockAddress];
+        const isMatch = storedCreator === userAddress;
+        
+        console.log(`   Stored creator for this lock: ${storedCreator || 'null'}`);
+        console.log(`   Creator matches current user: ${isMatch}`);
+        
+        return isMatch;
+      } catch (err) {
+        console.error('❌ WIDGET: Error checking local created locks:', err);
+        return false;
+      }
+    }
+
+    // Function to find the creator of a lock by analyzing transaction history
+    async function findLockCreator(lockAddress) {
+      const lockAddressStr = lockAddress.toString();
+      console.log('🔍 WIDGET: CREATOR DETECTION START for lock:', lockAddressStr);
+      
+      try {
+        // Get all signatures for this account (lock creation should be the first one)
+        console.log('📡 WIDGET: Fetching transaction signatures for lock account...');
+        const signatures = await connection.getSignaturesForAddress(lockAddress, { limit: 10 });
+        
+        console.log(`📊 WIDGET: Found ${signatures.length} total transactions for this lock`);
+        
+        if (signatures.length === 0) {
+          console.log('❌ WIDGET: No transactions found for lock:', lockAddressStr);
+          console.log('🔍 WIDGET: CREATOR DETECTION END: No transactions found');
+          return null;
+        }
+        
+        // Log all signatures for debugging
+        signatures.forEach((sig, index) => {
+          console.log(`📋 WIDGET: Transaction ${index + 1}/${signatures.length}: ${sig.signature}`);
+          console.log(`   └─ Slot: ${sig.slot}, Block Time: ${sig.blockTime ? new Date(sig.blockTime * 1000).toISOString() : 'Unknown'}`);
+        });
+        
+        // The creation transaction should be the last (oldest) transaction
+        const creationSignature = signatures[signatures.length - 1];
+        console.log('🎯 WIDGET: Analyzing CREATION transaction (oldest):', creationSignature.signature);
+        console.log(`   └─ Creation time: ${creationSignature.blockTime ? new Date(creationSignature.blockTime * 1000).toISOString() : 'Unknown'}`);
+        
+        // Get the full transaction details
+        console.log('📥 WIDGET: Fetching full transaction details...');
+        const transaction = await connection.getTransaction(creationSignature.signature, {
+          maxSupportedTransactionVersion: 0
+        });
+        
+        if (!transaction) {
+          console.log('❌ WIDGET: Could not fetch transaction details for signature:', creationSignature.signature);
+          console.log('🔍 WIDGET: CREATOR DETECTION END: Transaction fetch failed');
+          return null;
+        }
+        
+        console.log('✅ WIDGET: Transaction details fetched successfully');
+        console.log(`📊 WIDGET: Transaction has ${transaction.transaction.message.accountKeys.length} account keys`);
+        console.log(`📊 WIDGET: Transaction has ${transaction.transaction.message.instructions.length} total instructions`);
+        
+        // Log all account keys for debugging
+        transaction.transaction.message.accountKeys.forEach((key, index) => {
+          const isSigner = index < transaction.transaction.message.header.numRequiredSignatures;
+          console.log(`🔑 WIDGET: Account[${index}]: ${key.toString()} ${isSigner ? '(SIGNER)' : '(non-signer)'}`);
+        });
+        
+        // Find the signer who created the lock
+        // Look for the transaction that called our program
+        console.log('🔍 WIDGET: Searching for program instructions...');
+        const programInstructions = transaction.transaction.message.instructions.filter(
+          (instruction, index) => {
+            // Get the program ID from the account keys
+            const programIndex = instruction.programIdIndex;
+            const programId = transaction.transaction.message.accountKeys[programIndex];
+            const isOurProgram = programId.equals(PROGRAM_ID);
+            
+            console.log(`📋 WIDGET: Instruction ${index + 1}: Program[${programIndex}] = ${programId.toString()}`);
+            console.log(`   └─ Is our program (${PROGRAM_ID.toString()}): ${isOurProgram}`);
+            
+            if (isOurProgram) {
+              console.log(`   └─ 🎯 WIDGET: Found our program instruction! Accounts involved:`);
+              instruction.accounts.forEach((accountIndex, i) => {
+                const accountKey = transaction.transaction.message.accountKeys[accountIndex];
+                const isSigner = accountIndex < transaction.transaction.message.header.numRequiredSignatures;
+                console.log(`      Account[${i}]: Index=${accountIndex}, Key=${accountKey.toString()}, Signer=${isSigner}`);
+              });
+            }
+            
+            return isOurProgram;
+          }
+        );
+        
+        console.log(`📊 WIDGET: Found ${programInstructions.length} instructions calling our program`);
+        
+        if (programInstructions.length === 0) {
+          console.log('❌ WIDGET: No program instructions found in creation transaction');
+          console.log('🔍 WIDGET: CREATOR DETECTION END: No program instructions found');
+          return null;
+        }
+        
+        // The first account in the instruction should be the signer (creator)
+        const creationInstruction = programInstructions[0];
+        console.log('🎯 WIDGET: Analyzing creation instruction accounts...');
+        console.log(`📊 WIDGET: Creation instruction has ${creationInstruction.accounts.length} accounts`);
+        
+        // According to our IDL: [lock, locker, beneficiary, mint, lockerToken, vaultToken, tokenProgram, systemProgram, rent]
+        // Index 1 is the locker/signer (creator)
+        if (creationInstruction.accounts.length < 2) {
+          console.log('❌ WIDGET: Creation instruction has insufficient accounts (expected at least 2)');
+          console.log('🔍 WIDGET: CREATOR DETECTION END: Insufficient accounts in instruction');
+          return null;
+        }
+        
+        const creatorIndex = creationInstruction.accounts[1]; // Index 1 is the locker/signer in our IDL
+        console.log(`🎯 WIDGET: Creator should be at account index: ${creatorIndex}`);
+        
+        if (creatorIndex >= transaction.transaction.message.accountKeys.length) {
+          console.log(`❌ WIDGET: Creator index ${creatorIndex} is out of bounds (max: ${transaction.transaction.message.accountKeys.length - 1})`);
+          console.log('🔍 WIDGET: CREATOR DETECTION END: Creator index out of bounds');
+          return null;
+        }
+        
+        const creatorPubkey = transaction.transaction.message.accountKeys[creatorIndex];
+        const creatorIsSigner = creatorIndex < transaction.transaction.message.header.numRequiredSignatures;
+        
+        console.log(`🎯 WIDGET: Creator identified: ${creatorPubkey.toString()}`);
+        console.log(`   └─ Is signer in transaction: ${creatorIsSigner}`);
+        console.log(`   └─ Account index in transaction: ${creatorIndex}`);
+        
+        if (!creatorIsSigner) {
+          console.log('⚠️ WIDGET: WARNING: Creator account is not marked as signer in transaction');
+          console.log('   This might indicate an error in creator detection logic');
+        }
+        
+        console.log('✅ WIDGET: Creator successfully identified from transaction history');
+        console.log('🔍 WIDGET: CREATOR DETECTION END: Success');
+        return creatorPubkey;
+        
+      } catch (error) {
+        console.error('❌ WIDGET: Error in findLockCreator:', error);
+        console.error('   Error type:', error.constructor.name);
+        console.error('   Error message:', error.message);
+        if (error.stack) {
+          console.error('   Stack trace:', error.stack);
+        }
+        console.log('🔍 WIDGET: CREATOR DETECTION END: Error occurred');
+        return null;
+      }
+    }
+
+    // Token Program ID
+    const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+
+    // Helper function to get Associated Token Address
+    async function getAssociatedTokenAddress(mint, owner) {
+      const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+      const [address] = await solanaWeb3.PublicKey.findProgramAddress([
+        owner.toBuffer(),
+        TOKEN_PROGRAM_ID.toBuffer(),
+        mint.toBuffer()
+      ], ASSOCIATED_TOKEN_PROGRAM_ID);
+      return address;
+    }
+
+    // SPL Token layout helpers (browser compatible)
+    function defineMintLayout() {
+      return {
+        decode: function (buffer) {
+          return {
+            mintAuthorityOption: buffer[0],
+            mintAuthority: buffer.slice(4, 36),
+            supply: buffer.readBigUInt64LE(36),
+            decimals: buffer[44],
+            isInitialized: buffer[45] !== 0,
+            freezeAuthorityOption: buffer[46],
+            freezeAuthority: buffer.slice(48, 80)
+          };
+        }
+      };
+    }
+    const MintLayout = defineMintLayout();
+
+    // Helper function to parse mint data
+    function parseMintData(data) {
+      return MintLayout.decode(data);
+    }
+
+    // Helper function to get token symbol (basic implementation)
+    function getTokenSymbol(mintAddress) {
+      const knownTokens = {
+        'So11111111111111111111111111111111111111112': 'SOL',
+        'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': 'USDC',
+        'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': 'USDT',
+        // Add more known tokens as needed
+      };
+      return knownTokens[mintAddress];
+    }
+
+    // Helper function to create associated token account instruction
+    function createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint) {
+      const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+      return new solanaWeb3.TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: [
+          { pubkey: payer, isSigner: true, isWritable: true },
+          { pubkey: associatedToken, isSigner: false, isWritable: true },
+          { pubkey: owner, isSigner: false, isWritable: false },
+          { pubkey: mint, isSigner: false, isWritable: false },
+          { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
+        ],
+        data: new Uint8Array([])
+      });
+    }
+    const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+
+    // Helper functions for SPL token operations
+    async function getAssociatedTokenAddress(mint, owner) {
+      const [address] = await solanaWeb3.PublicKey.findProgramAddress([
+        owner.toBuffer(),
+        TOKEN_PROGRAM_ID.toBuffer(),
+        mint.toBuffer()
+      ], ASSOCIATED_TOKEN_PROGRAM_ID);
+      return address;
+    }
+
+    function createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint) {
+      return new solanaWeb3.TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: [
+          { pubkey: payer, isSigner: true, isWritable: true },
+          { pubkey: associatedToken, isSigner: false, isWritable: true },
+          { pubkey: owner, isSigner: false, isWritable: false },
+          { pubkey: mint, isSigner: false, isWritable: false },
+          { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
+        ],
+        data: Buffer.alloc(0)
+      });
+    }
+
+    // Parse mint account data
+    function parseMintData(data) {
+      return {
+        mintAuthorityOption: data[0],
+        mintAuthority: data.slice(4, 36),
+        supply: data.readBigUInt64LE(36),
+        decimals: data[44],
+        isInitialized: data[45] !== 0,
+        freezeAuthorityOption: data[46],
+        freezeAuthority: data.slice(48, 80)
+      };
+    }
+
+    // Get token symbol from known tokens (you can expand this)
+    function getTokenSymbol(mintAddress) {
+      const knownTokens = {
+        'So11111111111111111111111111111111111111112': 'SOL',
+        'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': 'USDC',
+        'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': 'USDT',
+        // Add more known tokens as needed
+      };
+      return knownTokens[mintAddress];
+    }
+
+    // Simple wallet adapter for demo - in production use @solana/wallet-adapter
+    class SimpleWallet {
+      constructor() {
+        this.publicKey = null;
+        this.connected = false;
+      }
+
+      async connect() {
+        if (window.solana && window.solana.isPhantom) {
+          try {
+            const response = await window.solana.connect();
+            this.publicKey = response.publicKey;
+            this.connected = true;
+            return response;
+          } catch (err) {
+            throw new Error('Failed to connect to Phantom wallet');
+          }
+        } else if (window.solflare && window.solflare.isConnected) {
+          try {
+            await window.solflare.connect();
+            this.publicKey = window.solflare.publicKey;
+            this.connected = true;
+            return { publicKey: this.publicKey };
+          } catch (err) {
+            throw new Error('Failed to connect to Solflare wallet');
+          }
+        } else {
+          throw new Error('No Solana wallet detected. Please install Phantom or Solflare.');
+        }
+      }
+
+      async signTransaction(transaction) {
+        if (window.solana && window.solana.isPhantom) {
+          return await window.solana.signTransaction(transaction);
+        } else if (window.solflare) {
+          return await window.solflare.signTransaction(transaction);
+        }
+        throw new Error('No wallet available for signing');
+      }
+
+      async signAndSendTransaction(transaction) {
+        if (window.solana && window.solana.isPhantom) {
+          return await window.solana.signAndSendTransaction(transaction);
+        } else if (window.solflare) {
+          return await window.solflare.signAndSendTransaction(transaction);
+        }
+        throw new Error('No wallet available for signing and sending');
+      }
+
+      disconnect() {
+        this.publicKey = null;
+        this.connected = false;
+        if (window.solana && window.solana.disconnect) {
+          window.solana.disconnect();
+        }
+      }
+    }
+
+    wallet = new SimpleWallet();
+
+    // Connect to wallet using centralized wallet.js
+    async function connectWallet() {
+      try {
+        // Use centralized wallet.js with 'solana' parameter
+        const connected = await window.wildWestWallet.connectWallet('solana');
+        if (connected) {
+          wallet = window.wildWestWallet.provider;
+          userAddress = window.wildWestWallet.account;
+          updateWalletUI();
+          checkClaimability();
+          showSuccess('Wallet connected successfully!');
+        }
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        showError('Failed to connect wallet: ' + error.message);
+      }
+    }
+
+    function updateWalletUI() {
+      const connectBtn = document.getElementById('connectBtn');
+      const walletInfo = document.getElementById('walletInfo');
+      
+      if (userAddress) {
+        connectBtn.textContent = 'Connected';
+        connectBtn.disabled = true;
+        walletInfo.textContent = `${userAddress.slice(0,8)}...${userAddress.slice(-8)}`;
+      } else {
+        connectBtn.textContent = 'Connect Wallet';
+        connectBtn.disabled = false;
+        walletInfo.textContent = '';
+      }
+    }
+
+    function checkClaimability() {
+      const claimBtn = document.getElementById('claimBtn');
+      const userRoleDiv = document.getElementById('userRole');
+      
+      if (!lockData || !userAddress) {
+        claimBtn.style.display = 'none';
+        if (lockData) {
+          userRoleDiv.textContent = 'LOCK DETAILS';
+        }
+        return;
+      }
+
+      // Determine user's relationship to this lock
+      const isCreator = lockData.creator && userAddress === lockData.creator;
+      const isBeneficiary = userAddress === lockData.beneficiary;
+      
+      let userRole = 'VIEWER';
+      if (isCreator && isBeneficiary) {
+        userRole = 'CREATOR & BENEFICIARY';
+      } else if (isCreator) {
+        userRole = 'CREATOR';
+      } else if (isBeneficiary) {
+        userRole = 'BENEFICIARY';
+      }
+      
+      userRoleDiv.textContent = `YOUR ROLE: ${userRole}`;
+
+      // Check if user is the beneficiary and tokens are unlocked and not claimed
+      const isClaimable = !lockData.claimed && 
+                         Date.now() >= lockData.unlockTime &&
+                         isBeneficiary;
+
+      if (isClaimable) {
+        claimBtn.style.display = 'block';
+        claimBtn.disabled = false;
+      } else {
+        claimBtn.style.display = 'none';
+      }
+    }
+
+    async function claimTokens() {
+      if (!wallet.connected || !lockAddr) {
+        showError('Wallet not connected or invalid lock address');
+        return;
+      }
+
+      try {
+        const claimBtn = document.getElementById('claimBtn');
+        claimBtn.disabled = true;
+        claimBtn.textContent = 'Claiming...';
+
+        // Real Solana program integration
+        const lockPubkey = new solanaWeb3.PublicKey(lockAddr);
+        const beneficiaryKey = new solanaWeb3.PublicKey(userAddress);
+        
+        // Get lock account data to find mint and vault
+        const lockAccountInfo = await connection.getAccountInfo(lockPubkey);
+        if (!lockAccountInfo) {
+          throw new Error('Lock account not found');
+        }
+
+        // Parse lock data (based on your program structure)
+        const data = lockAccountInfo.data;
+        const mint = new solanaWeb3.PublicKey(data.slice(56, 88));
+        const unlock_unix = Number(new DataView(data.buffer, 40, 8).getBigInt64(0, true));
+        
+        // Check if tokens are unlocked
+        const now = Date.now() / 1000;
+        if (now < unlock_unix) {
+          throw new Error('Tokens are still locked');
+        }
+
+        // Check if already claimed
+        const claimed = !!data[88];
+        if (claimed) {
+          throw new Error('Tokens already claimed');
+        }
+
+        // Recreate vault PDA (same as in lock creation)
+        function strToBytes(str) { return new TextEncoder().encode(str); }
+        function i64ToBytes(num) { const arr = new BigInt64Array([BigInt(num)]); return new Uint8Array(arr.buffer); }
+        
+        const unlockUnixBytes = i64ToBytes(unlock_unix);
+        const vaultSeeds = [
+          strToBytes('lock'),
+          beneficiaryKey.toBuffer(),
+          mint.toBuffer(),
+          unlockUnixBytes
+        ];
+        const [vaultPda] = await solanaWeb3.PublicKey.findProgramAddress(vaultSeeds, PROGRAM_ID);
+
+        // Get user's associated token account
+        const userTokenAccount = await getAssociatedTokenAddress(mint, beneficiaryKey);
+        
+        // Ensure user's ATA exists
+        let ataInfo = await connection.getAccountInfo(userTokenAccount);
+        if (!ataInfo) {
+          // Create ATA first
+          const ataIx = createAssociatedTokenAccountInstruction(
+            beneficiaryKey, // payer
+            userTokenAccount, // ATA
+            beneficiaryKey, // owner
+            mint // mint
+          );
+          
+          const ataTx = new solanaWeb3.Transaction().add(ataIx);
+          const { blockhash } = await connection.getLatestBlockhash();
+          ataTx.recentBlockhash = blockhash;
+          ataTx.feePayer = beneficiaryKey;
+          
+          const signedAtaTx = await wallet.signTransaction(ataTx);
+          const ataSig = await connection.sendRawTransaction(signedAtaTx.serialize());
+          await connection.confirmTransaction(ataSig, 'confirmed');
+        }
+
+        // Build claim instruction
+        const discriminator = new Uint8Array(await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode('global:claim'))).slice(0, 8);
+        
+        const claimIx = new solanaWeb3.TransactionInstruction({
+          programId: PROGRAM_ID,
+          keys: [
+            { pubkey: lockPubkey, isSigner: false, isWritable: true }, // lock
+            { pubkey: beneficiaryKey, isSigner: true, isWritable: false }, // beneficiary (signer)
+            { pubkey: vaultPda, isSigner: false, isWritable: true }, // vault_token (PDA)
+            { pubkey: userTokenAccount, isSigner: false, isWritable: true }, // beneficiary_token (user's ATA)
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }
+          ],
+          data: discriminator
+        });
+
+        const tx = new solanaWeb3.Transaction().add(claimIx);
+        const { blockhash: claimBlockhash } = await connection.getLatestBlockhash();
+        tx.recentBlockhash = claimBlockhash;
+        tx.feePayer = beneficiaryKey;
+
+        showSuccess('Requesting wallet signature...');
+        
+        let signature;
+        if (wallet.signAndSendTransaction) {
+          const result = await wallet.signAndSendTransaction(tx);
+          signature = result.signature;
+        } else {
+          const signedTx = await wallet.signTransaction(tx);
+          signature = await connection.sendRawTransaction(signedTx.serialize());
+        }
+
+        showSuccess('Transaction sent! Waiting for confirmation...');
+        await connection.confirmTransaction(signature, 'confirmed');
+        
+        showSuccess('Tokens claimed successfully!');
+        loadLock(); // Refresh lock data
+        
+      } catch (error) {
+        console.error('Claim error:', error);
+        showError('Failed to claim tokens: ' + error.message);
+      } finally {
+        const claimBtn = document.getElementById('claimBtn');
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'Claim Tokens';
+      }
+    }
+
+    function showError(message) {
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      errorMsg.textContent = message;
+      successMsg.textContent = '';
+      setTimeout(() => errorMsg.textContent = '', 5000);
+    }
+
+    function showSuccess(message) {
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      successMsg.textContent = message;
+      errorMsg.textContent = '';
+      setTimeout(() => successMsg.textContent = '', 5000);
+    }
+
+    async function loadLock() {
+      if (!lockAddr || lockAddr.length < 32) {
+        document.getElementById('lockName').textContent = 'Invalid lock address';
+        document.getElementById('userRole').textContent = '';
+        document.getElementById('lockAmount').textContent = '';
+        document.getElementById('lockBeneficiary').textContent = '';
+        document.getElementById('lockCreator').textContent = '';
+        document.getElementById('lockUnlock').textContent = '';
+        document.getElementById('lockStatus').textContent = '';
+        document.getElementById('explorerLink').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('explorerLink').href = `https://explorer.solana.com/address/${lockAddr}`;
+
+      try {
+        // Fetch real lock data from your Solana program
+        const lockPubkey = new solanaWeb3.PublicKey(lockAddr);
+        const lockAccountInfo = await connection.getAccountInfo(lockPubkey);
+        
+        if (!lockAccountInfo) {
+          throw new Error('Lock account not found');
+        }
+
+        // Parse lock data based on your program structure
+        const data = lockAccountInfo.data;
+        
+        // Account structure: discriminator(8) + beneficiary(32) + unlock_time(8) + amount(8) + mint(32) + claimed(1) + name_len(4) + name(variable) + locker(32)
+        const beneficiary = new solanaWeb3.PublicKey(data.slice(8, 40)).toString();
+        const unlock_unix = Number(new DataView(data.buffer, 40, 8).getBigInt64(0, true));
+        const amountRaw = new DataView(data.buffer, 48, 8).getBigUint64(0, true);
+        const mint = new solanaWeb3.PublicKey(data.slice(56, 88));
+        const claimed = !!data[88];
+        const nameLen = new DataView(data.buffer, 89, 4).getUint32(0, true);
+        const nameBytes = data.slice(93, 93 + nameLen);
+        const lock_name = new TextDecoder().decode(nameBytes);
+        
+        // Enhanced creator extraction with multiple approaches
+        let creator = null;
+        try {
+          // Approach 1: Original calculation (after name)
+          const lockerOffset = 93 + nameLen;
+          if (data.length >= lockerOffset + 32) {
+            const creatorPubkey = new solanaWeb3.PublicKey(data.slice(lockerOffset, lockerOffset + 32));
+            const creatorStr = creatorPubkey.toString();
+            // Validate it's not the system program ID
+            if (creatorStr !== '11111111111111111111111111111111') {
+              creator = creatorStr;
+            }
+          }
+          
+          // Approach 2: If first approach failed, try fixed offset
+          if (!creator && data.length >= 157) {
+            try {
+              const creatorPubkey = new solanaWeb3.PublicKey(data.slice(125, 157));
+              const creatorStr = creatorPubkey.toString();
+              if (creatorStr !== '11111111111111111111111111111111') {
+                creator = creatorStr;
+              }
+            } catch (e) {
+              // Continue to next approach
+            }
+          }
+          
+          // Approach 3: If still no creator, try reading from end
+          if (!creator && data.length >= 32) {
+            try {
+              const creatorPubkey = new solanaWeb3.PublicKey(data.slice(-32));
+              const creatorStr = creatorPubkey.toString();
+              if (creatorStr !== '11111111111111111111111111111111') {
+                creator = creatorStr;
+              }
+            } catch (e) {
+              // Creator extraction failed completely
+            }
+          }
+        } catch (err) {
+          console.warn('Could not parse creator:', err);
+        }
+
+        // Store lock data
+        lockData = {
+          name: lock_name,
+          beneficiary,
+          creator,
+          unlockTime: unlock_unix * 1000, // Convert to milliseconds
+          amount: amountRaw,
+          mint: mint.toString(),
+          claimed
+        };
+
+        // Fetch token decimals and symbol
+        let decimals = 0;
+        let symbol = '';
+        let formattedAmount = amountRaw.toString();
+        
+        try {
+          const mintAccountInfo = await connection.getAccountInfo(mint);
+          if (mintAccountInfo) {
+            const mintInfo = parseMintData(mintAccountInfo.data);
+            decimals = mintInfo.decimals;
+            formattedAmount = (Number(amountRaw) / Math.pow(10, decimals)).toLocaleString(undefined, { 
+              maximumFractionDigits: decimals 
+            });
+            
+            // Try to get symbol from known tokens or use mint address
+            symbol = getTokenSymbol(mint.toString()) || mint.toString().slice(0, 4) + '...';
+          }
+        } catch (err) {
+          console.log('Could not fetch mint info:', err);
+        }
+
+        // Update UI
+        document.getElementById('lockName').textContent = lock_name;
+        document.getElementById('userRole').textContent = 'YOUR ROLE: Viewer';
+        document.getElementById('lockAmount').textContent = `AMOUNT: ${formattedAmount} ${symbol}`;
+        document.getElementById('lockBeneficiary').textContent = `BENEFICIARY: ${beneficiary.slice(0, 6)}...${beneficiary.slice(-4)}`;
+        if (creator) {
+          document.getElementById('lockCreator').textContent = `CREATOR: ${creator.slice(0, 6)}...${creator.slice(-4)}`;
+          document.getElementById('lockCreator').style.display = 'block';
+        } else {
+          document.getElementById('lockCreator').style.display = 'none';
+        }
+        document.getElementById('lockUnlock').textContent = `UNLOCKS: ${new Date(unlock_unix * 1000).toLocaleString()}`;
+        
+        const statusDiv = document.getElementById('lockStatus');
+        const now = Date.now() / 1000;
+        
+        if (claimed) {
+          statusDiv.textContent = 'Claimed';
+          statusDiv.className = 'lock-status claimed';
+        } else if (now >= unlock_unix) {
+          statusDiv.textContent = 'Claimable';
+          statusDiv.className = 'lock-status claimable';
+        } else {
+          statusDiv.textContent = 'Locked';
+          statusDiv.className = 'lock-status locked';
+        }
+
+        checkClaimability();
+        
+      } catch (err) {
+        console.error('Lock loading error:', err);
+        document.getElementById('lockName').textContent = 'Error loading lock';
+        document.getElementById('userRole').textContent = '';
+        document.getElementById('lockAmount').textContent = '';
+        document.getElementById('lockBeneficiary').textContent = '';
+        document.getElementById('lockCreator').textContent = '';
+        document.getElementById('lockUnlock').textContent = '';
+        document.getElementById('lockStatus').textContent = '';
+      }
+    }
+
+    // Auto-connect if wallet is already connected
+    async function checkExistingConnection() {
+      try {
+        if (window.solana && window.solana.isConnected) {
+          userAddress = window.solana.publicKey.toString();
+          wallet.publicKey = window.solana.publicKey;
+          wallet.connected = true;
+          updateWalletUI();
+          checkClaimability();
+        } else if (window.solflare && window.solflare.isConnected) {
+          userAddress = window.solflare.publicKey.toString();
+          wallet.publicKey = window.solflare.publicKey;
+          wallet.connected = true;
+          updateWalletUI();
+          checkClaimability();
+        }
+      } catch (error) {
+        console.log('No existing wallet connection');
+      }
+    }
+
+    // Listen for wallet events
+    if (window.solana) {
+      window.solana.on('connect', () => {
+        if (window.solana.publicKey) {
+          userAddress = window.solana.publicKey.toString();
+          wallet.publicKey = window.solana.publicKey;
+          wallet.connected = true;
+          updateWalletUI();
+          checkClaimability();
+        }
+      });
+
+      window.solana.on('disconnect', () => {
+        userAddress = null;
+        wallet.disconnect();
+        updateWalletUI();
+        checkClaimability();
+      });
+    }
+
+    // Initialize
+    loadLock();
+    // SECURITY: Don't auto-check wallet connections - let user connect manually
+    // checkExistingConnection();
+  </script>
+
+  <!-- Copyright Footer -->
+  <footer style="
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+    border-top: 1px solid rgba(255, 174, 0, 0.3);
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: #fffbe7;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+    text-shadow: 0 0 4px #000, 0 0 2px #ffae00;
+  ">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 1rem;">
+        <span style="color: #ffae00; font-weight: 600; font-size: 1.1rem; text-shadow: 0 0 8px #ffae00;">WILDWEST LAUNCHPAD</span>
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="margin-bottom: 1rem;">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
+          background: linear-gradient(135deg, #0088cc, #00aaff);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.25rem;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          TELEGRAM
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
+          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.25rem;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-weight: 600;
+          font-size: 0.75rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          X
+        </a>
+      </div>
+      
+      <!-- $WILDW Token Contract Address -->
+      <div style="margin-bottom: 1rem; font-size: 0.7rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <span style="color: #ff6b35; font-weight: 600; text-shadow: 0 0 4px #ff6b35;">$WILDW TOKEN (BASE):</span>
+        </div>
+        <span style="color: #fffbe7; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 3px 6px; border-radius: 3px; font-size: 0.65rem;">
+          0x8129609E5303910464FCe3022a809fA44455Fe9A
+        </span>
+      </div>
+      
+      <div style="margin-bottom: 0.5rem; font-size: 0.8rem;">
+        © 2025 Wild West Launchpad. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
