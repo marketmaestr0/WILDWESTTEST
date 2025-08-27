@@ -59,6 +59,10 @@
  }
 
 
+.site-header { transform: translateZ(0); }  /* nudges GPU compositing */
+
+
+
 /* =========================
    Ticker Buys
    ========================= */
