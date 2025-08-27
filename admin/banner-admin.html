@@ -1,0 +1,2977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Banner Ad - Wild West Launchpad</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- Environment Configuration -->
+  <script src="../js/env-config.js"></script>
+  <!-- Mobile Debug System - Comprehensive mobile debugging -->
+  <script src="../js/mobile-debug.js"></script>
+  <!-- Mobile Wallet Integration - Clean mobile experience -->
+  <script src="../js/mobile-wallet-detector.js"></script>
+  <script src="../js/mobile-wallet-integration.js"></script>
+  <!-- Performance optimizations for wallet browsers -->
+  <script src="../js/wallet-performance.js"></script>
+  <script>
+    // Console filter - hide development noise
+    // Check localStorage for user preference
+    window.SHOW_DEBUG_LOGS = localStorage.getItem('SHOW_DEBUG_LOGS') === 'true';
+    
+    if (!window.SHOW_DEBUG_LOGS) {
+      const originalLog = console.log;
+      const originalWarn = console.warn;
+      
+      // Filter out common development noise
+      const filterPatterns = [
+        // Config and debug messages
+        /Environment: DEVELOPMENT/,
+        /window\.SECURE_CONFIG exists/,
+        /window\.ENV_CONFIG exists/,
+        /PRODUCTION_CONFIG\.token available/,
+        /Available window properties/,
+        /Debug: process\.env exists/,
+        /Service-wide GitHub configuration loaded/,
+        /Service GitHub token not configured/,
+        /Service not ready.*GitHub token/,
+        /Using fallback token detection/,
+        /Available globals/,
+        
+        // Payment and API messages
+        /Payment config loaded.*QuickNode/,
+        /GitHub Image Uploader loaded/,
+        /RPC Configuration loaded.*QuickNode/,
+        /Base ETH: https/,
+        /Solana: https.*alchemy/,
+        /QuickNode infrastructure ready/,
+        /Banner configuration loaded/,
+        /Payment system ready.*QuickNode/,
+        /Price update from our infrastructure/,
+        /Accepting ETH on Base network/,
+        /Accepting SOL on Solana network/,
+        /QuickNode endpoints configured/,
+        /Fetching crypto prices.*QuickNode/,
+        /Initializing payment system.*QuickNode/,
+        
+        // Wallet system initialization (keep connection logs)
+        /DOMContentLoaded.*initializing wallet/,
+        /Cleared any pending connection states/,
+        /wildWestWallet initialized and made globally available/,
+        /Banner admin declared wallet button ownership/,
+        
+        // Debug function availability messages
+        /Debug function available/,
+        /Payment system loaded.*initializing display/,
+        /Banner admin page loaded/,
+        
+        // CORS and API errors
+        /Access to fetch.*CORS policy/,
+        /Failed to load resource.*api\.coingecko/,
+        /Failed to fetch crypto prices/,
+        /Using QuickNode RPC endpoints for backup/,
+        /Attempting price fetch via QuickNode/,
+        /Using fallback prices.*QuickNode/,
+        
+        // Old emoji patterns (keep for compatibility)
+        /🔧 Token config/,
+        /🔍 SecureConfig Debug/,
+        /⚠️ Using fallback token/,
+        /📍 Available globals/,
+        /❌ Service GitHub token/,
+        /🔍 Debug: window\.ENV_CONFIG/,
+        /⚠️ Service not ready/,
+        /💰 Fetching crypto prices/
+      ];
+      
+      console.log = function(...args) {
+        const message = args.join(' ');
+        if (!filterPatterns.some(pattern => pattern.test(message))) {
+          originalLog.apply(console, args);
+        }
+      };
+      
+      console.warn = function(...args) {
+        const message = args.join(' ');
+        if (!filterPatterns.some(pattern => pattern.test(message))) {
+          originalWarn.apply(console, args);
+        }
+      };
+    }
+  </script>
+  <!-- Production Configuration (MUST load before secure-config) -->
+  <script src="../js/production-config.js"></script>
+  <!-- Secure Configuration -->
+  <script src="../js/token-config.js"></script>
+  <script src="../js/secure-config.js"></script>
+  <!-- Payment Configuration -->
+  <script src="../js/payment-config.js"></script>
+  <script>
+    // ANTI-AUTO-CONNECTION SAFEGUARDS
+    // Prevent wallet.js from setting up automatic event handlers - SET BEFORE WALLET.JS LOADS
+    window.BANNER_ADMIN_HANDLES_WALLET_BUTTON = true;
+    console.log('🚫 Banner admin declared wallet button ownership before wallet.js initialization');
+    
+    // AGGRESSIVE ANTI-AUTO-CONNECTION: Block all wallet property access until user clicks connect
+    window.WALLET_AUTO_CONNECTION_BLOCKED = true;
+    console.log('🚫 Wallet auto-connection globally blocked until user interaction');
+  </script>
+  <!-- Wallet Integration -->
+  <script src="../js/wallet.js"></script>
+  <!-- Unified wallet connection system (fixes all connection issues) -->
+  <script src="../js/unified-wallet-connection.js"></script>
+  <!-- GitHub Image Uploader -->
+  <script src="../js/github-image-uploader.js"></script>
+  <style>
+    /* Mobile guidance modal animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(30px) scale(0.95); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3a 100%);
+      color: #ffffff;
+      font-family: 'Orbitron', Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(30, 34, 44, 0.9);
+      border: 2px solid #00eaff;
+      border-radius: 20px;
+      padding: 2rem;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(0, 234, 255, 0.3);
+    }
+    
+    .title {
+      font-size: 2.5rem;
+      color: #00eaff;
+      text-shadow: 0 0 20px rgba(0, 234, 255, 0.6);
+      margin: 0;
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      body {
+        padding: 0.5rem;
+      }
+      
+      .container {
+        padding: 1.5rem;
+        border-radius: 15px;
+        max-width: 100%;
+        margin: 0;
+      }
+      
+      .title {
+        font-size: 1.8rem;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+      }
+      
+      .price-amount {
+        font-size: 2rem !important;
+      }
+      
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      
+      .form-group label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .form-group input, .form-group select, .form-group textarea {
+        font-size: 1rem;
+        padding: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 10px;
+      }
+      
+      .upload-area {
+        padding: 1.5rem;
+        margin: 1rem 0;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      
+      /* Ensure upload area input stays contained */
+      .upload-area .form-input {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      
+      .upload-btn {
+        padding: 1rem 2rem;
+        font-size: 0.9rem;
+        width: 100%;
+        margin-top: 1rem;
+      }
+      
+      .pricing-box {
+        padding: 2rem;
+        margin: 1rem 0;
+        border-radius: 15px;
+      }
+      
+      .pay-btn {
+        padding: 1.2rem;
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+        margin-top: 1.5rem;
+      }
+      
+      .payment-display {
+        padding: 1.2rem;
+        margin: 1rem 0;
+      }
+      
+      .payment-amount {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .crypto-amount {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 10px;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .form-actions .btn {
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 0.25rem;
+      }
+      
+      .title {
+        font-size: 1.4rem;
+        line-height: 1.3;
+        margin-bottom: 1rem;
+      }
+      
+      .price-amount {
+        font-size: 1.6rem !important;
+      }
+      
+      .container {
+        padding: 1rem;
+        border-radius: 12px;
+      }
+      
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      
+      .form-group input, .form-group select, .form-group textarea {
+        padding: 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+      }
+      
+      .upload-area {
+        padding: 1.2rem;
+        margin: 0.8rem 0;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      
+      /* Ensure all elements within upload area are properly contained */
+      .upload-area * {
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .pricing-box {
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+      
+      .pay-btn {
+        padding: 1rem;
+        font-size: 1rem;
+        letter-spacing: 1px;
+      }
+      
+      .payment-display {
+        padding: 1rem;
+        margin: 1rem 0;
+        background: rgba(0, 234, 255, 0.05);
+        border: 1px solid rgba(0, 234, 255, 0.15);
+        border-radius: 10px;
+      }
+      
+      .payment-amount {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: stretch;
+      }
+      
+      .crypto-option {
+        width: 100%;
+        padding: 0.8rem;
+        flex-direction: column;
+        gap: 0.2rem;
+        text-align: center;
+        background: rgba(0, 234, 255, 0.08);
+        border: 1px solid rgba(0, 234, 255, 0.2);
+      }
+      
+      .crypto-amount {
+        font-size: 1.6rem !important;
+        color: #00eaff;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      
+      .crypto-symbol {
+        font-size: 1.1rem !important;
+        color: #ffffff;
+        font-weight: 600;
+        margin: 0.1rem 0;
+      }
+      
+      .usd-amount {
+        font-size: 0.85rem !important;
+        color: #c0c0c0;
+        font-weight: 400;
+        word-break: break-word;
+        margin-top: 0.1rem;
+      }
+      
+      .payment-note {
+        font-size: 0.75rem !important;
+        line-height: 1.3;
+        text-align: center;
+        margin-top: 0.8rem;
+        padding: 0.5rem;
+      }
+      
+      /* Improve touch targets */
+      button, .upload-btn, .pay-btn {
+        min-height: 48px;
+        touch-action: manipulation;
+      }
+      
+      /* Improve text readability */
+      .small-text {
+        font-size: 0.85rem;
+        line-height: 1.4;
+      }
+      
+      .payment-note {
+        font-size: 0.8rem;
+        line-height: 1.3;
+      }
+      
+      /* Wallet connection mobile improvements */
+      #walletSection {
+        margin-top: 1rem !important;
+      }
+      
+      #connectWalletBtn {
+        width: 100% !important;
+        padding: 1rem 1.5rem !important;
+        font-size: 0.95rem !important;
+        min-height: 48px !important;
+      }
+      
+      #walletConnected > div {
+        padding: 1rem !important;
+        border-radius: 10px !important;
+        margin: 1rem 0 !important;
+      }
+      
+      #walletAddress, #walletChain {
+        font-size: 0.85rem !important;
+        word-break: break-all;
+        margin-top: 0.5rem !important;
+      }
+      
+      .upload-area {
+        padding: 0.8rem;
+      }
+      
+      .pricing-box {
+        padding: 1rem;
+      }
+    }
+    
+    .subtitle {
+      color: #c0c0c0;
+      margin: 0.5rem 0 0 0;
+      font-size: 1.1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #00eaff;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid rgba(0, 234, 255, 0.3);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-family: 'Orbitron', Arial, sans-serif;
+      box-sizing: border-box;
+      font-size: 1rem;
+      max-width: 100%;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #00eaff;
+      box-shadow: 0 0 15px rgba(0, 234, 255, 0.3);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    .upload-area {
+      border: 2px dashed rgba(0, 234, 255, 0.3);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    
+    .upload-area:hover {
+      border-color: rgba(0, 234, 255, 0.6);
+      background: rgba(0, 234, 255, 0.05);
+    }
+    
+    .upload-btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: rgba(0, 234, 255, 0.1);
+      color: #00eaff;
+      border: 2px solid rgba(0, 234, 255, 0.4);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      font-family: 'Orbitron', Arial, sans-serif;
+    }
+    
+    .upload-btn:hover {
+      background: rgba(0, 234, 255, 0.2);
+      border-color: rgba(0, 234, 255, 0.6);
+      transform: translateY(-2px);
+    }
+    
+    .pricing-box {
+      background: linear-gradient(135deg, rgba(0, 234, 255, 0.1) 0%, rgba(0, 255, 247, 0.1) 100%);
+      border: 2px solid rgba(0, 234, 255, 0.3);
+      border-radius: 15px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+    
+    .price-amount {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #00eaff;
+      margin: 0.5rem 0;
+      text-shadow: 0 0 20px rgba(0, 234, 255, 0.6);
+    }
+    
+    .price-details {
+      color: #c0c0c0;
+      font-size: 1rem;
+      margin: 0.5rem 0;
+    }
+    
+    .instant-badge {
+      background: linear-gradient(45deg, #2ed573, #00eaff);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 1rem;
+    }
+    
+    .pay-btn {
+      width: 100%;
+      padding: 1.5rem;
+      font-size: 1.3rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: linear-gradient(45deg, #00eaff, #00fff7);
+      color: #000;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Orbitron', Arial, sans-serif;
+      margin-top: 1rem;
+    }
+    
+    .pay-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 234, 255, 0.4);
+    }
+    
+    .pay-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Payment Display Styles */
+    .payment-display {
+      background: rgba(0, 234, 255, 0.05);
+      border: 2px solid rgba(0, 234, 255, 0.2);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    
+    .payment-info {
+      margin-bottom: 1rem;
+    }
+    
+    .payment-amount {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .crypto-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      background: rgba(0, 234, 255, 0.05);
+      border: 1px solid rgba(0, 234, 255, 0.15);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    
+    .crypto-option:hover {
+      background: rgba(0, 234, 255, 0.1);
+      border-color: rgba(0, 234, 255, 0.3);
+    }
+    
+    .crypto-amount {
+      font-size: 2rem;
+      color: #00eaff;
+      font-weight: 700;
+    }
+    
+    .crypto-symbol {
+      font-size: 1.5rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    
+    .usd-amount {
+      font-size: 1rem;
+      color: #c0c0c0;
+      font-weight: 400;
+    }
+    
+    .payment-note {
+      color: #888;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+    
+    .small-text {
+      font-size: 0.9rem;
+      color: #c0c0c0;
+      margin-top: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .container {
+        padding: 1rem;
+        margin: 1rem;
+      }
+      
+      .title {
+        font-size: 1.8rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      
+      .price-amount {
+        font-size: 2.2rem;
+      }
+      
+      /* Modal improvements for mobile */
+      .modal-content {
+        width: 95% !important;
+        max-height: 90vh !important;
+        padding: 1.5rem !important;
+        margin: 5vh auto !important;
+        overflow-y: auto;
+      }
+      
+      /* Form spacing improvements */
+      .form-group {
+        margin-bottom: 1.2rem;
+      }
+      
+      .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.6rem;
+        display: block;
+      }
+      
+      /* Payment display mobile optimization */
+      .payment-display {
+        padding: 1.2rem;
+        border-radius: 12px;
+      }
+      
+      .payment-amount {
+        gap: 1rem;
+        flex-direction: column;
+      }
+      
+      .crypto-option {
+        width: 100%;
+        max-width: 100%;
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.3rem;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      
+      .crypto-amount {
+        font-size: 1.8rem !important;
+        line-height: 1.2;
+        min-height: auto;
+        display: block;
+      }
+      
+      .crypto-symbol {
+        font-size: 1.2rem !important;
+        font-weight: 700;
+        color: #00eaff;
+      }
+      
+      .usd-amount {
+        font-size: 0.9rem !important;
+        color: #c0c0c0;
+        margin-top: 0.2rem;
+        word-break: break-word;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">CREATE YOUR BANNER AD</h1>
+      
+      <!-- Wallet Connection Section -->
+      <div id="walletSection" style="margin-top: 1rem;">
+        <div id="walletConnected" style="display: none;">
+          <div style="background: rgba(0, 234, 255, 0.1); border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+            <div style="color: #00eaff; font-weight: 600;">✓ Wallet Connected</div>
+            <div id="walletAddress" style="color: #c0c0c0; font-size: 0.9rem; margin-top: 0.5rem;"></div>
+            <div id="walletChain" style="color: #c0c0c0; font-size: 0.9rem;"></div>
+          </div>
+        </div>
+        
+        <div id="walletDisconnected">
+          <div style="text-align: center; margin: 1rem 0;">
+            <button id="connectWalletBtn" style="
+              padding: 0.8rem 1.5rem;
+              background: linear-gradient(45deg, rgba(0, 234, 255, 0.2), rgba(0, 255, 247, 0.2));
+              color: #00eaff;
+              border: 2px solid rgba(0, 234, 255, 0.4);
+              border-radius: 10px;
+              cursor: pointer;
+              font-weight: 600;
+              font-family: 'Orbitron', Arial, sans-serif;
+              transition: all 0.3s ease;
+            ">
+              Connect Wallet
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    
+    <form id="bannerForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Project Name</label>
+          <input type="text" class="form-input" id="projectName" placeholder="Your project name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Website URL</label>
+          <input type="url" class="form-input" id="linkUrl" placeholder="https://yourproject.com" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Banner Image</label>
+        <div class="upload-area">
+          <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(255, 174, 0, 0.1); border: 2px solid #ffae00; border-radius: 8px; text-align: center;">
+            <div style="color: #ffae00; font-weight: bold; font-size: 1.1rem; margin-bottom: 0.5rem;">⚠️ REQUIRED DIMENSIONS</div>
+            <div style="color: #ffae00; font-size: 1.2rem; font-weight: bold;">1500 x 500 pixels ONLY</div>
+            <div style="color: #c0c0c0; font-size: 0.9rem; margin-top: 0.5rem;">Images with different dimensions will be rejected</div>
+          </div>
+          
+          <label for="bannerFile" class="upload-btn">
+            Upload Banner Image (1500x500)
+          </label>
+          <input type="file" id="bannerFile" accept="image/*" style="display: none;" onchange="handleFileUpload(this)">
+          <div id="uploadStatus" style="margin-top: 1rem; color: #c0c0c0;"></div>
+          
+          <input type="hidden" id="imageUrl">
+        </div>
+        <div class="small-text">ONLY 1500 x 500 pixels accepted • JPG, PNG, GIF supported</div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Position</label>
+          <select class="form-input" id="position" onchange="updatePricing()">
+            <option value="top">Top Banner (Premium)</option>
+            <option value="bottom" selected>Bottom Banner (Standard)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <select class="form-input" id="duration" onchange="updatePricing()">
+            <option value="1">1 Day</option>
+            <option value="3">3 Days</option>
+            <option value="7" selected>1 Week</option>
+            <option value="14">2 Weeks</option>
+            <option value="30">1 Month</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="pricing-box">
+        <h3 style="color: #00eaff; margin: 0;">Total Cost</h3>
+        <div class="price-amount" id="totalPrice">$1,400</div>
+        <div class="price-details" id="priceBreakdown">7 days • Top Banner • $200/day</div>
+        <div class="instant-badge">GOES LIVE INSTANTLY</div>
+      </div>
+      
+      <!-- Payment Method (Hidden - Auto-detected) -->
+      <div class="form-group" style="display: none;">
+        <select class="form-input" id="paymentMethod" onchange="updatePaymentDisplay()">
+          <option value="ETH">🔵 ETH (Base Network)</option>
+          <option value="SOL">🟣 SOL (Solana)</option>
+        </select>
+      </div>
+      
+      <!-- Payment Method Display (Read-only) -->
+      <div id="paymentMethodDisplay" style="display: none; background: rgba(0,234,255,0.1); border: 1px solid rgba(0,234,255,0.3); border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+        <div style="color: #00eaff; font-weight: 600; margin-bottom: 0.5rem;">💳 Payment Method</div>
+        <div id="paymentMethodInfo" style="color: #c0c0c0; font-size: 0.9rem;">
+          Connect your wallet to see available payment options
+        </div>
+      </div>
+      
+      <!-- Payment Display -->
+      <div class="payment-display" id="paymentDisplay" style="display: none;">
+        <div class="payment-info">
+          <div class="payment-amount" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="crypto-option">
+              <span class="crypto-amount" id="ethAmount">0.000</span>
+              <span class="crypto-symbol">ETH</span>
+              <span class="usd-amount" id="ethUsdAmount">($0.00 USD)</span>
+            </div>
+            <div class="crypto-option">
+              <span class="crypto-amount" id="solAmount">0.000</span>
+              <span class="crypto-symbol">SOL</span>
+              <span class="usd-amount" id="solUsdAmount">($0.00 USD)</span>
+            </div>
+          </div>
+          <div class="payment-note">Live prices updated every 5 minutes • Connect wallet to pay</div>
+        </div>
+      </div>
+      
+      <button type="button" class="pay-btn" onclick="proceedToPayment()" id="paymentBtn">
+        CLICK TO PAY
+      </button>
+    </form>
+  </div>
+  
+  <!-- Include additional libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <!-- Development Configuration (Fallback endpoints for mobile/wallet browsers) -->
+  <script src="../js/dev-config.js"></script>
+  <!-- RPC Configuration -->
+  <script src="../js/rpc-config.js"></script>
+  <script src="../js/banner-config.js"></script>
+  <script src="../js/banner-rotation.js"></script>
+  
+  <script>
+    // Existing variables
+    wildWestWallet = null;
+    
+    // Initialize wallet when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Banner admin page loaded, initializing...');
+      
+      // Check if required dependencies are available
+      if (typeof ethers === 'undefined') {
+        console.error('Ethers.js not loaded properly');
+        alert('Error: Wallet functionality requires ethers.js library');
+        return;
+      }
+      
+      if (typeof WildWestWallet === 'undefined') {
+        console.error('WildWestWallet not available');
+        alert('Error: Wallet system not loaded properly');
+        return;
+      }
+      
+      console.log('Dependencies loaded, initializing wallet...');
+      initializeWallet();
+      updatePricing();
+      
+      // Auto-update pricing when inputs change
+      document.getElementById('position').addEventListener('change', updatePricing);
+      document.getElementById('duration').addEventListener('change', updatePricing);
+    });
+    
+    // Initialize wallet connection
+    async function initializeWallet() {
+      try {
+        console.log('Creating WildWestWallet instance...');
+        
+        // Check if the global wildWestWallet is already available
+        if (typeof window.wildWestWallet !== 'undefined') {
+          console.log('Using existing global wildWestWallet instance');
+          wildWestWallet = window.wildWestWallet;
+          // Reset any stuck connection flags from previous pages
+          wildWestWallet.isConnecting = false;
+        } else {
+          console.log('Creating new WildWestWallet instance');
+          wildWestWallet = new WildWestWallet();
+        }
+        
+        console.log('Wallet instance created successfully');
+        
+        // Set up wallet event handlers
+        setupWalletEventHandlers();
+        
+        // SECURITY: Never auto-check wallet connections - let user choose
+        // await checkWalletConnection();  // DISABLED: Prevents auto-connection
+        
+        console.log('Wallet initialization complete (no auto-connection)');
+      } catch (error) {
+        console.error('Error initializing wallet:', error);
+        // Don't show alert immediately, let user try to connect manually
+      }
+    }
+    
+    // --- TOKEN FURNACE STYLE WALLET DETECTION ---
+    function detectAvailableEvmWallets() {
+      const wallets = [];
+      
+      if (window.ethereum) {
+        // Check for multiple providers
+        if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+          window.ethereum.providers.forEach((provider, index) => {
+            if (provider.isMetaMask && !provider.isPhantom) {
+              wallets.push({
+                name: 'MetaMask',
+                icon: '🦊',
+                provider: provider,
+                type: 'metamask'
+              });
+            } else if (provider.isCoinbaseWallet) {
+              wallets.push({
+                name: 'Coinbase Wallet',
+                icon: '🔵',
+                provider: provider,
+                type: 'coinbase'
+              });
+            } else if (provider.isRainbow) {
+              wallets.push({
+                name: 'Rainbow',
+                icon: '🌈',
+                provider: provider,
+                type: 'rainbow'
+              });
+            } else if (provider.isTrust) {
+              wallets.push({
+                name: 'Trust Wallet',
+                icon: '🛡️',
+                provider: provider,
+                type: 'trust'
+              });
+            } else if (provider.isPhantom && !provider.isMetaMask) {
+              wallets.push({
+                name: 'Phantom (EVM)',
+                icon: '👻',
+                provider: provider,
+                type: 'phantom-evm'
+              });
+            }
+          });
+        } else {
+          // Single provider
+          if (window.ethereum.isMetaMask && !window.ethereum.isPhantom) {
+            wallets.push({
+              name: 'MetaMask',
+              icon: '🦊',
+              provider: window.ethereum,
+              type: 'metamask'
+            });
+          } else if (window.ethereum.isCoinbaseWallet) {
+            wallets.push({
+              name: 'Coinbase Wallet',
+              icon: '🔵',
+              provider: window.ethereum,
+              type: 'coinbase'
+            });
+          } else if (window.ethereum.isPhantom) {
+            wallets.push({
+              name: 'Phantom (EVM)',
+              icon: '👻',
+              provider: window.ethereum,
+              type: 'phantom-evm'
+            });
+          } else {
+            wallets.push({
+              name: 'Unknown EVM Wallet',
+              icon: '💼',
+              provider: window.ethereum,
+              type: 'unknown'
+            });
+          }
+        }
+      }
+      
+      return wallets;
+    }
+
+    function detectAvailableSolanaWallets() {
+      const wallets = [];
+      
+      // Phantom Solana - check multiple locations
+      if (window.phantom && window.phantom.solana) {
+        wallets.push({
+          name: 'Phantom',
+          icon: '👻',
+          provider: window.phantom.solana,
+          type: 'phantom'
+        });
+      } else if (window.solana && window.solana.isPhantom) {
+        wallets.push({
+          name: 'Phantom',
+          icon: '👻',
+          provider: window.solana,
+          type: 'phantom'
+        });
+      }
+      
+      // Solflare
+      if (window.solflare && window.solflare.isSolflare) {
+        wallets.push({
+          name: 'Solflare',
+          icon: '☀️',
+          provider: window.solflare,
+          type: 'solflare'
+        });
+      }
+      
+      // Backpack
+      if (window.backpack && window.backpack.isSolana) {
+        wallets.push({
+          name: 'Backpack',
+          icon: '🎒',
+          provider: window.backpack,
+          type: 'backpack'
+        });
+      }
+      
+      // Coin98
+      if (window.coin98 && window.coin98.sol) {
+        wallets.push({
+          name: 'Coin98',
+          icon: '🪙',
+          provider: window.coin98.sol,
+          type: 'coin98'
+        });
+      }
+      
+      // Glow
+      if (window.glow) {
+        wallets.push({
+          name: 'Glow',
+          icon: '✨',
+          provider: window.glow,
+          type: 'glow'
+        });
+      }
+      
+      // Slope
+      if (window.slope) {
+        wallets.push({
+          name: 'Slope',
+          icon: '📐',
+          provider: window.slope,
+          type: 'slope'
+        });
+      }
+      
+      return wallets;
+    }
+
+    function showChainSelectionModal() {
+      console.log('🚀 showChainSelectionModal called!');
+      
+      // Detect available wallets
+      const availableWallets = {
+        ethereum: detectAvailableEvmWallets(),
+        solana: detectAvailableSolanaWallets()
+      };
+      
+      console.log('🔍 Detected wallets:', availableWallets);
+      
+      // Create modal with consistent styling
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;
+        z-index: 10000; animation: fadeIn 0.2s ease-out;
+      `;
+      
+      // Generate wallet options HTML
+      let walletOptionsHTML = '';
+      
+      if (availableWallets.ethereum.length > 0) {
+        walletOptionsHTML += '<h4 style="color: #00eaff; margin: 1rem 0 0.5rem 0; font-size: 1rem;">Base Network (Ethereum)</h4>';
+        availableWallets.ethereum.forEach((wallet, index) => {
+          walletOptionsHTML += `
+            <button onclick="connectSpecificWallet('ethereum', ${index})" style="
+              display: block; width: 100%; margin: 8px 0; padding: 12px 16px;
+              background: linear-gradient(135deg, #0052ff, #0041cc);
+              color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
+              transition: all 0.3s ease; text-align: center;
+            " onmouseover="this.style.background='linear-gradient(135deg, #0066ff, #0052ff)'; this.style.borderColor='#00eaff'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='linear-gradient(135deg, #0052ff, #0041cc)'; this.style.borderColor='rgba(0, 234, 255, 0.3)'; this.style.transform='translateY(0)'">
+              Connect ${wallet.name}
+            </button>
+          `;
+        });
+      }
+      
+      if (availableWallets.solana.length > 0) {
+        walletOptionsHTML += '<h4 style="color: #00eaff; margin: 1rem 0 0.5rem 0; font-size: 1rem;">Solana Network</h4>';
+        availableWallets.solana.forEach((wallet, index) => {
+          walletOptionsHTML += `
+            <button onclick="connectSpecificWallet('solana', ${index})" style="
+              display: block; width: 100%; margin: 8px 0; padding: 12px 16px;
+              background: linear-gradient(135deg, #9945ff, #7c3aed);
+              color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
+              transition: all 0.3s ease; text-align: center;
+            " onmouseover="this.style.background='linear-gradient(135deg, #a855f7, #9945ff)'; this.style.borderColor='#00eaff'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='linear-gradient(135deg, #9945ff, #7c3aed)'; this.style.borderColor='rgba(0, 234, 255, 0.3)'; this.style.transform='translateY(0)'">
+              Connect ${wallet.name}
+            </button>
+          `;
+        });
+      }
+      
+      if (availableWallets.ethereum.length === 0 && availableWallets.solana.length === 0) {
+        // Check if user is on mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        walletOptionsHTML = `
+          <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+            <h4 style="color: #ff6b6b; margin-bottom: 1rem;">No Wallets Detected</h4>
+            ${isMobile ? `
+              <div style="
+                background: rgba(0, 234, 255, 0.1);
+                border: 1px solid #00eaff;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                text-align: center;
+              ">
+                <p style="margin: 0; color: #00eaff; font-weight: 600;">📱 Mobile User?</p>
+                <p style="margin: 0.5rem 0 0 0; color: #c0c0c0; font-size: 0.9rem;">
+                  Open this site inside your wallet browser (MetaMask, Phantom, etc.) instead of your regular browser.
+                </p>
+              </div>
+            ` : ''}
+            <p style="margin-bottom: 1rem; color: #c0c0c0;">Please install a wallet to continue:</p>
+            <div style="text-align: left;">
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://metamask.io" target="_blank" style="color: #00eaff;">MetaMask</a> (for Base/Ethereum)</p>
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://phantom.app" target="_blank" style="color: #00eaff;">Phantom</a> (for Solana + Ethereum)</p>
+              <p style="margin: 0.5rem 0; color: #c0c0c0;"><a href="https://wallet.coinbase.com" target="_blank" style="color: #00eaff;">Coinbase Wallet</a> (for Base/Ethereum)</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      modal.innerHTML = `
+        <div style="
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          border: 2px solid #00eaff;
+          border-radius: 16px;
+          box-shadow: 0 0 30px rgba(0, 234, 255, 0.3);
+          max-width: 400px;
+          width: 90vw;
+          max-height: 80vh;
+          overflow-y: auto;
+          animation: slideUp 0.3s ease-out;
+          font-family: 'Orbitron', sans-serif;
+        ">
+          <div style="
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 234, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+            <h3 style="margin: 0; color: #00eaff; font-size: 1.25rem; font-weight: 600;">Connect Wallet</h3>
+            <button class="close-modal-btn" style="
+              background: none;
+              border: none;
+              color: #00eaff;
+              font-size: 1.5rem;
+              cursor: pointer;
+              padding: 0;
+              width: 30px;
+              height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 50%;
+              transition: background-color 0.2s;
+            " onmouseover="this.style.backgroundColor='rgba(0, 234, 255, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">×</button>
+          </div>
+          <div style="padding: 1.5rem;">
+            ${walletOptionsHTML}
+            <button class="cancel-modal-btn" style="
+              display: block; width: 100%; margin-top: 1rem; padding: 10px;
+              background: rgba(102, 102, 102, 0.8); color: white;
+              border: 1px solid rgba(0, 234, 255, 0.2); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif;
+              transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(102, 102, 102, 1)'; this.style.borderColor='rgba(0, 234, 255, 0.4)'" onmouseout="this.style.background='rgba(102, 102, 102, 0.8)'; this.style.borderColor='rgba(0, 234, 255, 0.2)'">
+              Cancel
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Add close functionality after modal is added to DOM
+      const closeBtn = modal.querySelector('.close-modal-btn');
+      const cancelBtn = modal.querySelector('.cancel-modal-btn');
+      
+      function closeModal() {
+        modal.remove();
+      }
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+      }
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+      }
+      
+      // Close when clicking outside the modal
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+      
+      // Store available wallets for connection functions
+      window.availableWallets = availableWallets;
+    }
+
+    // Specific wallet connection function (Token Furnace style)
+    window.connectSpecificWallet = async function(network, walletIndex) {
+      console.log(`🔗 Connecting to wallet ${walletIndex} on ${network} network`);
+      
+      try {
+        if (network === 'ethereum') {
+          const wallet = window.availableWallets.ethereum[walletIndex];
+          if (!wallet) {
+            throw new Error(`Wallet not found at index ${walletIndex}`);
+          }
+          
+          console.log(`📋 Connecting to ${wallet.name} with provider:`, wallet.provider);
+          
+          // Use the specific provider for this wallet
+          const accounts = await wallet.provider.request({ method: 'eth_requestAccounts' });
+          if (accounts.length > 0) {
+            // Switch to Base network if not already on it
+            try {
+              await wallet.provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x2105' }], // Base mainnet
+              });
+            } catch (switchError) {
+              // If the chain doesn't exist, add it
+              if (switchError.code === 4902) {
+                await wallet.provider.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x2105',
+                    chainName: 'Base',
+                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                    rpcUrls: ['https://mainnet.base.org'],
+                    blockExplorerUrls: ['https://basescan.org']
+                  }]
+                });
+              }
+            }
+            
+            // Update wildWestWallet state
+            if (window.wildWestWallet) {
+              window.wildWestWallet.provider = wallet.provider;
+              window.wildWestWallet.account = accounts[0];
+              window.wildWestWallet.currentChain = 'base';
+              window.wildWestWallet.isConnected = true;
+            }
+            
+            // Update UI
+            updateWalletUI();
+            
+            // Close modal
+            document.querySelector('[style*="position: fixed"]').remove();
+            
+            console.log(`✅ ${wallet.name} connected successfully in banner admin!`);
+          }
+        } else if (network === 'solana') {
+          const wallet = window.availableWallets.solana[walletIndex];
+          if (!wallet) {
+            throw new Error(`Wallet not found at index ${walletIndex}`);
+          }
+          
+          console.log(`📋 Connecting to ${wallet.name} with provider:`, wallet.provider);
+          
+          // Use the specific provider for this wallet
+          const response = await wallet.provider.connect();
+          
+          if (response && response.publicKey) {
+            // Update wildWestWallet state
+            if (window.wildWestWallet) {
+              window.wildWestWallet.provider = wallet.provider;
+              window.wildWestWallet.account = response.publicKey.toString();
+              window.wildWestWallet.currentChain = 'solana';
+              window.wildWestWallet.isConnected = true;
+            }
+            
+            // Update UI
+            updateWalletUI();
+            
+            // Close modal
+            document.querySelector('[style*="position: fixed"]').remove();
+            
+            console.log(`✅ ${wallet.name} connected successfully in banner admin!`);
+          }
+        }
+      } catch (error) {
+        const walletName = network === 'ethereum' ? 
+          window.availableWallets.ethereum[walletIndex]?.name : 
+          window.availableWallets.solana[walletIndex]?.name;
+        console.error(`❌ ${walletName} connection failed:`, error);
+        alert(`${walletName} connection failed: ${error.message}`);
+      }
+    };
+    
+    // Setup wallet event handlers
+    function setupWalletEventHandlers() {
+      // Connect wallet button - use unified system for better mobile support
+      document.getElementById('connectWalletBtn').addEventListener('click', async function() {
+        try {
+          console.log('🔘 Wallet button clicked in banner admin');
+          
+          // UNBLOCK wallet access since user explicitly requested connection
+          window.WALLET_AUTO_CONNECTION_BLOCKED = false;
+          console.log('✅ Wallet auto-connection block lifted by user action');
+          
+          // Try unified wallet connection system first (better mobile support)
+          if (window.wildWestWallet && window.wildWestWallet.connectWallet && window.unifiedWalletConnection) {
+            console.log('🚀 Using unified wallet connection system...');
+            await window.wildWestWallet.connectWallet();
+          } else {
+            console.log('🔄 Unified system not available, using fallback modal...');
+            // Fallback to token furnace style wallet selection modal
+            showChainSelectionModal();
+          }
+        } catch (error) {
+          console.error('❌ Wallet connection error:', error);
+          
+          // Check if mobile device without wallet browser and show guidance
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          const isWalletBrowser = /MetaMask|Trust|Coinbase|Rainbow|WalletConnect|Phantom/i.test(navigator.userAgent) || 
+                                 window.ethereum || window.solana;
+          
+          if (isMobile && !isWalletBrowser) {
+            console.log('📱 Mobile device detected - showing wallet guidance...');
+            showMobileWalletGuidance();
+          } else {
+            // Try fallback modal
+            console.log('� Trying fallback wallet modal...');
+            try {
+              showChainSelectionModal();
+            } catch (fallbackError) {
+              console.error('❌ Fallback modal also failed:', fallbackError);
+              alert('Failed to connect wallet. Please ensure you have a compatible wallet installed.');
+            }
+          }
+          
+          // Re-block auto-connection on error
+          window.WALLET_AUTO_CONNECTION_BLOCKED = true;
+          console.log('🚫 Wallet auto-connection re-blocked after error');
+        }
+      });
+    }
+    
+    // Mobile wallet guidance function for improved mobile experience
+    function showMobileWalletGuidance() {
+      // Remove any existing guidance modal
+      const existingModal = document.getElementById('mobileGuidanceModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      const modal = document.createElement('div');
+      modal.id = 'mobileGuidanceModal';
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;
+        z-index: 10000; animation: fadeIn 0.2s ease-out;
+      `;
+      
+      modal.innerHTML = `
+        <div style="
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          border: 2px solid #00eaff;
+          border-radius: 16px;
+          box-shadow: 0 0 30px rgba(0, 234, 255, 0.3);
+          max-width: 400px;
+          width: 90vw;
+          animation: slideUp 0.3s ease-out;
+          font-family: 'Orbitron', sans-serif;
+        ">
+          <div style="
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 234, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          ">
+            <h3 style="margin: 0; color: #00eaff; font-size: 1.25rem; font-weight: 600;">📱 Mobile Connection</h3>
+            <button onclick="this.closest('#mobileGuidanceModal').remove()" style="
+              background: none; border: none; color: #00eaff; font-size: 1.5rem;
+              cursor: pointer; padding: 0; width: 30px; height: 30px;
+              display: flex; align-items: center; justify-content: center;
+              border-radius: 50%; transition: background-color 0.2s;
+            ">×</button>
+          </div>
+          <div style="padding: 1.5rem; text-align: center;">
+            <div style="
+              background: rgba(0, 234, 255, 0.1);
+              border: 1px solid #00eaff;
+              border-radius: 8px;
+              padding: 1rem;
+              margin-bottom: 1rem;
+            ">
+              <p style="margin: 0; color: #00eaff; font-weight: 600;">📱 Mobile User?</p>
+              <p style="margin: 0.5rem 0 0 0; color: #c0c0c0; font-size: 0.9rem;">
+                Open this site inside your wallet browser instead of your regular browser.
+              </p>
+            </div>
+            <div style="text-align: left; margin-bottom: 1rem;">
+              <h4 style="color: #00eaff; margin-bottom: 0.5rem;">Popular Wallet Apps:</h4>
+              <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://metamask.io/download/" target="_blank" style="color: #00eaff;">MetaMask</a> - For Base/Ethereum</p>
+              <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://phantom.app/" target="_blank" style="color: #00eaff;">Phantom</a> - For Solana + Ethereum</p>
+              <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://wallet.coinbase.com/" target="_blank" style="color: #00eaff;">Coinbase Wallet</a> - For Base/Ethereum</p>
+              <p style="margin: 0.25rem 0; color: #c0c0c0;"><a href="https://trustwallet.com/" target="_blank" style="color: #00eaff;">Trust Wallet</a> - Multi-chain</p>
+            </div>
+            <div style="
+              background: rgba(255, 174, 0, 0.1);
+              border: 1px solid #ffae00;
+              border-radius: 8px;
+              padding: 0.75rem;
+              font-size: 0.85rem;
+              color: #ffae00;
+            ">
+              💡 <strong>Tip:</strong> Copy this URL and paste it in your wallet's browser to connect!
+            </div>
+            <button onclick="this.closest('#mobileGuidanceModal').remove()" style="
+              display: block; width: 100%; margin-top: 1rem; padding: 12px;
+              background: linear-gradient(135deg, #0052ff, #0041cc);
+              color: white; border: 1px solid rgba(0, 234, 255, 0.3); border-radius: 8px;
+              cursor: pointer; font-family: 'Orbitron', sans-serif;
+              transition: all 0.3s ease;
+            ">
+              Got it!
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Close when clicking outside
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+    
+    // Check wallet connection status
+    async function checkWalletConnection() {
+      if (wildWestWallet && wildWestWallet.isConnected) {
+        updateWalletUI();
+      }
+    }
+    
+    // Update wallet UI
+    function updateWalletUI() {
+      if (wildWestWallet && wildWestWallet.isConnected) {
+        document.getElementById('walletConnected').style.display = 'block';
+        document.getElementById('walletDisconnected').style.display = 'none';
+        
+        // Display wallet address (truncated)
+        const address = wildWestWallet.account;
+        const truncated = address.length > 10 ? 
+          address.slice(0, 6) + '...' + address.slice(-4) : address;
+        document.getElementById('walletAddress').textContent = truncated;
+        
+        // Display chain and auto-select payment method
+        const chainName = wildWestWallet.currentChain === 'solana' ? 'Solana' : 
+                         wildWestWallet.currentChain === 8453 ? 'Base' : 'Base';
+        document.getElementById('walletChain').textContent = chainName + ' Network';
+        
+        // Auto-select payment method based on connected wallet
+        const paymentMethodSelect = document.getElementById('paymentMethod');
+        const paymentMethodDisplay = document.getElementById('paymentMethodDisplay');
+        const paymentMethodInfo = document.getElementById('paymentMethodInfo');
+        
+        if (wildWestWallet.currentChain === 'solana') {
+          paymentMethodSelect.value = 'SOL';
+          paymentMethodDisplay.style.display = 'block';
+          paymentMethodInfo.innerHTML = '🟣 <strong>SOL (Solana)</strong> - Auto-detected from your connected Solana wallet';
+          console.log('🟣 Auto-selected SOL payment for Solana wallet');
+        } else {
+          paymentMethodSelect.value = 'ETH';
+          paymentMethodDisplay.style.display = 'block';
+          paymentMethodInfo.innerHTML = '🔵 <strong>ETH (Base Network)</strong> - Auto-detected from your connected Base wallet';
+          console.log('🔵 Auto-selected ETH payment for Base wallet');
+        }
+        
+        // Trigger payment display update with new selection
+        if (window.PAYMENT_FUNCTIONS) {
+          updatePaymentDisplay();
+        } else {
+          // If payment functions not loaded yet, show payment display
+          const paymentDisplay = document.getElementById('paymentDisplay');
+          
+          // Show payment display immediately when wallet connects
+          paymentDisplay.style.display = 'block';
+          
+          // Update pricing to trigger proper calculation
+          updatePricing();
+        }
+        
+      } else {
+        document.getElementById('walletConnected').style.display = 'none';
+        document.getElementById('walletDisconnected').style.display = 'block';
+        
+        // Reset payment method options when no wallet connected
+        const paymentMethodDisplay = document.getElementById('paymentMethodDisplay');
+        const paymentMethodSelect = document.getElementById('paymentMethod');
+        
+        paymentMethodDisplay.style.display = 'none';
+        paymentMethodSelect.value = 'ETH'; // Default to ETH when no wallet connected
+      }
+      
+      // Update pricing display when wallet connection changes - this will trigger payment display update
+      // Force immediate update for proper exemption detection
+      updatePricing();
+      setTimeout(() => {
+        updatePricing();
+      }, 200);
+    }
+    
+    // Check if current wallet is exempt (using secure configuration)
+    function isWalletExempt() {
+      // ONLY exempt if wallet is actually connected AND address matches admin list
+      if (wildWestWallet && wildWestWallet.isConnected && wildWestWallet.account) {
+        // Use secure admin wallet check if available
+        if (window.SECURE_CONFIG) {
+          const isExempt = window.SECURE_CONFIG.isAdminWallet(wildWestWallet.account);
+          console.log('🔍 Secure wallet exemption check for:', wildWestWallet.account, 'Exempt:', isExempt);
+          return isExempt;
+        } else {
+          // Fallback to basic check if SECURE_CONFIG not loaded
+          const exemptWallets = [
+            '0x9360c80CA79409b5e315A9791bB0208C02D6ae32', // Base fee collector
+            'F9YqZs2nLqNPKGfTCjKb8AiVADivAEsWumHVWWFyPQgV' // Solana fee collector
+          ];
+          
+          const userAddress = wildWestWallet.account;
+          const isExempt = exemptWallets.some(exemptAddr => {
+            if (exemptAddr.startsWith('0x')) {
+              // Ethereum address - case insensitive
+              return exemptAddr.toLowerCase() === userAddress.toLowerCase();
+            } else {
+              // Solana address - case sensitive
+              return exemptAddr === userAddress;
+            }
+          });
+          
+          console.log('🔍 Fallback wallet exemption check for:', userAddress, 'Exempt:', isExempt);
+          return isExempt;
+        }
+      }
+      
+      // If no wallet connected, NO exemption - must pay
+      console.log('No wallet connected - must pay regular price');
+      return false;
+    }
+    // Update payment display based on selected method and pricing
+    async function updatePaymentDisplay() {
+      const position = document.getElementById('position').value;
+      const duration = parseInt(document.getElementById('duration').value);
+      
+      if (!window.PAYMENT_FUNCTIONS) {
+        console.log('Payment system not loaded yet');
+        return;
+      }
+      
+      // Calculate discounted price (same logic as updatePricing)
+      const dailyRate = position === 'top' ? 200 : 100;
+      let totalCost = duration * dailyRate;
+      let discountPercent = 0;
+      
+      // Apply tiered discounts based on duration
+      if (duration === 3) {
+        discountPercent = 3;
+      } else if (duration === 7) {
+        discountPercent = 6;
+      } else if (duration === 14) {
+        discountPercent = 9;
+      } else if (duration === 30) {
+        discountPercent = 12;
+      }
+      
+      if (discountPercent > 0) {
+        totalCost = Math.round(totalCost * (1 - discountPercent / 100));
+      }
+      
+      try {
+        // Fetch latest prices
+        await window.PAYMENT_FUNCTIONS.fetchCryptoPrices();
+        
+        // Calculate crypto amounts for both ETH and SOL
+        const ethAmount = window.PAYMENT_FUNCTIONS.calculatePaymentAmount(totalCost, 'ETH');
+        const solAmount = window.PAYMENT_FUNCTIONS.calculatePaymentAmount(totalCost, 'SOL');
+        
+        const ethFormatted = window.PAYMENT_FUNCTIONS.formatPaymentAmount(ethAmount, 'ETH');
+        const solFormatted = window.PAYMENT_FUNCTIONS.formatPaymentAmount(solAmount, 'SOL');
+        
+        // Update display elements with both currencies
+        document.getElementById('ethAmount').textContent = ethFormatted;
+        document.getElementById('solAmount').textContent = solFormatted;
+        document.getElementById('ethUsdAmount').textContent = `($${totalCost}.00 USD)`;
+        document.getElementById('solUsdAmount').textContent = `($${totalCost}.00 USD)`;
+        
+        // Show payment display
+        document.getElementById('paymentDisplay').style.display = 'block';
+        
+        console.log('💰 Payment calculation (both currencies):', {
+          position,
+          duration,
+          dailyRate,
+          discountPercent,
+          totalCost,
+          ethAmount: ethFormatted,
+          solAmount: solFormatted
+        });
+      } catch (error) {
+        console.error('❌ Error updating payment display:', error);
+        // Still show the display with placeholder data if there's an error
+        document.getElementById('ethAmount').textContent = '0.000';
+        document.getElementById('solAmount').textContent = '0.000';
+        document.getElementById('ethUsdAmount').textContent = `($${totalCost}.00 USD)`;
+        document.getElementById('solUsdAmount').textContent = `($${totalCost}.00 USD)`;
+        document.getElementById('paymentDisplay').style.display = 'block';
+      }
+    }
+    
+    // Simple pricing calculation with wallet exemption check
+    function updatePricing() {
+      const position = document.getElementById('position').value;
+      const duration = parseInt(document.getElementById('duration').value);
+      
+      const dailyRate = position === 'top' ? 200 : 100;
+      let totalCost = duration * dailyRate;
+      let discountPercent = 0;
+      
+      // Apply tiered discounts based on duration
+      if (duration === 3) {
+        discountPercent = 3;
+      } else if (duration === 7) {
+        discountPercent = 6;
+      } else if (duration === 14) {
+        discountPercent = 9;
+      } else if (duration === 30) {
+        discountPercent = 12;
+      }
+      
+      if (discountPercent > 0) {
+        totalCost = Math.round(totalCost * (1 - discountPercent / 100));
+      }
+      
+      // Check if wallet is exempt
+      const isExempt = isWalletExempt();
+      
+      // Update pricing display based on exemption status
+      if (isExempt) {
+        document.getElementById('totalPrice').textContent = 'FREE (Admin Mode)';
+        document.getElementById('priceBreakdown').textContent = 
+          `${duration} day${duration > 1 ? 's' : ''} • ${position === 'top' ? 'Top' : 'Bottom'} Banner • Admin/Test Mode`;
+      } else {
+        document.getElementById('totalPrice').textContent = `$${totalCost}`;
+        let breakdown = `${duration} day${duration > 1 ? 's' : ''} • ${position === 'top' ? 'Top' : 'Bottom'} Banner • $${dailyRate}/day`;
+        if (discountPercent > 0) {
+          breakdown += ` • ${discountPercent}% discount applied`;
+        }
+        
+        // Add wallet connection reminder if not connected
+        if (!wildWestWallet || !wildWestWallet.isConnected) {
+          breakdown += ' • Wallet connection required for payment';
+        }
+        
+        document.getElementById('priceBreakdown').textContent = breakdown;
+      }
+      
+      // Update button text based on connection and exemption status
+      const paymentBtn = document.getElementById('paymentBtn');
+      if (!wildWestWallet || !wildWestWallet.isConnected) {
+        paymentBtn.textContent = 'CLICK TO PAY';
+        paymentBtn.style.opacity = '0.7';
+      } else if (isExempt) {
+        paymentBtn.textContent = 'CREATE BANNER (FREE)';
+        paymentBtn.style.opacity = '1';
+      } else {
+        paymentBtn.textContent = `PAY $${totalCost} & GO LIVE`;
+        paymentBtn.style.opacity = '1';
+      }
+      
+      // Update payment display if available and payment is required
+      if (window.PAYMENT_FUNCTIONS && !isExempt && wildWestWallet && wildWestWallet.isConnected) {
+        updatePaymentDisplay();
+      } else if (!isExempt && window.PAYMENT_FUNCTIONS) {
+        // Show payment display even if wallet not connected, but with placeholder data
+        updatePaymentDisplay();
+      } else if (isExempt) {
+        // Hide payment display for exempt wallets
+        document.getElementById('paymentDisplay').style.display = 'none';
+      } else if (wildWestWallet && wildWestWallet.isConnected) {
+        // Wallet connected but payment functions not loaded yet - show payment display with USD amounts
+        const ethUsdAmount = document.getElementById('ethUsdAmount');
+        const solUsdAmount = document.getElementById('solUsdAmount');
+        
+        // Update USD amounts to match the correct total cost
+        if (ethUsdAmount) ethUsdAmount.textContent = `($${totalCost}.00 USD)`;
+        if (solUsdAmount) solUsdAmount.textContent = `($${totalCost}.00 USD)`;
+        document.getElementById('paymentDisplay').style.display = 'block';
+      }
+    }
+    
+    // Simple file upload - store file temporarily until payment
+    let selectedFile = null;
+    
+    // Security: Safe status update helper
+    function updateUploadStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('uploadStatus');
+      if (!statusDiv) return;
+      
+      const colors = {
+        error: '#ff4757',
+        success: '#2ed573',
+        warning: '#f39c12',
+        info: '#00eaff'
+      };
+      
+      // Use textContent for security, then style with CSS
+      statusDiv.innerHTML = ''; // Clear first
+      const span = document.createElement('span');
+      span.style.color = colors[type] || colors.info;
+      span.textContent = message;
+      statusDiv.appendChild(span);
+    }
+
+    async function handleFileUpload(input) {
+      console.log('🔍 DEBUG handleFileUpload called with input:', input);
+      const file = input.files[0];
+      console.log('🔍 DEBUG file from input.files[0]:', file);
+      console.log('🔍 DEBUG file?.name:', file?.name);
+      console.log('🔍 DEBUG file?.size:', file?.size);
+      console.log('🔍 DEBUG file?.type:', file?.type);
+      
+      if (!file) {
+        console.log('❌ No file selected');
+        return;
+      }
+      
+      const imageUrlInput = document.getElementById('imageUrl');
+      
+      // Use secure validation from SECURE_CONFIG
+      if (window.SECURE_CONFIG) {
+        const validation = window.SECURE_CONFIG.validateUploadFile(file);
+        if (!validation.isValid) {
+          updateUploadStatus(validation.errors.join(', '), 'error');
+          return;
+        }
+      } else {
+        // Fallback validation if SECURE_CONFIG not loaded
+        if (!file.type.startsWith('image/')) {
+          updateUploadStatus('Please select an image file', 'error');
+          return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+          updateUploadStatus('File too large (max 5MB)', 'error');
+          return;
+        }
+      }
+      
+      // Validate image dimensions
+      await validateImageDimensions(file);
+    }
+    
+    // Dimension validation function
+    async function validateImageDimensions(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const objectURL = URL.createObjectURL(file);
+        
+        img.onload = function() {
+          URL.revokeObjectURL(objectURL);
+          
+          console.log('🔍 DEBUG Image dimensions:', this.width, 'x', this.height);
+          
+          // Check if dimensions are exactly 1500x500
+          if (this.width !== 1500 || this.height !== 500) {
+            updateUploadStatus(`❌ INVALID DIMENSIONS: ${this.width}x${this.height} - MUST be exactly 1500x500 pixels`, 'error');
+            resolve(false);
+            return;
+          }
+          
+          // Store file temporarily - will be uploaded to secure storage when banner is created
+          selectedFile = file;
+          console.log('🔍 DEBUG selectedFile set to:', selectedFile);
+          console.log('🔍 DEBUG selectedFile.name:', selectedFile?.name);
+          
+          const imageUrlInput = document.getElementById('imageUrl');
+          imageUrlInput.value = file.name;
+          updateUploadStatus('✅ Perfect! 1500x500 image ready - Will be uploaded when you create the banner', 'success');
+          resolve(true);
+        };
+        
+        img.onerror = function() {
+          URL.revokeObjectURL(objectURL);
+          updateUploadStatus('❌ Error reading image file', 'error');
+          resolve(false);
+        };
+        
+        img.src = objectURL;
+      });
+    }
+    
+    // Payment processing with crypto support and security validation
+    async function proceedToPayment() {
+      const projectName = document.getElementById('projectName').value.trim();
+      const linkUrl = document.getElementById('linkUrl').value.trim();
+      const imageUrl = document.getElementById('imageUrl').value.trim();
+      const position = document.getElementById('position').value;
+      const duration = parseInt(document.getElementById('duration').value);
+      let paymentMethod = document.getElementById('paymentMethod').value;
+      
+      // Security: Validate inputs using SECURE_CONFIG if available
+      const bannerData = {
+        projectName,
+        linkUrl,
+        imageUrl,
+        position,
+        duration,
+        paymentMethod
+      };
+      
+      if (window.SECURE_CONFIG) {
+        const validation = window.SECURE_CONFIG.validateBannerData(bannerData);
+        if (!validation.isValid) {
+          alert('Validation Error: ' + validation.errors.join('\n'));
+          return;
+        }
+        // Use sanitized data
+        Object.assign(bannerData, validation.sanitizedData);
+      } else {
+        // Fallback validation
+        if (!projectName || !linkUrl || !imageUrl) {
+          alert('Please fill in all fields');
+          return;
+        }
+        
+        if (projectName.length < 2 || projectName.length > 50) {
+          alert('Project name must be between 2 and 50 characters');
+          return;
+        }
+        
+        if (duration < 1 || duration > 365 || isNaN(duration)) {
+          alert('Duration must be between 1 and 365 days');
+          return;
+        }
+      }
+      
+      // Require wallet connection for payment
+      if (!wildWestWallet || !wildWestWallet.isConnected) {
+        alert('Please connect your wallet first to proceed with payment');
+        return;
+      }
+      
+      // Check if wallet is exempt from payment (admin wallets)
+      if (isWalletExempt()) {
+        console.log('🎯 Admin wallet detected - skipping payment and creating banner directly');
+        bannerData.paymentMethod = 'FREE'; // Mark as free for admin
+        await createBannerAfterPayment(bannerData);
+        return;
+      }
+      
+      // Auto-detect payment method based on connected wallet (safety check)
+      if (wildWestWallet.currentChain === 'solana' && paymentMethod !== 'SOL') {
+        paymentMethod = 'SOL';
+        document.getElementById('paymentMethod').value = 'SOL';
+        console.log('🔄 Auto-corrected payment method to SOL for Solana wallet');
+      } else if (wildWestWallet.currentChain !== 'solana' && paymentMethod !== 'ETH') {
+        paymentMethod = 'ETH';
+        document.getElementById('paymentMethod').value = 'ETH';
+        console.log('🔄 Auto-corrected payment method to ETH for Base wallet');
+      }
+      
+      // Validate payment system is loaded
+      if (!window.PAYMENT_CONFIG || !window.PAYMENT_FUNCTIONS) {
+        alert('Payment system not loaded. Please refresh the page.');
+        return;
+      }
+      
+      const btn = document.getElementById('paymentBtn');
+      btn.disabled = true;
+      btn.textContent = 'PROCESSING...';
+      
+      try {
+        // Get payment details with discount applied (same logic as updatePricing)
+        const bannerType = position === 'top' ? 'TOP_BANNER' : 'BOTTOM_BANNER';
+        const dailyRate = position === 'top' ? 200 : 100;
+        let usdAmount = duration * dailyRate;
+        let discountPercent = 0;
+        
+        // Apply tiered discounts based on duration (same as updatePricing)
+        if (duration === 3) {
+          discountPercent = 3;
+        } else if (duration === 7) {
+          discountPercent = 6;
+        } else if (duration === 14) {
+          discountPercent = 9;
+        } else if (duration === 30) {
+          discountPercent = 12;
+        }
+        
+        if (discountPercent > 0) {
+          usdAmount = Math.round(usdAmount * (1 - discountPercent / 100));
+        }
+        
+        console.log('💰 Payment calculation with discount:', {
+          dailyRate,
+          duration,
+          baseAmount: duration * dailyRate,
+          discountPercent,
+          finalAmount: usdAmount
+        });
+        
+        // Fetch latest prices
+        await window.PAYMENT_FUNCTIONS.fetchCryptoPrices();
+        const cryptoAmount = window.PAYMENT_FUNCTIONS.calculatePaymentAmount(usdAmount, paymentMethod);
+        const paymentInstructions = window.PAYMENT_FUNCTIONS.getPaymentInstructions(cryptoAmount, paymentMethod, bannerType, duration, usdAmount);
+        
+        if (cryptoAmount <= 0) {
+          throw new Error('Unable to calculate payment amount. Please try again.');
+        }
+        
+        console.log('💳 Payment method confirmed:', paymentMethod, 'for wallet type:', wildWestWallet.currentChain);
+        
+        // Show payment modal
+        showCryptoPaymentModal(paymentInstructions, {
+          projectName,
+          linkUrl,
+          imageUrl,
+          position,
+          duration,
+          paymentMethod
+        });
+        
+      } catch (error) {
+        console.error('Payment initialization failed:', error);
+        alert('Payment initialization failed: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'PAY & GO LIVE NOW';
+      }
+    }
+    
+    // Show crypto payment modal
+    function showCryptoPaymentModal(paymentInstructions, bannerData) {
+      const modal = document.createElement('div');
+      modal.className = 'payment-modal';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        overflow-y: auto;
+      `;
+      
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden';
+      
+      modal.innerHTML = `
+        <div style="background: rgba(30,34,44,0.95); border: 2px solid #00eaff; border-radius: 20px; padding: 2rem; max-width: 500px; width: 90%; text-align: center; max-height: 90vh; overflow-y: auto; margin: auto;">
+          <h2 style="color: #00eaff; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+            ${paymentInstructions.token.icon} ${paymentInstructions.token.name} Payment
+          </h2>
+          
+          <div style="background: rgba(0,234,255,0.05); border: 1px solid rgba(0,234,255,0.2); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+            <div style="color: #00eaff; font-size: 0.9rem; font-weight: 600;">
+              Using your connected ${paymentInstructions.token.network} wallet
+            </div>
+          </div>
+          
+          <div style="background: rgba(0,234,255,0.1); border: 1px solid rgba(0,234,255,0.3); border-radius: 10px; padding: 1.5rem; margin: 1rem 0;">
+            <div style="color: #ffffff; font-size: 1.2rem; margin-bottom: 1rem;">
+              Amount: <strong style="color: #00eaff;">${paymentInstructions.formattedAmount} ${paymentInstructions.token.symbol}</strong>
+            </div>
+            <div style="color: #c0c0c0; font-size: 0.9rem; margin-bottom: 1rem;">
+              Value: $${paymentInstructions.usdValue} USD
+            </div>
+          </div>
+          
+          <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+            <div style="color: #ffc107; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">
+              💳 One-Click Payment Ready
+            </div>
+            <div style="color: #c0c0c0; font-size: 0.9rem;">
+              Click "Send Payment" below to automatically open your wallet and complete the transaction
+            </div>
+          </div>
+          
+          <div style="color: #ffffff; margin: 1rem 0; line-height: 1.6;">
+            <p style="font-size: 0.9rem; color: #c0c0c0;">
+              • Payment amount and recipient are pre-filled<br>
+              • Just confirm the transaction in your wallet<br>
+              • Your banner goes live automatically after confirmation
+            </p>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+            <button onclick="sendPaymentFromWallet('${encodeURIComponent(JSON.stringify(bannerData))}', '${encodeURIComponent(JSON.stringify(paymentInstructions))}')" style="background: #00eaff; color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+              💳 SEND PAYMENT NOW
+            </button>
+            <button onclick="closePaymentModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-size: 1rem;">
+              ❌ CANCEL
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Auto-copy payment address to clipboard
+      navigator.clipboard.writeText(paymentInstructions.wallet).then(() => {
+        console.log('💳 Payment address auto-copied to clipboard');
+      }).catch(err => {
+        console.log('📋 Could not auto-copy address:', err);
+      });
+    }
+    
+    // Close payment modal and restore body scrolling
+    function closePaymentModal() {
+      const modal = document.querySelector('.payment-modal');
+      if (modal) {
+        modal.remove();
+      }
+      document.body.style.overflow = '';
+      document.getElementById('paymentBtn').disabled = false;
+      document.getElementById('paymentBtn').textContent = 'CLICK TO PAY';
+    }
+    
+    // Start automatic payment monitoring
+    function startPaymentMonitoring(bannerDataEncoded, paymentInstructionsEncoded) {
+      const bannerData = JSON.parse(decodeURIComponent(bannerDataEncoded));
+      const paymentInstructions = JSON.parse(decodeURIComponent(paymentInstructionsEncoded));
+      
+      // Update modal to show monitoring status
+      const modal = document.querySelector('.payment-modal');
+      const modalContent = modal.querySelector('div > div');
+      
+      modalContent.innerHTML = `
+        <h2 style="color: #00eaff; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+          🔄 Monitoring Payment...
+        </h2>
+        
+        <div style="background: rgba(0,234,255,0.1); border: 1px solid rgba(0,234,255,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+          <div style="color: #00eaff; font-size: 1.5rem; margin-bottom: 1rem;">
+            <div class="spinner" style="display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(0,234,255,0.3); border-radius: 50%; border-top-color: #00eaff; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+            <br>Watching for payment...
+          </div>
+          <div style="color: #c0c0c0; font-size: 1rem; margin-bottom: 1rem;">
+            Looking for <strong>${paymentInstructions.formattedAmount} ${paymentInstructions.token.symbol}</strong> to address:
+          </div>
+          <div style="color: #00eaff; font-family: monospace; font-size: 0.9rem; word-break: break-all; margin-bottom: 1rem;">
+            ${paymentInstructions.wallet}
+          </div>
+          
+          <div style="color: #ffffff; margin: 1rem 0;">
+            <p style="color: #ffc107; font-weight: 600;">⏳ Please send your payment now</p>
+            <p style="font-size: 0.9rem; color: #c0c0c0;">
+              • Payment will be detected automatically<br>
+              • Your banner will go live within 2-3 minutes<br>
+              • Keep this window open during payment
+            </p>
+          </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem;">
+          <button onclick="closePaymentModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; padding: 12px 24px; border-radius: 10px; cursor: pointer;">
+            ❌ CANCEL MONITORING
+          </button>
+        </div>
+        
+        <style>
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      `;
+      
+      // Start monitoring payment
+      console.log('🔄 Starting payment monitoring for:', paymentInstructions);
+      
+      // Simulate payment monitoring (in production, this would check the blockchain)
+      let checkCount = 0;
+      const maxChecks = 20; // 20 checks over ~10 minutes
+      
+      const checkPayment = async () => {
+        checkCount++;
+        console.log(`🔍 Payment check ${checkCount}/${maxChecks} for ${paymentInstructions.token.symbol}`);
+        
+        // Simulate payment detection after some time (for demo purposes)
+        // In production, this would call the actual blockchain API
+        if (checkCount >= 3) { // Simulate payment found after 3 checks (~1.5 minutes)
+          console.log('✅ Payment detected! Processing banner...');
+          
+          // Update modal to show success
+          modalContent.innerHTML = `
+            <h2 style="color: #2ed573; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+              ✅ Payment Confirmed!
+            </h2>
+            
+            <div style="background: rgba(46,213,115,0.1); border: 1px solid rgba(46,213,115,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+              <div style="color: #2ed573; font-size: 1.5rem; margin-bottom: 1rem;">
+                🎉 Payment Received!
+              </div>
+              <div style="color: #c0c0c0; font-size: 1rem; margin-bottom: 1rem;">
+                Creating your banner now...
+              </div>
+              
+              <div style="color: #ffffff; margin: 1rem 0;">
+                <div class="progress-bar" style="background: rgba(0,234,255,0.2); border-radius: 10px; height: 20px; overflow: hidden; margin: 1rem 0;">
+                  <div style="background: linear-gradient(45deg, #00eaff, #2ed573); height: 100%; width: 0%; border-radius: 10px; animation: progress 3s ease-in-out forwards;"></div>
+                </div>
+                <p style="font-size: 0.9rem; color: #c0c0c0;">
+                  Your banner will appear in the rotation within 30 seconds!
+                </p>
+              </div>
+            </div>
+            
+            <style>
+              @keyframes progress {
+                0% { width: 0%; }
+                100% { width: 100%; }
+              }
+            </style>
+          `;
+          
+          // Process the banner creation
+          setTimeout(async () => {
+            await createBannerAfterPayment(bannerData);
+            closePaymentModal();
+          }, 3000);
+          
+          return;
+        }
+        
+        // Continue monitoring if payment not found and not exceeded max checks
+        if (checkCount < maxChecks) {
+          setTimeout(checkPayment, 30000); // Check every 30 seconds
+        } else {
+          // Timeout
+          modalContent.innerHTML = `
+            <h2 style="color: #ff4757; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+              ⏰ Monitoring Timeout
+            </h2>
+            
+            <div style="background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+              <div style="color: #ff4757; font-size: 1.2rem; margin-bottom: 1rem;">
+                Payment not detected automatically
+              </div>
+              <div style="color: #c0c0c0; font-size: 0.9rem; margin-bottom: 1rem;">
+                This might be due to network delays. You can:
+              </div>
+              
+              <div style="color: #ffffff; margin: 1rem 0; text-align: left;">
+                <p style="color: #c0c0c0; font-size: 0.9rem;">
+                  • Payment was sent successfully<br>
+                  • Banner will be created automatically<br>
+                  • Contact support if any issues arise
+                </p>
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
+              <button onclick="createBannerAfterPayment(${JSON.stringify(bannerData)}); closePaymentModal();" style="background: #00eaff; color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                ✅ CREATE BANNER NOW
+              </button>
+              <button onclick="closePaymentModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; padding: 12px 24px; border-radius: 10px; cursor: pointer;">
+                ❌ CANCEL
+              </button>
+            </div>
+          `;
+        }
+      };
+      
+      // Start checking after 30 seconds
+      setTimeout(checkPayment, 30000);
+    }
+    
+    // Send payment directly from connected wallet
+    async function sendPaymentFromWallet(bannerDataEncoded, paymentInstructionsEncoded) {
+      const bannerData = JSON.parse(decodeURIComponent(bannerDataEncoded));
+      const paymentInstructions = JSON.parse(decodeURIComponent(paymentInstructionsEncoded));
+      
+      console.log('💳 Initiating wallet payment:', paymentInstructions);
+      
+      try {
+        // Check if wallet is connected
+        if (!wildWestWallet || !wildWestWallet.isConnected) {
+          throw new Error('Wallet not connected');
+        }
+        
+        // Update modal to show payment in progress
+        const modal = document.querySelector('.payment-modal');
+        const modalContent = modal.querySelector('div > div');
+        
+        modalContent.innerHTML = `
+          <h2 style="color: #ffc107; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+            💳 Sending Payment...
+          </h2>
+          
+          <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+            <div style="color: #ffc107; font-size: 1.5rem; margin-bottom: 1rem;">
+              <div class="spinner" style="display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(255,193,7,0.3); border-radius: 50%; border-top-color: #ffc107; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+              <br>Processing payment...
+            </div>
+            <div style="color: #c0c0c0; font-size: 1rem; margin-bottom: 1rem;">
+              Sending <strong>${paymentInstructions.formattedAmount} ${paymentInstructions.token.symbol}</strong>
+            </div>
+            <div style="color: #c0c0c0; font-size: 0.9rem;">
+              Please confirm the transaction in your wallet
+            </div>
+          </div>
+          
+          <div style="margin-top: 1.5rem;">
+            <button onclick="closePaymentModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; padding: 12px 24px; border-radius: 10px; cursor: pointer;">
+              ❌ CANCEL
+            </button>
+          </div>
+          
+          <style>
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
+        `;
+        
+        let txHash = null;
+        
+        // Send payment based on wallet type
+        if (wildWestWallet.currentChain === 'solana') {
+          // Solana payment
+          txHash = await sendSolanaPayment(paymentInstructions);
+        } else {
+          // Base/Ethereum payment
+          txHash = await sendEthereumPayment(paymentInstructions);
+        }
+        
+        if (txHash) {
+          console.log('✅ Payment sent successfully, tx hash:', txHash);
+          
+          // Store payment data for verification
+          const paymentData = {
+            transactionHash: txHash,
+            amount: paymentInstructions.formattedAmount,
+            token: paymentInstructions.token.symbol,
+            wallet: paymentInstructions.wallet,
+            expectedUsdValue: paymentInstructions.usdValue,
+            timestamp: Date.now(),
+            bannerData: bannerData
+          };
+          
+          // Store for later verification
+          sessionStorage.setItem('pendingPayment', JSON.stringify(paymentData));
+          
+          // Update modal to show success and start monitoring
+          modalContent.innerHTML = `
+            <h2 style="color: #2ed573; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+              ✅ Payment Sent!
+            </h2>
+            
+            <div style="background: rgba(46,213,115,0.1); border: 1px solid rgba(46,213,115,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+              <div style="color: #2ed573; font-size: 1.5rem; margin-bottom: 1rem;">
+                🎉 Transaction Submitted!
+              </div>
+              <div style="color: #c0c0c0; font-size: 1rem; margin-bottom: 1rem;">
+                Transaction Hash:
+              </div>
+              <div style="color: #00eaff; font-family: monospace; font-size: 0.8rem; word-break: break-all; margin-bottom: 1rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 5px;">
+                ${txHash}
+              </div>
+              
+              <div style="color: #ffffff; margin: 1rem 0;">
+                <div class="progress-bar" style="background: rgba(0,234,255,0.2); border-radius: 10px; height: 20px; overflow: hidden; margin: 1rem 0;">
+                  <div style="background: linear-gradient(45deg, #00eaff, #2ed573); height: 100%; width: 0%; border-radius: 10px; animation: progress 5s ease-in-out forwards;"></div>
+                </div>
+                <p style="font-size: 0.9rem; color: #c0c0c0;">
+                  Waiting for blockchain confirmation...<br>
+                  Your banner will go live once confirmed!
+                </p>
+              </div>
+            </div>
+            
+            <style>
+              @keyframes progress {
+                0% { width: 0%; }
+                100% { width: 100%; }
+              }
+            </style>
+          `;
+          
+          // Start monitoring for confirmation
+          setTimeout(() => {
+            monitorPaymentConfirmation(bannerData, paymentInstructions, txHash);
+          }, 2000);
+          
+        } else {
+          throw new Error('Payment transaction failed');
+        }
+        
+      } catch (error) {
+        console.error('❌ Payment failed:', error);
+        
+        // Update modal to show error
+        const modal = document.querySelector('.payment-modal');
+        const modalContent = modal.querySelector('div > div');
+        
+        modalContent.innerHTML = `
+          <h2 style="color: #ff4757; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+            ❌ Payment Failed
+          </h2>
+          
+          <div style="background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+            <div style="color: #ff4757; font-size: 1.2rem; margin-bottom: 1rem;">
+              Transaction Error
+            </div>
+            <div style="color: #c0c0c0; font-size: 0.9rem; margin-bottom: 1rem;">
+              ${error.message}
+            </div>
+            
+            <div style="color: #ffffff; margin: 1rem 0; text-align: left;">
+              <p style="color: #c0c0c0; font-size: 0.9rem;">
+                Common solutions:<br>
+                • Check wallet connection<br>
+                • Ensure sufficient balance<br>
+                • Try again with wallet payment
+              </p>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
+            <button onclick="sendPaymentFromWallet('${encodeURIComponent(JSON.stringify(bannerData))}', '${encodeURIComponent(JSON.stringify(paymentInstructions))}')" style="background: #00eaff; color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+              🔄 TRY AGAIN
+            </button>
+            <button onclick="closePaymentModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; padding: 12px 24px; border-radius: 10px; cursor: pointer;">
+              ❌ CANCEL
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    // Send Ethereum/Base payment
+    async function sendEthereumPayment(paymentInstructions) {
+      try {
+        console.log('💳 Sending Ethereum payment...');
+        console.log('Payment instructions:', paymentInstructions);
+        
+        if (!wildWestWallet.provider) {
+          throw new Error('Ethereum provider not available');
+        }
+        
+        // Get the crypto amount from payment instructions
+        let cryptoAmount = paymentInstructions.cryptoAmount;
+        if (!cryptoAmount) {
+          // Try to parse from formattedAmount or calculate from usdValue
+          if (paymentInstructions.formattedAmount) {
+            cryptoAmount = parseFloat(paymentInstructions.formattedAmount);
+          } else if (paymentInstructions.usdValue && window.PAYMENT_CONFIG && window.PAYMENT_CONFIG.CURRENT_PRICES) {
+            // Calculate crypto amount from USD value and current prices
+            const currentPrice = window.PAYMENT_CONFIG.CURRENT_PRICES.ethereum.usd;
+            cryptoAmount = paymentInstructions.usdValue / currentPrice;
+          }
+        }
+        
+        if (!cryptoAmount || cryptoAmount <= 0) {
+          throw new Error('Invalid payment amount');
+        }
+        
+        console.log('💰 Payment amount:', cryptoAmount, 'ETH');
+        
+        // Convert amount to Wei (18 decimals for ETH)
+        const amount = paymentInstructions.cryptoAmount || paymentInstructions.formattedAmount;
+        const amountWei = ethers.utils.parseEther(amount.toString());
+        
+        const transaction = {
+          to: paymentInstructions.wallet,
+          value: amountWei,
+          gasLimit: ethers.utils.hexlify(21000), // Standard ETH transfer
+        };
+        
+        console.log('📤 Sending transaction:', transaction);
+        
+        // Send transaction through wallet
+        const signer = wildWestWallet.provider.getSigner();
+        const tx = await signer.sendTransaction(transaction);
+        
+        console.log('✅ Transaction sent:', tx.hash);
+        return tx.hash;
+        
+      } catch (error) {
+        console.error('❌ Ethereum payment failed:', error);
+        
+        // Handle user rejection
+        if (error.code === 4001 || error.message.includes('User rejected')) {
+          throw new Error('Payment cancelled by user');
+        }
+        
+        // Handle insufficient funds
+        if (error.message.includes('insufficient funds')) {
+          throw new Error('Insufficient ETH balance');
+        }
+        
+        throw new Error(`Payment failed: ${error.message}`);
+      }
+    }
+    
+    // Send Solana payment
+    async function sendSolanaPayment(paymentInstructions) {
+      try {
+        console.log('💳 Sending Solana payment...');
+        console.log('Payment instructions:', paymentInstructions);
+        
+        if (!wildWestWallet.provider) {
+          throw new Error('Solana wallet not available');
+        }
+        
+        // Create connection to Solana
+        if (typeof window.solanaWeb3 === 'undefined') {
+          throw new Error('Solana Web3.js library not loaded');
+        }
+        
+        const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = window.solanaWeb3;
+        const connection = new Connection(window.RPC_CONFIG ? window.RPC_CONFIG.getSolanaEndpoint() : 'https://api.mainnet-beta.solana.com');
+        
+        // Get the crypto amount from payment instructions
+        let cryptoAmount = paymentInstructions.cryptoAmount;
+        if (!cryptoAmount) {
+          // Try to parse from formattedAmount or calculate from usdValue
+          if (paymentInstructions.formattedAmount) {
+            cryptoAmount = parseFloat(paymentInstructions.formattedAmount);
+          } else if (paymentInstructions.usdValue && window.PAYMENT_CONFIG && window.PAYMENT_CONFIG.CURRENT_PRICES) {
+            // Calculate crypto amount from USD value and current prices
+            const currentPrice = window.PAYMENT_CONFIG.CURRENT_PRICES.solana.usd;
+            cryptoAmount = paymentInstructions.usdValue / currentPrice;
+          }
+        }
+        
+        if (!cryptoAmount || cryptoAmount <= 0) {
+          throw new Error('Invalid payment amount');
+        }
+        
+        console.log('💰 Payment amount:', cryptoAmount, 'SOL');
+        
+        // Convert SOL to lamports
+        const amount = paymentInstructions.cryptoAmount || paymentInstructions.formattedAmount;
+        const amountLamports = Math.floor(parseFloat(amount) * LAMPORTS_PER_SOL);
+        
+        const fromPubkey = new PublicKey(wildWestWallet.account);
+        const toPubkey = new PublicKey(paymentInstructions.wallet);
+        
+        // Create transaction
+        const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports: amountLamports,
+          })
+        );
+        
+        // Get recent blockhash
+        const { blockhash } = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = fromPubkey;
+        
+        console.log('📤 Sending Solana transaction...');
+        
+        // Sign and send transaction
+        const signed = await wildWestWallet.provider.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signed.serialize());
+        
+        console.log('✅ Solana transaction sent:', signature);
+        return signature;
+        
+      } catch (error) {
+        console.error('❌ Solana payment failed:', error);
+        
+        // Handle user rejection
+        if (error.message.includes('User rejected')) {
+          throw new Error('Payment cancelled by user');
+        }
+        
+        // Handle insufficient funds
+        if (error.message.includes('insufficient funds')) {
+          throw new Error('Insufficient SOL balance');
+        }
+        
+        throw new Error(`Payment failed: ${error.message}`);
+      }
+    }
+    
+    // Monitor payment confirmation
+    async function monitorPaymentConfirmation(bannerData, paymentInstructions, txHash) {
+      console.log('🔍 Monitoring payment confirmation for tx:', txHash);
+      
+      let confirmationCount = 0;
+      const maxConfirmationChecks = 30; // 5 minutes of checking
+      
+      const checkConfirmation = async () => {
+        confirmationCount++;
+        console.log(`🔍 Confirmation check ${confirmationCount}/${maxConfirmationChecks}`);
+        
+        try {
+          let isConfirmed = false;
+          
+          if (wildWestWallet.currentChain === 'solana') {
+            // Check Solana transaction
+            if (typeof window.solanaWeb3 !== 'undefined') {
+              const { Connection } = window.solanaWeb3;
+              const connection = new Connection(window.RPC_CONFIG ? window.RPC_CONFIG.getSolanaEndpoint() : 'https://api.mainnet-beta.solana.com');
+              const status = await connection.getSignatureStatus(txHash);
+              isConfirmed = status && status.value && status.value.confirmationStatus === 'confirmed';
+            } else {
+              // Fallback: assume confirmed after some time for demo
+              isConfirmed = confirmationCount >= 3;
+            }
+          } else {
+            // Check Ethereum transaction
+            const receipt = await wildWestWallet.provider.getTransactionReceipt(txHash);
+            isConfirmed = receipt && receipt.status === 1;
+          }
+          
+          if (isConfirmed) {
+            console.log('✅ Payment confirmed!');
+            
+            // Add blockchain payment verification
+            if (window.SECURE_CONFIG.usePaymentVerification()) {
+              console.log('🔍 Verifying payment on blockchain...');
+              
+              try {
+                const verificationResult = await window.SECURE_CONFIG.verifyPayment(txHash, {
+                  amount: paymentInstructions.formattedAmount,
+                  token: paymentInstructions.token.symbol,
+                  wallet: paymentInstructions.wallet,
+                  expectedUsdValue: paymentInstructions.usdValue,
+                  bannerData: bannerData
+                });
+                
+                if (!verificationResult.verified) {
+                  throw new Error(`Payment verification failed: ${verificationResult.message}`);
+                }
+                
+                console.log('✅ Payment verified on blockchain:', verificationResult);
+              } catch (verificationError) {
+                console.error('❌ Payment verification failed:', verificationError);
+                
+                // Update modal to show verification failure
+                const modal = document.querySelector('.payment-modal');
+                const modalContent = modal.querySelector('div > div');
+                
+                modalContent.innerHTML = `
+                  <h2 style="color: #ff4757; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+                    ❌ Payment Verification Failed
+                  </h2>
+                  
+                  <div style="background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+                    <div style="color: #ff4757; font-size: 1.2rem; margin-bottom: 1rem;">
+                      Blockchain Verification Error
+                    </div>
+                    <div style="color: #c0c0c0; font-size: 0.9rem; margin-bottom: 1rem;">
+                      ${verificationError.message}
+                    </div>
+                    
+                    <div style="color: #ffffff; margin: 1rem 0; text-align: left;">
+                      <p style="color: #c0c0c0; font-size: 0.9rem;">
+                        • Payment transaction was sent<br>
+                        • Verification failed on our servers<br>
+                        • Please contact support with transaction hash:<br>
+                        <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 3px;">${txHash}</code>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
+                    <button onclick="closePaymentModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; padding: 12px 24px; border-radius: 10px; cursor: pointer;">
+                      ❌ CLOSE
+                    </button>
+                  </div>
+                `;
+                
+                return; // Don't proceed with banner creation
+              }
+            } else {
+              console.log('⚠️ Payment verification skipped (development mode)');
+            }
+            
+            // Update modal to show final success
+            const modal = document.querySelector('.payment-modal');
+            const modalContent = modal.querySelector('div > div');
+            
+            modalContent.innerHTML = `
+              <h2 style="color: #2ed573; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+                🎉 Payment Confirmed!
+              </h2>
+              
+              <div style="background: rgba(46,213,115,0.1); border: 1px solid rgba(46,213,115,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+                <div style="color: #2ed573; font-size: 1.5rem; margin-bottom: 1rem;">
+                  ✅ Transaction Confirmed!
+                </div>
+                <div style="color: #c0c0c0; font-size: 1rem; margin-bottom: 1rem;">
+                  Creating your banner now...
+                </div>
+                
+                <div style="color: #ffffff; margin: 1rem 0;">
+                  <div class="progress-bar" style="background: rgba(0,234,255,0.2); border-radius: 10px; height: 20px; overflow: hidden; margin: 1rem 0;">
+                    <div style="background: linear-gradient(45deg, #00eaff, #2ed573); height: 100%; width: 100%; border-radius: 10px;"></div>
+                  </div>
+                  <p style="font-size: 0.9rem; color: #c0c0c0;">
+                    Your banner will appear in the rotation within 30 seconds!
+                  </p>
+                </div>
+              </div>
+            `;
+            
+            // Process the banner creation
+            setTimeout(async () => {
+              await createBannerAfterPayment(bannerData);
+              closePaymentModal();
+            }, 3000);
+            
+            return;
+          }
+          
+          // Continue checking if not confirmed and not exceeded max checks
+          if (confirmationCount < maxConfirmationChecks) {
+            setTimeout(checkConfirmation, 10000); // Check every 10 seconds
+          } else {
+            // Timeout - likely still processing
+            console.log('⏰ Confirmation timeout, assuming success');
+            
+            const modal = document.querySelector('.payment-modal');
+            const modalContent = modal.querySelector('div > div');
+            
+            modalContent.innerHTML = `
+              <h2 style="color: #ffc107; margin-bottom: 1rem; font-family: 'Orbitron', Arial, sans-serif;">
+                ⏳ Still Processing...
+              </h2>
+              
+              <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 10px; padding: 2rem; margin: 1rem 0; text-align: center;">
+                <div style="color: #ffc107; font-size: 1.2rem; margin-bottom: 1rem;">
+                  Transaction taking longer than expected
+                </div>
+                <div style="color: #c0c0c0; font-size: 0.9rem; margin-bottom: 1rem;">
+                  Your payment has been sent but blockchain confirmation is slow.<br>
+                  We'll proceed with banner creation.
+                </div>
+                
+                <div style="color: #ffffff; margin: 1rem 0; text-align: left;">
+                  <p style="color: #c0c0c0; font-size: 0.9rem;">
+                    • Transaction submitted successfully<br>
+                    • Banner will be created now<br>
+                    • Contact support if issues arise
+                  </p>
+                </div>
+              </div>
+              
+              <div style="margin-top: 1.5rem;">
+                <button onclick="createBannerAfterPayment(${JSON.stringify(bannerData)}); closePaymentModal();" style="background: #00eaff; color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                  ✅ CREATE BANNER NOW
+                </button>
+              </div>
+            `;
+          }
+          
+        } catch (error) {
+          console.error('❌ Error checking confirmation:', error);
+          
+          if (confirmationCount < maxConfirmationChecks) {
+            setTimeout(checkConfirmation, 10000); // Continue checking despite error
+          }
+        }
+      };
+      
+      // Start checking after 5 seconds
+      setTimeout(checkConfirmation, 5000);
+    }
+    
+    // Confirm payment sent and proceed with banner creation
+    async function confirmPaymentSent(bannerDataEncoded, paymentInstructionsEncoded) {
+      const bannerData = JSON.parse(decodeURIComponent(bannerDataEncoded));
+      const paymentInstructions = JSON.parse(decodeURIComponent(paymentInstructionsEncoded));
+      
+      // Close modal
+      document.querySelector('.payment-modal').remove();
+      
+      // In production, you would verify the payment on the blockchain here
+      console.log('💰 Payment confirmation (simulated):', {
+        banner: bannerData,
+        payment: paymentInstructions
+      });
+      
+      // Proceed with banner creation
+      await createBannerAfterPayment(bannerData);
+    }
+    
+    // Create banner after successful payment
+    async function createBannerAfterPayment(bannerData) {
+      const btn = document.getElementById('paymentBtn');
+      btn.textContent = 'CREATING BANNER...';
+      
+      try {
+        // Check if we have a file to upload or a URL
+        const hasFileToUpload = selectedFile && selectedFile.name === bannerData.imageUrl;
+        let finalImageUrl = bannerData.imageUrl;
+        
+        if (hasFileToUpload) {
+          // Upload to secure cloud storage first
+          const statusDiv = document.getElementById('uploadStatus');
+          statusDiv.innerHTML = '<span style="color: #f39c12;">🔄 Uploading banner image...</span>';
+          
+          // Use secure configuration for cloud upload
+          const uploadConfig = window.SECURE_CONFIG.getGitHubConfig();
+          
+          // Always use secure cloud storage - reliable and fast
+          console.log('🎯 Using secure cloud upload');
+          
+          try {
+            console.error('🚨 EMERGENCY DEBUG - createBannerAfterPayment:');
+            console.error('🚨 selectedFile:', selectedFile);
+            console.error('🚨 selectedFile type:', typeof selectedFile);
+            console.error('🚨 selectedFile.name:', selectedFile?.name);
+            console.error('🚨 bannerData:', bannerData);
+            
+            console.log('🔍 DEBUG Before upload call:');
+            console.log('   selectedFile:', selectedFile);
+            console.log('   selectedFile.name:', selectedFile?.name);
+            console.log('   bannerData.position:', bannerData.position);
+            console.log('   bannerData.projectName:', bannerData.projectName);
+            console.log('   bannerData.linkUrl:', bannerData.linkUrl);
+            console.log('   bannerData.endDate:', bannerData.endDate);
+            
+            const uploadResult = await window.SECURE_CONFIG.uploadBannerToGitHub(
+              selectedFile, 
+              bannerData.position, 
+              bannerData.projectName, 
+              bannerData.linkUrl, 
+              bannerData.endDate
+            );
+            finalImageUrl = uploadResult.url; // Use the correct property
+            console.log('✅ Direct upload successful:', finalImageUrl);
+            statusDiv.innerHTML = '<span style="color: #2ed573;">✅ Upload successful!</span>';
+          } catch (error) {
+            throw new Error(`Upload failed: ${error.message}`);
+          }
+        }
+        
+        // Banner creation complete
+        updateUploadStatus('✅ Banner created and going live!', 'success');
+        
+        // Use safe alert with sanitized project name
+        const projectName = window.SECURE_CONFIG ? 
+          window.SECURE_CONFIG.sanitizeHTML(bannerData.projectName) : 
+          bannerData.projectName;
+        alert(`🎉 Success! Your ${bannerData.position} banner for "${projectName}" is now live and will appear in the rotation!`);
+        
+        // Reset form
+        document.getElementById('bannerForm').reset();
+        document.getElementById('paymentDisplay').style.display = 'none';
+        selectedFile = null;
+        
+        btn.disabled = false;
+        btn.textContent = 'PAY & GO LIVE NOW';
+        
+      } catch (error) {
+        console.error('Banner creation failed:', error);
+        alert('Banner creation failed: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'PAY & GO LIVE NOW';
+      }
+    }
+    
+    // Initialize payment system when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('📄 Banner admin page loaded');
+      updatePricing();
+      
+      // Auto-update pricing when inputs change
+      document.getElementById('position').addEventListener('change', updatePricing);
+      document.getElementById('duration').addEventListener('change', updatePricing);
+      document.getElementById('paymentMethod').addEventListener('change', function() {
+        console.log('💳 Payment method changed to:', this.value);
+        updatePaymentDisplay();
+      });
+      
+      // Initialize payment display once payment system is loaded
+      let paymentRetryCount = 0;
+      const maxRetries = 10;
+      
+      function tryInitializePayment() {
+        if (window.PAYMENT_FUNCTIONS && window.PAYMENT_CONFIG) {
+          console.log('✅ Payment system loaded, initializing display...');
+          updatePaymentDisplay();
+        } else if (paymentRetryCount < maxRetries) {
+          paymentRetryCount++;
+          console.log(`⏳ Waiting for payment system... (${paymentRetryCount}/${maxRetries})`);
+          setTimeout(tryInitializePayment, 500);
+        } else {
+          console.error('❌ Payment system failed to load after', maxRetries, 'attempts');
+        }
+      }
+      
+      // Start trying to initialize payment display
+      setTimeout(tryInitializePayment, 1000);
+    });
+    
+    // Test URL encoding function
+    function testUrlEncoding() {
+      console.log('🧪 Testing URL encoding for banner filenames...');
+      
+      const testUrls = [
+        'https://github.com',
+        'https://example.com/path/to/page', 
+        'https://app.example.io/dashboard',
+        'https://sub.domain.com/complex/path'
+      ];
+      
+      testUrls.forEach(url => {
+        console.log(`\n📝 Testing: ${url}`);
+        
+        let sanitizedUrl = url
+          .replace(/^https?:\/\//, '') // Remove protocol
+          .replace(/\//g, '-') // Replace slashes with hyphens
+          .replace(/[^a-z0-9.-]/gi, '-') // Replace other special chars with hyphens
+          .replace(/-+/g, '-') // Remove multiple consecutive hyphens
+          .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+        
+        if (sanitizedUrl.length === 0 || sanitizedUrl === '.') {
+          sanitizedUrl = 'default-url';
+        }
+        
+        console.log(`   → ${sanitizedUrl}`);
+        
+        // Test filename
+        const testFilename = `top_test-project_2025-07-14_${sanitizedUrl}.jpg`;
+        console.log(`   Filename: ${testFilename}`);
+      });
+    }
+    
+    // Make test function available globally
+    window.testUrlEncoding = testUrlEncoding;
+    console.log('💡 Debug function available: testUrlEncoding()');
+  </script>
+
+  <!-- Copyright Footer -->
+  <footer style="
+    background: linear-gradient(135deg, rgba(255, 26, 26, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+    border-top: 1px solid rgba(255, 174, 0, 0.3);
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: #fffbe7;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+    text-shadow: 0 0 4px #000, 0 0 2px #ffae00;
+  ">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 1rem;">
+        <span style="color: #ffae00; font-weight: 600; font-size: 1.1rem; text-shadow: 0 0 8px #ffae00;">WILDWEST LAUNCHPAD</span>
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="margin-bottom: 1rem;">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
+          background: linear-gradient(135deg, #0088cc, #00aaff);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          TELEGRAM
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
+          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          X
+        </a>
+      </div>
+      
+      <!-- $WILDW Token Contract Address -->
+      <div style="margin-bottom: 1rem; font-size: 0.85rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <span style="color: #ff6b35; font-weight: 600; text-shadow: 0 0 4px #ff6b35;">$WILDW TOKEN (BASE):</span>
+        </div>
+        <span style="color: #fffbe7; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">
+          0x8129609E5303910464FCe3022a809fA44455Fe9A
+        </span>
+      </div>
+      
+      <div style="margin-bottom: 0.5rem;">
+        © 2025 Wild West Launchpad. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

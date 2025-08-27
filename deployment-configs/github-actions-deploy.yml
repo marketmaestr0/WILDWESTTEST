@@ -1,0 +1,115 @@
+name: Deploy Wild West Launchpad
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json found, skipping dependencies"
+          fi
+          
+      - name: Build project
+        env:
+          SOLANA_RPC_ENDPOINT: ${{ secrets.SOLANA_RPC_ENDPOINT }}
+          BASE_RPC_ENDPOINT: ${{ secrets.BASE_RPC_ENDPOINT }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          echo "Building Wild West Crypto Launchpad..."
+          echo "🔍 Debug: Checking secrets availability..."
+          echo "SOLANA_RPC_ENDPOINT present: ${{ secrets.SOLANA_RPC_ENDPOINT != '' }}"
+          echo "BASE_RPC_ENDPOINT present: ${{ secrets.BASE_RPC_ENDPOINT != '' }}"
+          echo "PERSONAL_ACCESS_TOKEN present: ${{ secrets.PERSONAL_ACCESS_TOKEN != '' }}"
+          
+          # Create production config with injected secrets
+          echo "🔧 Creating production config with GitHub Secrets..."
+          cat > js/production-config.js << 'EOF'
+          // Production configuration injected at build time from GitHub Secrets
+          (function() {
+            'use strict';
+            
+            console.log('🔍 Production config loading...');
+            
+            // Check if production config is already loaded
+            if (window.PRODUCTION_CONFIG) {
+              console.log('🔐 Production config already loaded, skipping fallback');
+              return;
+            }
+            
+            // Secure configuration from GitHub Secrets
+            window.PRODUCTION_CONFIG = {
+              token: '${{ secrets.PERSONAL_ACCESS_TOKEN }}',
+              rpc: {
+                solana: '${{ secrets.SOLANA_RPC_ENDPOINT }}',
+                base: '${{ secrets.BASE_RPC_ENDPOINT }}'
+              },
+              injectedAt: new Date().toISOString(),
+              source: 'github-actions'
+            };
+            
+            console.log('🔐 Production configuration loaded from GitHub Secrets');
+            console.log('📊 RPC Status:', {
+              solana: !!window.PRODUCTION_CONFIG.rpc.solana ? 'LOADED' : 'MISSING',
+              base: !!window.PRODUCTION_CONFIG.rpc.base ? 'LOADED' : 'MISSING',
+              solanaEndpoint: window.PRODUCTION_CONFIG.rpc.solana ? window.PRODUCTION_CONFIG.rpc.solana.substring(0, 50) + '...' : 'NULL'
+            });
+            
+            // Update ENV_CONFIG if it exists
+            if (window.ENV_CONFIG && typeof window.ENV_CONFIG.updateFromSecureAPI === 'function') {
+              const secureConfigs = {
+                github: { token: window.PRODUCTION_CONFIG.token },
+                rpc: window.PRODUCTION_CONFIG.rpc
+              };
+              window.ENV_CONFIG.updateFromSecureAPI(secureConfigs);
+              console.log('✅ ENV_CONFIG updated with GitHub Secrets');
+            }
+          })();
+          EOF
+          
+          echo "✅ Production config generated with secrets"
+          echo "🔍 Verifying production-config.js was created..."
+          ls -la js/production-config.js
+          echo "📄 First few lines of production-config.js:"
+          head -10 js/production-config.js
+          
+      - name: Deploy to GitHub Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './'
+          
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+          
+      - name: Notify deployment success
+        run: |
+          echo "🚀 Wild West Launchpad deployed successfully!"
+          echo "📍 Available at: https://cowboytbc.github.io/wildwest-launchpad/"
