@@ -5,61 +5,84 @@
    ========================= */
 
 :root {
-   /* Colors */
-   --bg: #0a0a1b;              /* page background */
-   --panel: #0a0a1b;           /* navbar/footer base */
-   --panel-80: #0a0a1bcc;      /* 80% panel */
-   --yellow: #ffcc00;
-   --yellow-30: #ffcc004d;             
-   --light-blue: #6ceaf9;
-   --light-blue-30: #6cebf923;
-   --violet-muted: #5e5e71;
-   --dark-violet: #2b2b57;
-   --violet: #4f3a78;
-   --violet-90: #4f3a78e6;     /* 90% transparency */
-   --violet-shadow: #2d1d4c52;     
+  /* Colors */
+  --bg: #0a0a1b;
+  --panel: #0a0a1b;
+  --panel-90: #0a0a1beb;
+  --panel-80: #0a0a1bcc;
+  --panel-50: #0a0a1b80;
+  --panel-30: #0a0a1b51;
+  --yellow: #ffcc00;
+  --yellow-70: #ffcc00a2;
+  --yellow-50: #ffcc007b;
+  --yellow-30: #ffcc004d;
+  --yellow-10: #ffcc0021;
+  --light-blue: #6ceaf9;
+  --light-blue-30: #6cebf938;
+  --light-blue-60: #6cebf99b;
+  --violet-muted: #5e5e71;
+  --dark-violet: #2b2b57;
+  --violet: #4f3a78;
+  --violet-90: #4f3a78e6;
+  /* 90% transparency */
+  --violet-shadow: #2d1d4c52;
+  --ticker-green: #56ff40;
 
-   /* Typography */
-   --font-ui: "Orbitron", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-   --font-display: "IFC INSANE RODEO", "Orbitron", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  /* Typography */
+  --font-ui: "Orbitron", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "IFC INSANE RODEO", "Orbitron", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
 
-   /* Spacing / sizing */
-   --nav-pad: 20px;
-   --gap-md: 30px;
-   --radius-sm: 8px;
+  /* Spacing / sizing */
+  --nav-pad: 20px;
+  --gap-md: 30px;
+  --radius-sm: 8px;
 
   /* Hero defaults (override per-page if needed) */
-   --hero-image: url("../images/Saloon Exterior_Night cropped.webp");
-   --hero-min-h: 80vh;
-   --hero-align: center;
-   --hero-zoom: cover;
-   --hero-overlay: none; /* e.g., linear-gradient(180deg,#0000 60%, #0006 100%) */
+  --hero-image: url("../images/Saloon Exterior_Night cropped.webp");
+  --hero-min-h: 80vh;
+  --hero-align: center;
+  --hero-zoom: cover;
+  --hero-overlay: none;
+  /* e.g., linear-gradient(180deg,#0000 60%, #0006 100%) */
 
-   /* Effects */
-   --icon-scale: 1.15;
-  }
+  /* Effects */
+  --icon-scale: 1.15;
+}
 
- /* Reset & base */
- * { margin: 0; padding: 0; box-sizing: border-box; }
- html, body { height: 100%; }
- body {
-   font-family: var(--font-ui);
-   background: var(--bg);
-   color: #fff;
-   letter-spacing: 0.2rem;
- }
+/* Reset & base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
- /* Better webfont loading */
- @font-face {
-   font-family: "IFC INSANE RODEO";
-   src:
-     url("../fonts/IFC-INSANE-RODEO.woff2") format("woff2"),
-     url("../fonts/IFC INSANE RODEO.ttf") format("truetype");
-     font-display: block;
- }
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: #fff;
+  letter-spacing: 0.2rem;
+}
+
+/* Better webfont loading */
+@font-face {
+  font-family: "IFC INSANE RODEO";
+  src:
+    url("../fonts/IFC-INSANE-RODEO.woff2") format("woff2"),
+    url("../fonts/IFC INSANE RODEO.ttf") format("truetype");
+  font-display: block;
+}
 
 
-.site-header { transform: translateZ(0); }  /* nudges GPU compositing */
+.site-header {
+  transform: translateZ(0);
+}
+
+/* nudges GPU compositing */
 
 
 
@@ -68,24 +91,40 @@
    ========================= */
 
 
- :root { --ticker-h: 40px; }          /* desktop ticker height */
- @media (max-width: 768px) { :root { --ticker-h: 35px; } }
- @media (max-width: 400px) { :root { --ticker-h: 28px; } }
+:root {
+  --ticker-h: 40px;
+}
+
+/* desktop ticker height */
+@media (max-width: 768px) {
+  :root {
+    --ticker-h: 35px;
+  }
+}
+
+@media (max-width: 400px) {
+  :root {
+    --ticker-h: 28px;
+  }
+}
 
 
- /* Ticker iframe (keep it above everything) */
- #transaction-ticker-iframe {
-   position: fixed;
-   top: 0; left: 0;
-   width: 100%;
-   height: var(--ticker-h);
-   border: none;
-   z-index: 99999;
-   background: transparent;
+/* Ticker iframe (keep it above everything) */
+#transaction-ticker-iframe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--ticker-h);
+  border: none;
+  z-index: 99999;
+  background: transparent;
 }
 
 /* Push page content below the fixed ticker */
-body { padding-top: var(--ticker-h); }
+body {
+  padding-top: var(--ticker-h);
+}
 
 
 
@@ -94,8 +133,10 @@ body { padding-top: var(--ticker-h); }
    ========================= */
 .navbar {
   position: sticky;
-  top: var(--ticker-h);                 /* <— key change */
-  z-index: 99990;                        /* above page content, below ticker */
+  top: var(--ticker-h);
+  /* <— key change */
+  z-index: 99990;
+  /* above page content, below ticker */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -105,7 +146,10 @@ body { padding-top: var(--ticker-h); }
 }
 
 
-.navlogo { font-weight: 700; font-size: 24px; }
+.navlogo {
+  font-weight: 700;
+  font-size: 24px;
+}
 
 .nav-links {
   list-style: none;
@@ -122,7 +166,9 @@ body { padding-top: var(--ticker-h); }
 }
 
 .nav-links a:hover,
-.nav-links a:focus-visible { color: var(--yellow); }
+.nav-links a:focus-visible {
+  color: var(--yellow);
+}
 
 .nav-links a[aria-current="page"] {
   color: #fff;
@@ -136,7 +182,9 @@ body { padding-top: var(--ticker-h); }
   gap: 15px;
 }
 
-.nav-actions a { display: inline-block; }
+.nav-actions a {
+  display: inline-block;
+}
 
 .nav-icon {
   width: 24px;
@@ -144,28 +192,36 @@ body { padding-top: var(--ticker-h); }
   vertical-align: middle;
   transition: transform 0.2s ease;
 }
+
 .nav-actions a:hover .nav-icon,
-.nav-actions a:focus-visible .nav-icon { transform: scale(var(--icon-scale)); }
+.nav-actions a:focus-visible .nav-icon {
+  transform: scale(var(--icon-scale));
+}
 
 /* Reduced motion respects users */
 @media (prefers-reduced-motion: reduce) {
-  .nav-icon { transition: none; }
+  .nav-icon {
+    transition: none;
+  }
 }
 
 /* =========================
    Dropdown
    ========================= */
-.nav-links .dropdown { position: relative; }
+.nav-links .dropdown {
+  position: relative;
+}
 
 .dropdown-menu {
   display: none;
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: var(--panel-80);
+  background-color: var(--panel-50);
   padding: 0.1rem 0;
   list-style: none;
-  width: 100%;                 /* match parent <li> width */
+  width: 100%;
+  /* match parent <li> width */
   border: 1px solid transparent;
   z-index: 1000;
   box-sizing: border-box;
@@ -179,6 +235,7 @@ body { padding-top: var(--ticker-h); }
   font-size: 14px;
   letter-spacing: 0.05rem;
 }
+
 .dropdown-menu a:hover,
 .dropdown-menu a:focus-visible {
   background-color: color-mix(in srgb, var(--violet) 30%, transparent);
@@ -205,7 +262,8 @@ body { padding-top: var(--ticker-h); }
 
 .hero__bg {
   position: absolute;
-  inset: -10vh 0 -10vh 0; /* oversize to avoid gaps when parallaxing */
+  inset: -10vh 0 -10vh 0;
+  /* oversize to avoid gaps when parallaxing */
   background:
     var(--hero-overlay),
     var(--hero-image) no-repeat var(--hero-align) / var(--hero-zoom);
@@ -283,19 +341,19 @@ body { padding-top: var(--ticker-h); }
     font-size: 12px !important;
     margin-left: 5px !important;
   }
-  
+
   #mobile-wallet-modal div[style*="padding: 30px"] {
     padding: 20px !important;
   }
-  
+
   #mobile-wallet-modal h2 {
     font-size: 20px !important;
   }
-  
+
   #mobile-wallet-modal h3 {
     font-size: 14px !important;
   }
-  
+
   #mobile-wallet-modal button {
     padding: 12px !important;
     font-size: 14px !important;
@@ -333,6 +391,7 @@ body {
   background: linear-gradient(135deg, #18122B 0%, #2D3250 100%);
   color: #fff;
 }
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -343,6 +402,7 @@ body {
   color: #fff;
   position: relative;
 }
+
 .logo {
   margin: 0;
   font-size: 1.2em;
@@ -351,6 +411,7 @@ body {
   text-shadow: 0 0 8px #00f0ff88, 0 2px 8px #0008;
   flex: 1 1 auto;
 }
+
 .wildwest {
   font-family: 'Stardos Stencil', serif;
   font-size: 2.5em;
@@ -361,14 +422,17 @@ body {
   vertical-align: middle;
   margin-right: 10px;
 }
+
 .logo {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .logo {
   font-family: 'Orbitron', Arial, sans-serif;
 }
+
 .logo .subtitle {
   font-family: 'Orbitron', Arial, sans-serif;
   font-size: 1.1em;
@@ -378,6 +442,7 @@ body {
   font-weight: 700;
   margin-left: 8px;
 }
+
 .wallet-dropdown {
   position: relative;
   display: flex;
@@ -385,6 +450,7 @@ body {
   align-items: flex-end;
   margin-left: auto;
 }
+
 .connect-btn {
   background: #3498db;
   color: #fff;
@@ -398,17 +464,21 @@ body {
   align-items: center;
   gap: 8px;
 }
+
 .connect-btn.connected {
   background: #27ae60;
 }
+
 .connect-btn:hover {
   background: #217dbb;
 }
+
 #walletIcon {
   width: 22px;
   height: 22px;
   display: inline-block;
 }
+
 .wallet-dropdown-menu {
   position: absolute;
   top: 48px;
@@ -422,6 +492,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 .wallet-dropdown-menu button {
   background: none;
   border: none;
@@ -432,10 +503,12 @@ body {
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .wallet-dropdown-menu button:hover {
   background: #00f0ff22;
   color: #00f0ff;
 }
+
 .wallet-menu {
   position: absolute;
   top: 60px;
@@ -449,6 +522,7 @@ body {
   min-width: 160px;
   z-index: 100;
 }
+
 .wallet-option {
   background: none;
   border: none;
@@ -459,10 +533,12 @@ body {
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .wallet-option:hover {
   background: #ff00cc22;
   color: #ff00cc;
 }
+
 .switch-btn {
   display: flex;
   align-items: center;
@@ -478,10 +554,12 @@ body {
   min-width: 180px;
   box-shadow: 0 0 16px 2px #00f0ff44;
 }
+
 .switch-btn.connected {
   background: linear-gradient(90deg, #18122B 60%, #ff00cc 100%);
   box-shadow: 0 0 24px 4px #ff00cc44;
 }
+
 .chain-indicator {
   width: 18px;
   height: 18px;
@@ -493,21 +571,26 @@ body {
   box-shadow: 0 0 8px #0002;
   transition: background 0.2s, box-shadow 0.2s;
 }
+
 .switch-btn.evm .chain-indicator {
   background: #00f0ff;
   box-shadow: 0 0 16px 4px #00f0ffcc, 0 0 8px #00f0ff;
 }
+
 .switch-btn.solana .chain-indicator {
   background: #ff00cc;
   box-shadow: 0 0 16px 4px #ff00ccbb, 0 0 8px #ff00cc;
 }
+
 .switch-btn.disconnected .chain-indicator {
   background: #e74c3c;
   box-shadow: 0 0 16px 4px #e74c3c88, 0 0 8px #e74c3c;
 }
+
 .wallet-hint {
   display: none;
 }
+
 .wallet-disclaimer {
   font-size: 0.7em;
   color: #00f0ff;
@@ -521,6 +604,7 @@ body {
   line-height: 1.2;
   display: block;
 }
+
 .main-nav {
   width: 100%;
   background: rgba(24, 18, 43, 0.98);
@@ -529,6 +613,7 @@ body {
   margin-bottom: 32px;
   z-index: 10;
 }
+
 .main-nav ul {
   display: flex;
   flex-wrap: wrap;
@@ -539,10 +624,12 @@ body {
   padding: 0;
   gap: 18px;
 }
+
 .main-nav li {
   margin: 0;
   padding: 0;
 }
+
 .main-nav a {
   display: block;
   padding: 14px 22px 12px 22px;
@@ -558,27 +645,33 @@ body {
   text-shadow: 0 0 8px #00f0ff, 0 0 2px #ff00cc;
   font-weight: 700;
 }
-.main-nav a:hover, .main-nav a:focus {
+
+.main-nav a:hover,
+.main-nav a:focus {
   background: linear-gradient(90deg, #18122B 60%, #ff00cc 100%);
   color: #00f0ff;
   box-shadow: 0 0 16px #ff00cc88, 0 0 8px #00f0ff;
   text-shadow: 0 0 12px #ff00cc, 0 0 2px #00f0ff;
 }
+
 @media (max-width: 900px) {
   .main-nav ul {
     gap: 8px;
   }
+
   .main-nav a {
     padding: 10px 10px 8px 10px;
     font-size: 0.98em;
   }
 }
+
 @media (max-width: 600px) {
   .main-nav ul {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
   }
+
   .main-nav a {
     border-radius: 0;
     padding: 12px 0 10px 0;
@@ -587,30 +680,37 @@ body {
     box-shadow: none;
     border-bottom: 1px solid #00f0ff33;
   }
-  .main-nav a:hover, .main-nav a:focus {
+
+  .main-nav a:hover,
+  .main-nav a:focus {
     background: #18122B;
     color: #ff00cc;
     box-shadow: none;
     text-shadow: 0 0 8px #ff00cc, 0 0 2px #00f0ff;
   }
 }
+
 @media (max-width: 600px) {
   .header {
     flex-direction: column;
     align-items: stretch;
     padding: 12px 8px;
   }
+
   .logo {
     margin-bottom: 12px;
   }
+
   .wallet-dropdown {
     align-items: flex-end;
     margin-left: 0;
     width: 100%;
   }
-  
+
   /* Improve wallet connect button for mobile */
-  .wallet-connect-btn, .connect-btn, .switch-btn {
+  .wallet-connect-btn,
+  .connect-btn,
+  .switch-btn {
     padding: 12px 16px !important;
     font-size: 0.9rem !important;
     min-width: 140px;
@@ -618,9 +718,10 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   /* Improve wallet dropdown for mobile */
-  .wallet-dropdown-content, .wallet-dropdown-menu {
+  .wallet-dropdown-content,
+  .wallet-dropdown-menu {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
@@ -633,8 +734,9 @@ body {
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
   }
-  
-  .wallet-dropdown-content::before, .wallet-dropdown-menu::before {
+
+  .wallet-dropdown-content::before,
+  .wallet-dropdown-menu::before {
     content: '';
     position: fixed;
     top: 0;
@@ -644,17 +746,17 @@ body {
     background: rgba(0, 0, 0, 0.5);
     z-index: -1;
   }
-  
+
   .wallet-option {
     padding: 16px 20px !important;
     font-size: 1rem !important;
     border-bottom: 1px solid rgba(0, 234, 255, 0.2) !important;
   }
-  
+
   .wallet-option:last-child {
     border-bottom: none !important;
   }
-  
+
   /* Improve connected wallet display for mobile */
   .connected-wallet {
     padding: 8px 12px !important;
@@ -664,26 +766,26 @@ body {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
-  
+
   /* Chain selection modal improvements for mobile */
   .chain-selection-modal {
     width: 90vw !important;
     max-width: 320px !important;
     border-radius: 12px !important;
   }
-  
+
   .chain-option {
     padding: 16px 20px !important;
     font-size: 1rem !important;
     border-radius: 8px !important;
     margin-bottom: 8px !important;
   }
-  
+
   .chain-option:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 234, 255, 0.3);
   }
-  
+
   /* Wallet menu improvements for mobile */
   .wallet-menu {
     position: fixed !important;
@@ -698,7 +800,7 @@ body {
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
   }
-  
+
   .wallet-menu::before {
     content: '';
     position: fixed;
@@ -715,42 +817,45 @@ body {
   .header {
     padding: 8px 4px;
   }
-  
+
   .wildwest {
     font-size: 2rem !important;
   }
-  
+
   .logo .subtitle {
     font-size: 0.9rem !important;
   }
-  
-  .wallet-connect-btn, .connect-btn, .switch-btn {
+
+  .wallet-connect-btn,
+  .connect-btn,
+  .switch-btn {
     padding: 10px 12px !important;
     font-size: 0.8rem !important;
     min-width: 120px;
   }
-  
-  .wallet-dropdown-content, .wallet-dropdown-menu {
+
+  .wallet-dropdown-content,
+  .wallet-dropdown-menu {
     width: 95vw !important;
     max-width: 280px !important;
   }
-  
+
   .connected-wallet {
     padding: 6px 10px !important;
     font-size: 0.8rem !important;
     max-width: 120px !important;
   }
-  
+
   .chain-selection-modal {
     width: 95vw !important;
     max-width: 280px !important;
   }
-  
+
   .chain-option {
     padding: 12px 16px !important;
     font-size: 0.9rem !important;
   }
-  
+
   .wallet-menu {
     width: 95vw !important;
     max-width: 280px !important;
