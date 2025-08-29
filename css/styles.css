@@ -324,50 +324,6 @@ body {
   }
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 24px 32px 20px 32px;
-  background: rgba(24, 18, 43, 0.95);
-  box-shadow: 0 4px 32px 0 #00f0ff33;
-  color: #fff;
-  position: relative;
-}
-
-.logo {
-  font-size: 1.2em;
-  font-weight: 400;
-  letter-spacing: 1px;
-  text-shadow: 0 0 8px #00f0ff88, 0 2px 8px #0008;
-  flex: 1 1 auto;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.wildwest {
-  font-family: 'Stardos Stencil', serif;
-  font-size: 2.5em;
-  letter-spacing: 2px;
-  color: #00f0ff;
-  text-shadow: 0 0 16px #00f0ff, 0 0 32px #00f0ff88, 2px 2px 0 #18122B;
-  font-weight: 700;
-  vertical-align: middle;
-  margin-right: 10px;
-}
-
-.logo .subtitle {
-  font-family: 'Orbitron', Arial, sans-serif;
-  font-size: 1.1em;
-  color: #fff;
-  letter-spacing: 2px;
-  text-shadow: 0 0 8px #ff00cc, 0 0 16px #00f0ff;
-  font-weight: 700;
-  margin-left: 8px;
-}
-
 .wallet-dropdown {
   position: relative;
   display: flex;
@@ -528,55 +484,6 @@ body {
   text-transform: uppercase;
   line-height: 1.2;
   display: block;
-}
-
-.main-nav {
-  width: 100%;
-  background: rgba(24, 18, 43, 0.98);
-  box-shadow: 0 2px 24px 0 #00f0ff44, 0 0 8px #ff00cc44;
-  padding: 0 0 0 0;
-  margin-bottom: 32px;
-  z-index: 10;
-}
-
-.main-nav ul {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 18px;
-}
-
-.main-nav li {
-  margin: 0;
-  padding: 0;
-}
-
-.main-nav a {
-  display: block;
-  padding: 14px 22px 12px 22px;
-  font-family: 'Orbitron', Arial, sans-serif;
-  font-size: 1.08em;
-  color: #fff;
-  text-decoration: none;
-  letter-spacing: 1.5px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #18122B 60%, #00f0ff 100%);
-  box-shadow: 0 0 8px #00f0ff44;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  text-shadow: 0 0 8px #00f0ff, 0 0 2px #ff00cc;
-  font-weight: 700;
-}
-
-.main-nav a:hover,
-.main-nav a:focus {
-  background: linear-gradient(90deg, #18122B 60%, #ff00cc 100%);
-  color: #00f0ff;
-  box-shadow: 0 0 16px #ff00cc88, 0 0 8px #00f0ff;
-  text-shadow: 0 0 12px #ff00cc, 0 0 2px #00f0ff;
 }
 
 @media (max-width: 900px) {
