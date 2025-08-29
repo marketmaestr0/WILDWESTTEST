@@ -1,5 +1,3 @@
-/*@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Outfit:wght@100..900&display=swap');*/
-
 /* =========================
    Base & Design Tokens
    ========================= */
@@ -47,6 +45,8 @@
 
   /* Effects */
   --icon-scale: 1.15;
+
+  --ticker-h: 40px;
 }
 
 /* Reset & base */
@@ -66,7 +66,10 @@ body {
   background: var(--bg);
   color: #fff;
   letter-spacing: 0.2rem;
+  padding-top: var(--ticker-h);
 }
+
+
 
 /* Better webfont loading */
 @font-face {
@@ -91,9 +94,6 @@ body {
    ========================= */
 
 
-:root {
-  --ticker-h: 40px;
-}
 
 /* desktop ticker height */
 @media (max-width: 768px) {
@@ -120,13 +120,6 @@ body {
   z-index: 99999;
   background: transparent;
 }
-
-/* Push page content below the fixed ticker */
-body {
-  padding-top: var(--ticker-h);
-}
-
-
 
 /* =========================
    Navbar
@@ -212,36 +205,6 @@ body {
   position: relative;
 }
 
-.dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: var(--panel-50);
-  padding: 0.1rem 0;
-  list-style: none;
-  width: 100%;
-  /* match parent <li> width */
-  border: 1px solid transparent;
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-.dropdown-menu a {
-  display: block;
-  padding: 0.5rem 1rem;
-  color: #fff;
-  text-decoration: none;
-  font-size: 14px;
-  letter-spacing: 0.05rem;
-}
-
-.dropdown-menu a:hover,
-.dropdown-menu a:focus-visible {
-  background-color: color-mix(in srgb, var(--violet) 30%, transparent);
-  color: var(--yellow);
-}
-
 .nav-links .dropdown:hover .dropdown-menu,
 .nav-links .dropdown:focus-within .dropdown-menu {
   display: block;
@@ -276,12 +239,14 @@ body {
   font-size: clamp(3rem, 8vw, 8rem);
   letter-spacing: 0.6rem;
   font-family: var(--font-display);
+  text-shadow: 0 0 20px var(--light-blue-60);
 }
 
 .hero-content p {
   font-size: 1rem;
   margin-top: 1rem;
   letter-spacing: 0.5rem;
+  text-shadow: 0 0 10px var(--light-blue-60);
 }
 
 
@@ -312,7 +277,6 @@ body {
 }
 
 .mobile-wallet-button:active {
-  transform: translateY(0) !important;
   transform: scale(0.95) !important;
 }
 
@@ -360,38 +324,6 @@ body {
   }
 }
 
-.launch-token-menu li,
-.staking-menu li,
-.token-locking-menu li {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.launch-token-menu a,
-.staking-menu a,
-.token-locking-menu a {
-  display: block;
-  padding: 10px 15px;
-  color: #fff;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.launch-token-menu a:hover,
-.staking-menu a:hover,
-.token-locking-menu a:hover {
-  background: rgba(0, 234, 255, 0.2);
-  color: #00eaff;
-}
-
-body {
-  margin: 0;
-  font-family: 'Orbitron', Arial, sans-serif;
-  background: linear-gradient(135deg, #18122B 0%, #2D3250 100%);
-  color: #fff;
-}
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -404,12 +336,15 @@ body {
 }
 
 .logo {
-  margin: 0;
   font-size: 1.2em;
   font-weight: 400;
   letter-spacing: 1px;
   text-shadow: 0 0 8px #00f0ff88, 0 2px 8px #0008;
   flex: 1 1 auto;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .wildwest {
@@ -421,16 +356,6 @@ body {
   font-weight: 700;
   vertical-align: middle;
   margin-right: 10px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo {
-  font-family: 'Orbitron', Arial, sans-serif;
 }
 
 .logo .subtitle {
@@ -697,9 +622,6 @@ body {
     padding: 12px 8px;
   }
 
-  .logo {
-    margin-bottom: 12px;
-  }
 
   .wallet-dropdown {
     align-items: flex-end;
