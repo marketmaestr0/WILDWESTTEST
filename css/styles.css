@@ -749,17 +749,17 @@ body {
   }
 
   .copy-tooltip {
-    position: fixed;            /* fixed to viewport, near mouse click */
+    position: fixed;
     background: #333;
     color: #fff;
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 0.8rem;
     opacity: 0;
-    pointer-events: none;        /* don't block clicks */
+    pointer-events: none;
     transform: translate(-50%, -120%);
     transition: opacity 0.3s ease;
-    z-index: 9999;
+    z-index: 2147483647; /* higher than any site overlay/iframe */
   }
   .copy-tooltip.show {
     opacity: 1;

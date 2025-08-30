@@ -3003,26 +3003,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const addressSpan = document.getElementById("contract-address");
   
     addressSpan.addEventListener("click", (e) => {
-      const text = addressSpan.innerText;
+      const text = addressSpan.textContent.trim();
   
       navigator.clipboard.writeText(text).then(() => {
-        // Create tooltip
         const tooltip = document.createElement("div");
         tooltip.className = "copy-tooltip";
-        tooltip.innerText = "Copied!";
+        tooltip.textContent = "Copied!";
   
-        // Position near mouse click
-        tooltip.style.left = e.pageX + "px";
-        tooltip.style.top = e.pageY + "px";
+        // Use viewport coords for fixed elements
+        let x = e.clientX + 10;   // small offset to the right
+        let y = e.clientY - 10;   // small offset above
+  
+        // Clamp so it stays inside the viewport
+        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        x = Math.min(Math.max(10, x), vw - 10);
+        y = Math.min(Math.max(10, y), vh - 10);
+  
+        tooltip.style.left = x + "px";
+        tooltip.style.top  = y + "px";
   
         document.body.appendChild(tooltip);
   
-        // Show + fade out
+        // Show then fade away
         requestAnimationFrame(() => tooltip.classList.add("show"));
         setTimeout(() => {
           tooltip.classList.remove("show");
-          setTimeout(() => tooltip.remove(), 300); // match transition
-        }, 1200); // visible for ~1.2s
+          setTimeout(() => tooltip.remove(), 300); // match CSS transition
+        }, 1200);
       });
     });
   </script>
