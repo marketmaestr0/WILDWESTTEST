@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Team - WildWest</title>
+  <link rel="icon" href="../favicon.ico">
+  <!-- Console Filter - Universal console control -->
+  <script src="../js/console-filter.js"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+  <!-- Preload only first two optimized WebP images for faster above-the-fold display -->
+  <link rel="preload" as="image" href="../team-optimized/1-256.webp" type="image/webp" />
+  <link rel="preload" as="image" href="../team-optimized/2-256.webp" type="image/webp" />
+  <style>
+  /* Ensure predictable sizing to avoid overflow */
+  *, *::before, *::after { box-sizing: border-box; }
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      text-decoration: none;
+      color: #f2f8ff;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      font-size: 0.9em;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+    }
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.32);
+    }
+
+    /* Page background polish */
+    body {
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(0, 234, 255, 0.15), transparent 60%),
+                  radial-gradient(800px 400px at 90% 10%, rgba(132, 56, 255, 0.12), transparent 60%),
+                  linear-gradient(180deg, #0a0f1c 0%, #0b1220 35%, #0e1426 100%);
+      min-height: 100vh;
+      color: #e9f6ff;
+    }
+
+    /* Responsive grid overrides for mobile/tablet */
+    @media (max-width: 720px) {
+      .team-grid { grid-template-columns: 1fr !important; gap: 18px !important; }
+  .section-header { margin: 64px auto 6px !important; text-align: center !important; }
+  .section-title { font-size: clamp(1.4rem, 6vw, 1.8rem) !important; }
+  .section-subtitle { font-size: 0.95rem !important; margin: 0 auto; }
+  .section-underline { margin-left: auto; margin-right: auto; }
+  .back-btn { position: static !important; display: inline-block; margin: 12px 16px 0; }
+      .member-card { padding: 14px !important; }
+      .member-card img { padding: 0 !important; }
+  .member-card div:nth-child(2) { font-size: 1rem !important; }
+  .member-card div:nth-child(3) { font-size: 0.82rem !important; }
+  .member-card div:nth-child(4) { font-size: 0.9rem !important; line-height: 1.5 !important; }
+    }
+    @media (min-width: 721px) and (max-width: 1024px) {
+      .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 20px !important; }
+    }
+    @media (min-width: 1280px) {
+      .team-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 22px !important; }
+    }
+
+  /* Section header */
+  .section-header { max-width: 1280px; margin: 48px auto 8px; padding: 0 16px; text-align: left; }
+    .section-eyebrow { color: #7adfff; font-weight: 700; letter-spacing: 1.2px; font-size: 0.8rem; opacity: 0.9; }
+    .section-title { margin: 8px 0 6px; font-size: clamp(1.6rem, 2.8vw, 2.2rem); font-weight: 800; color: #eaffff; }
+    .section-subtitle { color: #cfe9ff; opacity: 0.92; max-width: 780px; line-height: 1.5; }
+    .section-underline { height: 3px; width: 72px; background: linear-gradient(90deg, #00eaff, #7a9cff); border-radius: 3px; margin-top: 12px; }
+
+    /* Card alignment helpers */
+  .member-card { height: 100%; overflow: hidden; }
+    .member-name { min-height: 1.4em; }
+    .member-role { min-height: 1.2em; }
+    .member-desc {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-clamp: 3;
+      -webkit-line-clamp: 3; /* show up to 3 lines for consistent heights */
+      min-height: 4.5em; /* approx 3 lines with current line-height */
+    }
+    .member-desc.expanded {
+      display: block;
+      -webkit-line-clamp: unset;
+      line-clamp: unset;
+      max-height: none;
+      min-height: 0;
+    }
+    .desc-toggle { margin-top: 4px; font-size: 0.72rem; font-weight:700; letter-spacing:0.5px; cursor:pointer; user-select:none; display:inline-block; padding:4px 8px; border-radius:6px; background:rgba(0,234,255,0.08); color:#7adfff; border:1px solid rgba(0,234,255,0.25); transition:background .2s ease, color .2s ease; }
+    .desc-toggle:hover { background:rgba(0,234,255,0.18); color:#b8f4ff; }
+  /* Grid spacing override (inline style fallback) */
+  .team-grid { gap: 22px !important; }
+
+  /* Image wrapper + skeleton shimmer */
+  .member-image { position: relative; width: 100%; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; }
+  /* When using object-fit:contain we may get letterboxing; give subtle backdrop */
+  .member-image img { background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); }
+  .fit-contain .member-image img { object-fit: contain !important; }
+  .member-image.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.1), rgba(255,255,255,0.04));
+    transform: translateX(-100%);
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-btn">Back to Main</a>
+  <header class="section-header">
+    <div class="section-eyebrow">TEAM</div>
+    <h2 class="section-title">Meet the WildWest Team</h2>
+    <p class="section-subtitle">The builders, creators, and operators behind WildWest Launchpad & Utility Hub.</p>
+    <div class="section-underline"></div>
+  </header>
+
+  <!-- Team Grid -->
+  <section id="team" style="max-width:1280px;margin:28px auto 24px;padding:0 16px">
+    <div class="team-grid"
+         style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch">
+      <!-- Cards injected by script -->
+    </div>
+  </section>
+
+  <script>
+    (function(){
+      const grid = document.querySelector('.team-grid');
+      if (!grid) return;
+  // Original large PNGs pruned; retain variable for clarity but unused.
+  const basePathPng = null;
+  const optimizedPath = '../team-optimized/'; // expected new directory with webp assets (512 & 256 variants)
+      // Define team members, mapped to images 1..9.png
+      const members = [
+        { idx: 1, name: 'Josh', title: 'Lead Engineer, Smart Contracts', desc: 'Leads end‑to‑end engineering across smart contracts, backend services, and the web app. Focused on security, reliability, and shipping fast.' },
+  { idx: 2, name: 'Based Queen', title: 'Social Media Manager', desc: 'Owns social strategy and community programs. Grows reach, keeps the brand voice sharp, and channels feedback into action.' },
+  { idx: 3, name: 'Liquidity', title: 'Partnerships & Business Development', desc: 'Leads strategic partnerships and BD—sourcing, qualifying, and closing high‑impact integrations. Builds durable relationships that expand distribution and revenue.' },
+        { idx: 4, name: 'Cash', title: 'Community Host', desc: 'Hosts spaces and AMAs, turning updates into clear narratives. Keeps momentum high and the community heard.' },
+        { idx: 5, name: 'Market', title: 'Brand & Visual Design', desc: 'Designs brand systems and visual assets—from identity and motion to campaign creative and UI polish.' },
+        { idx: 6, name: 'CT', title: 'Audio Engineer & Artist', desc: 'Produces original audio for campaigns and content—engineering, mixing, and on‑brand tracks for WildWest.' },
+  { idx: 7, name: 'Sordisol', title: 'Growth Marketing', desc: 'Leads growth and performance marketing. Plans, executes, and optimizes multi‑channel campaigns.' },
+        { idx: 8, name: 'Seth', title: 'Product Strategy', desc: 'Shapes product concepts and experiments. Translates raw ideas into testable features and roadmaps.' },
+        { idx: 9, name: 'Mark', title: 'Strategic Advisor', desc: 'Advises on strategy and go‑to‑market. Prioritizes focus areas and aligns metrics with outcomes.' }
+      ];
+
+      function addCard(m){
+  const card = document.createElement('div');
+  card.className = 'member-card';
+  card.style.cssText = 'background: linear-gradient(180deg, rgba(16,20,36,0.78), rgba(12,16,28,0.82)) padding-box, linear-gradient(135deg, rgba(0,234,255,0.35), rgba(255,255,255,0.08)) border-box; border:1px solid transparent; border-radius:16px; box-shadow:0 10px 26px rgba(0,0,0,0.32); padding:16px; text-align:left; display:flex; flex-direction:column; gap:12px; justify-content:flex-start; align-items:stretch; transition:transform .2s ease, box-shadow .2s ease; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);';
+  card.onmouseenter = () => { card.style.transform = 'translateY(-3px)'; card.style.boxShadow = '0 12px 26px rgba(0,0,0,0.32)'; };
+  card.onmouseleave = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = '0 8px 22px rgba(0,0,0,0.28)'; };
+
+  // Image wrapper with skeleton shimmer
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'member-image skeleton';
+
+  // Use <picture> for modern WebP (optimized) with PNG fallback.
+  const picture = document.createElement('picture');
+  // Construct expected filenames (will exist after optimization step). Fallback to PNG if not present.
+  const webp256 = optimizedPath + m.idx + '-256.webp';
+  const webp512 = optimizedPath + m.idx + '-512.webp';
+  const pngOrig = ''; // no longer present; keep empty so <img> relies on webp via <source>
+  const sourceHi = document.createElement('source');
+  sourceHi.type = 'image/webp';
+  sourceHi.srcset = `${webp256} 256w, ${webp512} 512w`;
+  sourceHi.sizes = '(max-width: 640px) 160px, (max-width: 1024px) 220px, 256px';
+  const img = document.createElement('img');
+  img.decoding = 'async';
+  if (m.idx <= 2) { img.loading = 'eager'; img.setAttribute('fetchpriority', 'high'); } else { img.loading = 'lazy'; }
+  // Fallback removed (PNG originals deleted). Leave blank src; browser will pick <source> WebP.
+  img.src = webp256;
+  img.srcset = `${webp256} 256w, ${webp512} 512w`;
+  img.sizes = '(max-width: 640px) 160px, (max-width: 1024px) 220px, 256px';
+  img.alt = m.name + ' portrait';
+  img.setAttribute('width', '256');
+  img.setAttribute('height', '256');
+  img.style.cssText = 'width:100%;height:100%;max-width:100%;display:block;object-fit:cover;border-radius:12px;image-rendering:auto;background:transparent;padding:0;margin:0;border:none;box-shadow:none;';
+  img.referrerPolicy = 'no-referrer';
+  img.onerror = () => { /* keep card but remove broken image */ picture.remove(); };
+  img.onload = () => { imgWrap.classList.remove('skeleton'); };
+  picture.appendChild(sourceHi);
+  picture.appendChild(img);
+
+  const name = document.createElement('div');
+  name.className = 'member-name';
+  name.textContent = m.name;
+  name.style.cssText = 'color:#eaffff;font-weight:800;font-size:1.05rem;letter-spacing:0.2px;';
+
+  const role = document.createElement('div');
+  role.className = 'member-role';
+  role.textContent = m.title;
+  role.style.cssText = 'color:#7adfff;font-weight:800;font-size:0.88rem;opacity:0.98; letter-spacing: 0.25px; text-transform: uppercase;';
+
+  const desc = document.createElement('div');
+  desc.className = 'member-desc';
+  desc.textContent = m.desc;
+  desc.style.cssText = 'color:#d4e6ff;font-size:0.95rem;line-height:1.55;opacity:0.96;';
+
+  imgWrap.appendChild(picture);
+  card.appendChild(imgWrap);
+        card.appendChild(name);
+        card.appendChild(role);
+        card.appendChild(desc);
+        grid.appendChild(card);
+      }
+
+      // Render fixed order 1..10
+      members.forEach(addCard);
+
+      // Attach expand handlers
+      grid.querySelectorAll('.member-card').forEach(card => {
+        const desc = card.querySelector('.member-desc');
+        if (!desc) return;
+        // If content exceeds clamp (rough heuristic comparing scrollHeight vs clientHeight after a tick)
+        requestAnimationFrame(() => {
+          if (desc.scrollHeight > desc.clientHeight + 4) {
+            const toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'desc-toggle';
+            toggle.textContent = 'SHOW MORE';
+            let expanded = false;
+            toggle.onclick = () => {
+              expanded = !expanded;
+              desc.classList.toggle('expanded', expanded);
+              toggle.textContent = expanded ? 'SHOW LESS' : 'SHOW MORE';
+            };
+            card.appendChild(toggle);
+          }
+        });
+      });
+
+      // Provide runtime switch via hash (#cover or #contain)
+      function applyFitMode() {
+        if (location.hash === '#contain') {
+          document.body.classList.add('fit-contain');
+        } else {
+          document.body.classList.remove('fit-contain');
+        }
+      }
+      window.addEventListener('hashchange', applyFitMode);
+      applyFitMode();
+    })();
+  </script>
+
+  <!-- Copyright Footer -->
+  <footer style="
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 1px solid rgba(0, 234, 255, 0.2);
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-top: 4rem;
+    color: #c0c0c0;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+  ">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div style="margin-bottom: 1.5rem;">
+        <span style="color: #00eaff; font-weight: 600; font-size: 1.1rem;">WILDWEST LAUNCHPAD</span>
+      </div>
+      
+      <!-- Social Media Links -->
+      <div style="margin-bottom: 1rem;">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
+          background: linear-gradient(135deg, #0088cc, #00aaff);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          TELEGRAM
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
+          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+          color: #ffffff;
+          text-decoration: none;
+          margin: 0 0.5rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          transition: all 0.3s ease;
+          display: inline-block;
+          border: 1px solid rgba(255,255,255,0.2);
+        ">
+          X
+        </a>
+      </div>
+      
+      <!-- $WILDW Token Contract Address -->
+      <div style="margin-bottom: 1rem; font-size: 0.85rem;">
+        <div style="margin-bottom: 0.5rem;">
+          <span style="color: #ffae00; font-weight: 600;">$WILDW TOKEN (BASE):</span>
+        </div>
+        <span style="color: #c0c0c0; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">
+          0x8129609E5303910464FCe3022a809fA44455Fe9A
+        </span>
+      </div>
+      
+      <div style="margin-bottom: 0.5rem;">
+        &copy; 2025 Wild West Launchpad. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+

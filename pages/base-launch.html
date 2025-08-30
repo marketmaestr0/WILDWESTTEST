@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BASE TOKEN LAUNCHER</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <link rel="stylesheet" href="../css/styles.css">
     
-    <!-- Google Fonts for Professional Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Mark that we're handling the wallet button ourselves -->
     <script>
@@ -25,9 +24,8 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0f1419 0%, #1a1f29 50%, #0f1419 100%);
+            background: var(--panel);
             min-height: 100vh;
-            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             color: #f8fafc;
             margin: 0;
             padding: 16px;
@@ -1172,7 +1170,70 @@
     </style>
 </head>
 <body>
-    <a href="../index.html" id="backToMainBtn">Back to Main</a>
+    <!-- Top chrome: fixed wrapper that always stays above the page -->
+  <div class="site-chrome">
+    <!-- Transaction Ticker Widget -->
+    <iframe id="transaction-ticker-iframe" src="../transaction-ticker-widget.html" scrolling="no"
+      title="Transaction Ticker">
+    </iframe>
+
+    <!-- Nav Bar-->
+    <nav class="navbar">
+
+      <!-- Left: Logo -->
+      <div class="navlogo">WILD WEST</div>
+
+      <!-- Center: Main Links -->
+      <ul class="nav-links">
+        <li><a href="../index.html" aria-current="page">Home</a></li>
+
+        <li class="dropdown">
+          <a>Launch Token ▾</a>
+          <ul class="dropdown-menu">
+            <li><a href="./pages/base-launch.html">Base</a></li>
+            <li><a href="launch_solana.html">Solana <br> (Coming soon!)</a></li>
+          </ul>
+        </li>
+
+        <li class="dropdown">
+          <a>Staking ▾</a>
+          <ul class="dropdown-menu">
+            <li><a href="staking_base.html">Base</a></li>
+            <li><a href="staking_solana.html">Solana <br> (Coming soon!)</a></li>
+          </ul>
+        </li>
+
+        <li class="dropdown">
+          <a>Token Locking ▾</a>
+          <ul class="dropdown-menu">
+            <li><a href="locking_base.html">Base</a></li>
+            <li><a href="locking_solana.html">Solana</a></li>
+          </ul>
+        </li>
+
+        <li><a href="furnace.html">Token Furnace</a></li>
+        <li><a href="team.html">The Team</a></li>
+        <li><a href="team.html">Arcade</a></li>
+      </ul>
+
+      <!-- Right: Icons -->
+      <div class="nav-actions">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
+          <img src="../images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
+          <img src="../images/icons/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
+        </a>
+        <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank"
+          rel="noopener">
+          <img src="../images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener"
+            class="nav-icon">
+        </a>
+        <div class="connect-wallet-btn">
+          <a>Connect Wallet</a>
+        </div>
+      </div>
+    </nav>
     
     <!-- Token Furnace Style Wallet Modal System -->
     <script>
