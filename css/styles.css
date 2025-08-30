@@ -198,6 +198,20 @@ body {
   }
 }
 
+.connect-wallet-btn {
+ border: 2px solid #fff;
+ border-radius: 50px;
+ padding: 0.5rem;
+ transition: all 0.3s ease;
+}
+
+.connect-wallet-btn:hover {
+  background-color: var(--yellow);   /* fill the button on hover */
+  color: var(--panel);              /* change text colour for contrast */
+  border-color: var(--panel);       /* optional: keep border consistent */
+  cursor: pointer;          /* shows the hand pointer */
+}
+
 /* =========================
    Dropdown
    ========================= */
@@ -690,3 +704,68 @@ body {
     max-width: 280px !important;
   }
 }
+
+.footer-section {
+  border-top: 1px solid rgba(0, 234, 255, 0.2);
+  padding: 1rem 1rem;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+  .wild-west-footer{
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--yellow);
+    margin-bottom: 1rem;
+  }
+
+  .footer-socials{
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    display: flex;                  /* turn on flexbox */
+    justify-content: space-evenly;  /* equal space around each icon */
+    align-items: center;            /* vertical alignment */
+    width: 200px;                   /* your chosen fixed width */
+    margin-left: auto;              /* center the block */
+    margin-right: auto;             /* center the block */
+  }
+
+  .footer-wildw{
+    color: var(--yellow);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-address{
+    font-family: 'Courier New', Courier, monospace;
+    background: rgba(255,255,255,0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #999;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;              /* shows hand cursor */
+    position: relative;
+  }
+
+  .copy-tooltip {
+    position: fixed;            /* fixed to viewport, near mouse click */
+    background: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    opacity: 0;
+    pointer-events: none;        /* don't block clicks */
+    transform: translate(-50%, -120%);
+    transition: opacity 0.3s ease;
+    z-index: 9999;
+  }
+  .copy-tooltip.show {
+    opacity: 1;
+  }
+  
+
+  .footer-url{
+    margin-top: 1rem;
+  }
