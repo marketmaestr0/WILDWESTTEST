@@ -1400,10 +1400,6 @@
 
     <!-- Right: Icons -->
     <div class="nav-actions">
-      <!-- <a href="pages/wildwest-arcade.html" class="arcade-emoji-link" title="WildWest Arcade">
-        <span class="arcade-emoji">🕹️</span>
-        <span class="arcade-label">ARCADE</span>
-      </a> -->
      <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
        <img src="images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
      </a>
@@ -1413,7 +1409,9 @@
      <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank" rel="noopener">
        <img src="images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener" class="nav-icon">
      </a>
+    <div class="connect-wallet-btn">
      <a>Connect Wallet</a>
+    </div> 
   </div>
   </nav>
 
@@ -2977,70 +2975,57 @@ document.addEventListener('DOMContentLoaded', function() {
   </script>
 
   <!-- Copyright Footer -->
-  <footer style="
-    background: rgba(0, 0, 0, 0.8);
-    border-top: 1px solid rgba(0, 234, 255, 0.2);
-    padding: 2rem 1rem;
-    text-align: center;
-    margin-top: 4rem;
-    color: #c0c0c0;
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 0.9rem;
-  ">
-    <div style="max-width: 1200px; margin: 0 auto;">
-      <div style="margin-bottom: 1.5rem;">
-        <span style="color: #00eaff; font-weight: 600; font-size: 1.1rem;">WILDWEST LAUNCHPAD</span>
-      </div>
-      
-      <!-- Social Media Links -->
-      <div style="margin-bottom: 1rem;">
-        <a href="https://t.me/wildwestlaunchpad" target="_blank" style="
-          background: linear-gradient(135deg, #0088cc, #00aaff);
-          color: #ffffff;
-          text-decoration: none;
-          margin: 0 0.5rem;
-          padding: 8px 16px;
-          border-radius: 6px;
-          font-weight: 600;
-          font-size: 0.85rem;
-          transition: all 0.3s ease;
-          display: inline-block;
-          border: 1px solid rgba(255,255,255,0.2);
-        ">
-          TELEGRAM
+    <div class="footer-section">
+       <p class="wild-west-footer">WILDWEST LAUNCHPAD</p>
+       <div class="footer-socials">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
+          <img src="images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
         </a>
-        <a href="https://x.com/WILDWESTLP?t=RI3IQU3KASjN3Ak-yrfZnw&s=09" target="_blank" style="
-          background: linear-gradient(135deg, #1da1f2, #0d8bd9);
-          color: #ffffff;
-          text-decoration: none;
-          margin: 0 0.5rem;
-          padding: 8px 16px;
-          border-radius: 6px;
-          font-weight: 600;
-          font-size: 0.85rem;
-          transition: all 0.3s ease;
-          display: inline-block;
-          border: 1px solid rgba(255,255,255,0.2);
-        ">
-          X
+        <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
+          <img src="images/icons/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
         </a>
-      </div>
-      
-      <!-- $WILDW Token Contract Address -->
-      <div style="margin-bottom: 1rem; font-size: 0.85rem;">
-        <div style="margin-bottom: 0.5rem;">
-          <span style="color: #ffae00; font-weight: 600;">$WILDW TOKEN (BASE):</span>
-        </div>
-        <span style="color: #c0c0c0; font-family: 'Courier New', monospace; word-break: break-all; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px;">
-          0x8129609E5303910464FCe3022a809fA44455Fe9A
-        </span>
-      </div>
-      
-      <div style="margin-bottom: 0.5rem;">
-        &copy; 2025 Wild West Launchpad. All rights reserved.
+        <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank" rel="noopener">
+          <img src="images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener" class="nav-icon">
+        </a>
+       </div>
+       <p class="footer-wildw">$WILDW TOKEN (BASE)</p>
+       <span class="footer-address" id="contract-address">0x8129609E5303910464FCe3022a809fA44455Fe9A</span>
+
+
+
+      <p class="footer-url">&copy; 2025 Wild West Launchpad. All rights reserved.</p>
       </div>
     </div>
   </footer>
+
+  <!--Click to copy JS-->
+  <script>
+    const addressSpan = document.getElementById("contract-address");
+  
+    addressSpan.addEventListener("click", (e) => {
+      const text = addressSpan.innerText;
+  
+      navigator.clipboard.writeText(text).then(() => {
+        // Create tooltip
+        const tooltip = document.createElement("div");
+        tooltip.className = "copy-tooltip";
+        tooltip.innerText = "Copied!";
+  
+        // Position near mouse click
+        tooltip.style.left = e.pageX + "px";
+        tooltip.style.top = e.pageY + "px";
+  
+        document.body.appendChild(tooltip);
+  
+        // Show + fade out
+        requestAnimationFrame(() => tooltip.classList.add("show"));
+        setTimeout(() => {
+          tooltip.classList.remove("show");
+          setTimeout(() => tooltip.remove(), 300); // match transition
+        }, 1200); // visible for ~1.2s
+      });
+    });
+  </script>
   
 </body>
 </html>
