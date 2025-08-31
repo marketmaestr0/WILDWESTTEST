@@ -739,6 +739,7 @@
 
             .form-group {
                 margin-bottom: 24px;
+                font-family: var(--font-ui);
             }
 
             .status {
@@ -3805,7 +3806,7 @@
                             <!-- Removed manual price update button; price updates automatically every 5 minutes -->
                         </div>
                         <div id="priceStatus"
-                            style="margin-top: 12px; font-size: 0.9rem; color: #4a5568; display: none;">
+                            style="margin-top: 12px; font-size: 0.9rem; color: var(--violet-muted); display: none;">
                             Current ETH Price: $<span id="currentPrice">4400.00</span>
                         </div>
                         <div id="factoryMode" style="margin-top:8px;font-size:0.75rem;color:#555;display:none;">Mode: —
@@ -3833,8 +3834,8 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="balance-display">
-                                        <div class="balance-amount" id="walletBalance">0.0000 ETH ($0.00)</div>
                                         <div class="balance-label">Available Balance</div>
+                                        <div class="balance-amount" id="walletBalance">0.0000 ETH ($0.00)</div>
                                     </div>
                                 </div>
                                 <div class="btn-group btn-group-full" style="display:flex;justify-content:center;">
