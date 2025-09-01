@@ -3782,6 +3782,48 @@
             loadUserTokens = loadUserTokensEnhanced;
         </script>
 
+
+<!-- Hero Section -->
+<section class="utility-hero">
+  <div class="utility-hero__bg" aria-hidden="true"></div>
+
+  <div class="utility-hero-content">
+    <h1>BASE TOKEN LAUNCHER</h1>
+    <p>Create ERC20 tokens with locked liquidity</p>
+  </div>
+</section>
+
+<!-- JavaScript for Parallax effect-->
+
+<script>
+  (function () {
+    const bg = document.querySelector('.hero__bg');
+    if (!bg) return;
+
+    const speed = 0.6; // lower = subtler effect
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduce) return; // skip for reduced motion users
+
+    let ticking = false;
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const y = window.scrollY * speed;
+          bg.style.transform = `translateY(${y}px)`;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+
+
         <div class="page-wrapper">
             <div id="riskBanner"
                 style="display:none;margin:0 0 18px 0;padding:12px 18px;border-radius:10px;font-size:0.75rem;font-weight:600;line-height:1.35;background:linear-gradient(135deg,#7b1f21,#b11b1e);color:#fff;border:1px solid #ffcccc;box-shadow:0 2px 6px -1px rgba(0,0,0,0.25);">
@@ -3789,10 +3831,12 @@
                     factory or update address.</span>
             </div>
             <div class="container">
+                <!--
                 <div class="header">
                     <h1>BASE TOKEN LAUNCHER</h1>
                     <p style="text-align: center;">Create ERC20 tokens with locked liquidity</p>
                 </div>
+                -->
 
                 <div class="main-content">
                     <!-- Connection Status -->
