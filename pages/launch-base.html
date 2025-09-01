@@ -6622,16 +6622,16 @@
                             // Show user-friendly instructions
                             setTimeout(() => {
                                 const resetInstructions = `
-MetaMask transaction queue is stuck. To fix this:
+                    MetaMask transaction queue is stuck. To fix this:
 
-1. Open MetaMask extension
-2. Go to Settings (gear icon)
-3. Click "Advanced"
-4. Click "Reset Account"
-5. Confirm the reset
-6. Refresh this page and try again
+                    1. Open MetaMask extension
+                    2. Go to Settings (gear icon)
+                    3. Click "Advanced"
+                    4. Click "Reset Account"
+                    5. Confirm the reset
+                    6. Refresh this page and try again
 
-This will clear stuck transactions without affecting your funds.`;
+                    This will clear stuck transactions without affecting your funds.`;
 
                                 if (confirm(resetInstructions + '\n\nClick OK to see detailed instructions, or Cancel to continue.')) {
                                     window.open('https://support.metamask.io/hc/en-us/articles/360015488891-How-to-reset-your-MetaMask-wallet', '_blank');
