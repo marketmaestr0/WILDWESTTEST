@@ -47,6 +47,8 @@
   --hero-align: center;
   --hero-zoom: cover;
   --hero-overlay: none;
+
+  --launch-image: url("../images/token-launch-hero.webp");
   /* e.g., linear-gradient(180deg,#0000 60%, #0006 100%) */
 
   /* Effects */
@@ -446,6 +448,43 @@ body {
 }
 
 
+
+.utility-hero {
+  position: relative;
+  min-height: 500px;
+  max-height: 600px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding-top: 4rem;
+}
+
+.utility-hero__bg {
+  position: absolute;
+  inset: -10vh 0 -10vh 0;
+  /* oversize to avoid gaps when parallaxing */
+  background:
+    var(--hero-overlay),
+    var(--launch-image) no-repeat var(--hero-align) / var(--hero-zoom);
+  will-change: transform;
+  transform: translateY(0);
+  z-index: -1;
+}
+
+.utility-hero-content h1 {
+  font-size: clamp(3rem, 8vw, 8rem);
+  letter-spacing: 0.6rem;
+  font-family: var(--font-display);
+  text-shadow: 0 0 20px var(--light-blue-60);
+}
+
+.utility-hero-content p {
+  font-size: 1rem;
+  margin-top: 1rem;
+  letter-spacing: 0.5rem;
+  text-shadow: 0 0 10px var(--light-blue-60);
+}
 
 
 
@@ -888,7 +927,7 @@ body {
 }
 
 .footer-section {
-  border-top: 1px solid rgba(0, 234, 255, 0.2);
+  border-top: 2px solid var(--violet);
   padding: 1rem 1rem;
   text-align: center;
   font-size: 0.7rem;
