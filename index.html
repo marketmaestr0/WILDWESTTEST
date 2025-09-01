@@ -899,66 +899,73 @@
   <!-- Top chrome: fixed wrapper that always stays above the page -->
   <div class="site-chrome">
     <!-- Transaction Ticker Widget -->
-    <iframe id="transaction-ticker-iframe" src="transaction-ticker-widget.html" scrolling="no"
-      title="Transaction Ticker">
+    <iframe id="transaction-ticker-iframe" src="./transaction-ticker-widget.html" scrolling="no"
+        title="Transaction Ticker">
     </iframe>
 
     <!-- Nav Bar-->
     <nav class="navbar">
 
-      <!-- Left: Logo -->
-      <div class="navlogo">WILD WEST</div>
+        <!-- Left: Logo -->
+        <div class="navlogo">WILD WEST</div>
 
-      <!-- Center: Main Links -->
-      <ul class="nav-links">
-        <li><a href="index.html" aria-current="page">Home</a></li>
+        <!-- Center: Main Links -->
+        <ul class="nav-links">
+            <li><a href="../index.html">Home</a></li>
 
-        <li class="dropdown">
-          <a>Launch Token ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="./pages/base-launch.html">Base</a></li>
-            <li><a href="launch_solana.html">Solana <br> (Coming soon!)</a></li>
-          </ul>
-        </li>
+            <li class="dropdown">
+                <button class="dropdown-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                    Launch Token ▾
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <!-- NOTE: from /pages/ use same-folder path, not ./pages/... -->
+                    <li><a href="./pages/launch-base.html" role="menuitem" aria-current="page">Base</a></li>
+                    <li><a href="./pages/launch-solana.html" role="menuitem">Solana (Coming soon!)</a></li>
+                </ul>
+            </li>
 
-        <li class="dropdown">
-          <a>Staking ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="staking_base.html">Base</a></li>
-            <li><a href="staking_solana.html">Solana <br> (Coming soon!)</a></li>
-          </ul>
-        </li>
+            <li class="dropdown">
+                <button class="dropdown-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                    Staking ▾
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="./pages/staking-base.html" role="menuitem">Base</a></li>
+                    <li><a href="./pages/staking-solana.html" role="menuitem">Solana (Coming soon!)</a></li>
+                </ul>
+            </li>
 
-        <li class="dropdown">
-          <a>Token Locking ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="locking_base.html">Base</a></li>
-            <li><a href="locking_solana.html">Solana</a></li>
-          </ul>
-        </li>
+            <li class="dropdown">
+                <button class="dropdown-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                    Token Locking ▾
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="./pages/launch-base-COPY.html" role="menuitem">Base</a></li>
+                    <li><a href="./pages/locking-solana.html" role="menuitem">Solana</a></li>
+                </ul>
+            </li>
 
-        <li><a href="furnace.html">Token Furnace</a></li>
-        <li><a href="team.html">The Team</a></li>
-        <li><a href="team.html">Arcade</a></li>
-      </ul>
+            <li><a href="./pages/furnace.html">Token Furnace</a></li>
+            <li><a href="./pages/the-team.html">The Team</a></li>
+            <li><a href="./pages//arcade.html">Arcade</a></li> <!-- (double-check: both go to team.html) -->
+        </ul>
 
-      <!-- Right: Icons -->
-      <div class="nav-actions">
-        <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
-          <img src="images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
-        </a>
-        <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
-          <img src="images/icons/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
-        </a>
-        <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank"
-          rel="noopener">
-          <img src="images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener"
-            class="nav-icon">
-        </a>
-        <div class="connect-wallet-btn">
-          <a>Connect Wallet</a>
+        <!-- Right: Icons -->
+        <div class="nav-actions">
+            <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
+                <img src="./images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
+            </a>
+            <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
+                <img src="./images/icons/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
+            </a>
+            <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank"
+                rel="noopener">
+                <img src="./images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener"
+                    class="nav-icon">
+            </a>
+            <div class="connect-wallet-btn">
+                <a>Connect Wallet</a>
+            </div>
         </div>
-      </div>
     </nav>
 
 
@@ -2516,7 +2523,9 @@ Top Ad Banner
       console.log('  inspectBottomBanner() - Inspect bottom banner data');
     </script>
 
-    <!-- Copyright Footer -->
+    <!-- =========== Footer =========== -->
+
+
     <div class="footer-section">
       <p class="wild-west-footer">WILDWEST LAUNCHPAD</p>
       <div class="footer-socials">
