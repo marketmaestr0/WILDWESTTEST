@@ -41,16 +41,6 @@
   --gap-md: 30px;
   --radius-sm: 8px;
 
-  /* Hero defaults (override per-page if needed) */
-  --hero-image: url("../images/Saloon Exterior_Night cropped.webp");
-  --hero-min-h: 80vh;
-  --hero-align: center;
-  --hero-zoom: cover;
-  --hero-overlay: none;
-
-  --launch-image: url("../images/token-launch-hero.webp");
-  /* e.g., linear-gradient(180deg,#0000 60%, #0006 100%) */
-
   /* Effects */
   --icon-scale: 1.15;
   --ticker-h: 40px;
@@ -158,7 +148,7 @@ body {
 }
 
 .nav-links a {
-  color: #fff;
+  color: #ffffff;
   text-decoration: none;
   font-weight: 500;
   font-size: 16px;
@@ -413,7 +403,7 @@ body {
    ========================= */
 .hero {
   position: relative;
-  min-height: var(--hero-min-h);
+  min-height: 80vh;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -425,9 +415,7 @@ body {
   position: absolute;
   inset: -10vh 0 -10vh 0;
   /* oversize to avoid gaps when parallaxing */
-  background:
-    var(--hero-overlay),
-    var(--hero-image) no-repeat var(--hero-align) / var(--hero-zoom);
+  background: url("../images/Saloon Exterior_Night cropped.webp") no-repeat center / cover;
   will-change: transform;
   transform: translateY(0);
   z-index: -1;
@@ -463,14 +451,25 @@ body {
 .utility-hero__bg {
   position: absolute;
   inset: -10vh 0 -10vh 0;
-  /* oversize to avoid gaps when parallaxing */
-  background:
-    var(--hero-overlay),
-    var(--launch-image) no-repeat var(--hero-align) / var(--hero-zoom);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-image: url("../images/Saloon Exterior_Night cropped.webp"); /* default */
   will-change: transform;
   transform: translateY(0);
-  z-index: -1;
+  z-index: -1; /* use 0 + make content z-index:1 if needed */
 }
+
+/* Page variants — only override the variables */
+body.page-launch  .utility-hero__bg { background-image: url("../images/token-launch-hero.webp"); }
+body.page-nft-marketplace  .utility-hero__bg { background-image: url("../images/"); }
+body.page-staking  .utility-hero__bg { background-image: url("../images/"); }
+body.page-locking .utility-hero__bg { background-image: url("../images/Bank_Colorised.webp"); }
+body.page-furnace  .utility-hero__bg { background-image: url("../images/"); }
+body.page-team  .utility-hero__bg { background-image: url("../images/"); }
+body.page-arcade  .utility-hero__bg { background-image: url("../images/"); }
+body.coming-soon  .utility-hero__bg { background-image: url("../images/coming-soon-image.webp"); }
+/* add more pages as needed... */
 
 .utility-hero-content h1 {
   font-size: clamp(3rem, 8vw, 8rem);
@@ -479,6 +478,10 @@ body {
   text-shadow: 0 0 20px var(--light-blue-60);
 }
 
+/* Page variants — only override the variables */
+body.coming-soon  .utility-hero-content h1 { text-shadow: 0 0 20px var(--panel); }
+/* add more pages as needed... */
+
 .utility-hero-content p {
   font-size: 1rem;
   margin-top: 1rem;
@@ -486,6 +489,9 @@ body {
   text-shadow: 0 0 10px var(--light-blue-60);
 }
 
+/* Page variants — only override the variables */
+body.coming-soon  .utility-hero-content p1 { text-shadow: 0 0 5px var(--panel); }
+/* add more pages as needed... */
 
 
 

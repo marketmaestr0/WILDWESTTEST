@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNDER CONSTRUCTION</title>
+  <link rel="icon" href="../favicon.ico">
+  <!-- Console Filter - Universal console control -->
+  <script src="../js/console-filter.js"></script>
+  <!-- Legal Disclaimer System - Must load first for compliance -->
+  <script src="../js/legal-disclaimer.js"></script>
+  <!-- Core wallet dependencies -->
+  <script src="../js/wallet.js"></script>
+  <!-- Mobile Wallet Integration - Clean mobile experience -->
+  <script src="../js/mobile-wallet-detector.js"></script>
+  <script src="../js/mobile-wallet-integration.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/styles.css">
+  
+</head>
+<body class="coming-soon"> <!-- Determines hero picture -->
+  
+  <!-- Top chrome: fixed wrapper that always stays above the page -->
+    <div class="site-chrome">
+        <!-- Transaction Ticker Widget -->
+        <iframe id="transaction-ticker-iframe" src="../transaction-ticker-widget.html" scrolling="no"
+            title="Transaction Ticker">
+        </iframe>
+
+        <!-- ========== Nav Bar =============
+        ====================================
+        =================================-->
+
+        <nav class="navbar">
+
+            <!-- Left: Logo -->
+            <div class="navlogo">WILD WEST</div>
+
+            <!-- Center: Main Links -->
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+
+                <li class="dropdown">
+                    <button class="dropdown-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                        Launch Token ▾
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <!-- NOTE: from /pages/ use same-folder path, not ./pages/... -->
+                        <li><a href="launch-base.html" role="menuitem" aria-current="page">Base</a></li>
+                        <li><a href="coming-soon.html" role="menuitem">Solana (Coming soon!)</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="coming-soon.html">NFT Marketplace</a></li>
+
+                <li class="dropdown">
+                    <button class="dropdown-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                        Staking ▾
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="coming-soon.html" role="menuitem">Base</a></li>
+                        <li><a href="coming-soon.html" role="menuitem">Solana (Coming soon!)</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <button class="dropdown-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+                        Token Locking ▾
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="locking-base.html" role="menuitem">Base</a></li>
+                        <li><a href="locking-solana.html" role="menuitem">Solana</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="furnace.html">Token Furnace</a></li>
+                <li><a href="the-team.html">The Team</a></li>
+                <li><a href="coming-soon.html">Arcade</a></li> <!-- (double-check: both go to team.html) -->
+            </ul>
+
+            <!-- Right: Icons -->
+            <div class="nav-actions">
+                <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
+                    <img src="../images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
+                </a>
+                <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
+                    <img src="../images/icons/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
+                </a>
+                <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank"
+                    rel="noopener">
+                    <img src="../images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener"
+                        class="nav-icon">
+                </a>
+                <div class="connect-wallet-btn">
+                    <a>Connect Wallet</a>
+                </div>
+            </div>
+        </nav>
+
+        <!--======= HERO SECTION ===========
+        ====================================
+        =================================-->
+        
+        <section class="utility-hero">
+          <div class="utility-hero__bg" aria-hidden="true"></div>
+        
+          <div class="utility-hero-content">
+            <h1>UNDER CONSTRUCTION</h1>
+            <p>Check back soon...</p>
+          </div>
+        </section>
+        
+        <!-- JavaScript for Parallax effect-->
+        
+        <script>
+          (function () {
+            const bg = document.querySelector('.utility-hero__bg');
+            if (!bg) return;
+        
+            const speed = 0.6; // lower = subtler effect
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+            if (reduce) return; // skip for reduced motion users
+        
+            let ticking = false;
+        
+            function onScroll() {
+              if (!ticking) {
+                requestAnimationFrame(() => {
+                  const y = window.scrollY * speed;
+                  bg.style.transform = `translateY(${y}px)`;
+                  ticking = false;
+                });
+                ticking = true;
+              }
+            }
+        
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+          })();
+        </script>
+
+<!--========== FOOTER ==============
+====================================
+=================================-->
+
+<div class="footer-section">
+    <p class="wild-west-footer">WILDWEST LAUNCHPAD</p>
+    <div class="footer-socials">
+        <a href="https://t.me/wildwestlaunchpad" target="_blank" rel="noopener">
+            <img src="../images/icons/icons8-telegram-app-240_WHITE.png" alt="Telegram" class="nav-icon">
+        </a>
+        <a href="https://x.com/WILDWESTLP?t=wmcDfvCKnkAaLCtJbmAxgA" target="_blank" rel="noopener">
+            <img src="../images/icons/icons8-twitterx-240_WHITE.png" alt="Twitter/X" class="nav-icon">
+        </a>
+        <a href="https://dexscreener.com/base/0x8129609e5303910464fce3022a809fa44455fe9a" target="_blank"
+            rel="noopener">
+            <img src="../images/icons/661375b92a7e161501f4b5e5_dexscreener.322a5a2d_WHITE.png" alt="DEXScreener"
+                class="nav-icon">
+        </a>
+    </div>
+    <p class="footer-wildw">$WILDW TOKEN (BASE)</p>
+    <span class="footer-address" id="contract-address">0x8129609E5303910464FCe3022a809fA44455Fe9A</span>
+
+
+
+    <p class="footer-url">&copy; 2025 Wild West Launchpad. All rights reserved.</p>
+</div>
+</div>
+</footer>
+
+<!--Click to copy JS-->
+  <script>
+    const addressSpan = document.getElementById("contract-address");
+
+    addressSpan.addEventListener("click", (e) => {
+      const text = addressSpan.textContent.trim();
+
+      navigator.clipboard.writeText(text).then(() => {
+        const tooltip = document.createElement("div");
+        tooltip.className = "copy-tooltip";
+        tooltip.textContent = "Copied!";
+
+        // Use viewport coords for fixed elements
+        let x = e.clientX + 10;   // small offset to the right
+        let y = e.clientY - 10;   // small offset above
+
+        // Clamp so it stays inside the viewport
+        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        x = Math.min(Math.max(10, x), vw - 10);
+        y = Math.min(Math.max(10, y), vh - 10);
+
+        tooltip.style.left = x + "px";
+        tooltip.style.top = y + "px";
+
+        document.body.appendChild(tooltip);
+
+        // Show then fade away
+        requestAnimationFrame(() => tooltip.classList.add("show"));
+        setTimeout(() => {
+          tooltip.classList.remove("show");
+          setTimeout(() => tooltip.remove(), 300); // match CSS transition
+        }, 1200);
+      });
+    });
+  </script>
+
+</body>
+</html>
+
